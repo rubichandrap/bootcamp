@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { recordSubmission, getUserProgress, getFailedAttemptsCount, db, userProgress, submissions } from './progress';
+import {
+  recordSubmission,
+  getUserProgress,
+  getFailedAttemptsCount,
+  calculateModuleProgress,
+  db,
+  userProgress,
+  submissions,
+} from './progress';
 
 describe('SQLite Progress Tracking & Submissions', () => {
   const testUserId = 'user-1';
@@ -75,5 +83,30 @@ describe('SQLite Progress Tracking & Submissions', () => {
 
     const failedCount = getFailedAttemptsCount(testUserId, 'ch-failed-test');
     expect(failedCount).toBe(2);
+  });
+
+  it('should calculate exact module progress percentage based on completed chapters', () => {
+    const moduleChapters = ['ch-mod-1', 'ch-mod-2', 'ch-mod-3', 'ch-mod-4'];
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-mod-1',
+      code: 'pass 1',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-mod-3',
+      code: 'pass 3',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const percent = calculateModuleProgress(testUserId, moduleChapters);
+    expect(percent).toBe(50);
   });
 });
