@@ -52,5 +52,4 @@ next-env.d.ts
 skills-lock.json
 
 # Database
-.data
-.db
+*.db

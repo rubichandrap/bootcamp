@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, Terminal, Cpu, MemoryStick, Zap } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Terminal, Cpu, MemoryStick, Zap, AlertCircle } from 'lucide-react';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 
 interface TerminalOutputProps {
@@ -37,7 +37,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
                 activeTab === 'perf' ? 'bg-violet-600/30 text-violet-300 font-medium' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Cpu size={12} /> Performance
+              <Cpu size={12} /> Performance &amp; Allocations
             </button>
             <button
               onClick={() => setActiveTab('escape')}
@@ -119,7 +119,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
             </div>
           )}
 
-          {/* Performance Tab */}
+          {/* Performance & Allocations Tab */}
           {activeTab === 'perf' && (
             <div className="space-y-3 font-sans">
               <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -127,27 +127,46 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
               </div>
 
               {result.bench?.hasBench ? (
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase">Bytes / Op</span>
-                    <span className="text-lg font-bold text-violet-300 font-mono">
-                      {result.bench.bytesPerOp} <span className="text-xs font-normal text-slate-400">B/op</span>
-                    </span>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
+                      <span className="text-[10px] text-slate-400 uppercase">Bytes / Op</span>
+                      <span className="text-lg font-bold text-violet-300 font-mono">
+                        {result.bench.bytesPerOp} <span className="text-xs font-normal text-slate-400">B/op</span>
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
+                      <span className="text-[10px] text-slate-400 uppercase">Allocs / Op</span>
+                      <span className="text-lg font-bold text-cyan-300 font-mono">
+                        {result.bench.allocsPerOp} <span className="text-xs font-normal text-slate-400">allocs</span>
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
+                      <span className="text-[10px] text-slate-400 uppercase">Speed / Op</span>
+                      <span className="text-lg font-bold text-emerald-300 font-mono">
+                        {result.bench.nsPerOp} <span className="text-xs font-normal text-slate-400">ns/op</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase">Allocs / Op</span>
-                    <span className="text-lg font-bold text-cyan-300 font-mono">
-                      {result.bench.allocsPerOp} <span className="text-xs font-normal text-slate-400">allocs</span>
-                    </span>
-                  </div>
-
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase">Speed / Op</span>
-                    <span className="text-lg font-bold text-emerald-300 font-mono">
-                      {result.bench.nsPerOp} <span className="text-xs font-normal text-slate-400">ns/op</span>
-                    </span>
-                  </div>
+                  {/* Allocation Warning Alert */}
+                  {result.bench.allocsPerOp > 0 ? (
+                    <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-lg text-amber-300 text-xs flex items-center gap-2">
+                      <AlertCircle size={15} className="text-amber-400 shrink-0" />
+                      <span>
+                        <strong>Memory Allocation Alert:</strong> Code triggers {result.bench.allocsPerOp} heap allocation(s) ({result.bench.bytesPerOp} bytes/op). Check Escape Analysis tab for heap escape details.
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-emerald-950/30 border border-emerald-800/50 rounded-lg text-emerald-300 text-xs flex items-center gap-2">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                      <span>
+                        <strong>Zero Heap Allocations:</strong> Code operates entirely on the stack with 0 allocs/op!
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs flex items-center gap-2">
@@ -167,8 +186,8 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
 
               {result.bench?.escapeLogs && result.bench.escapeLogs.length > 0 ? (
                 <div className="p-3 bg-black/60 border border-slate-800 rounded-lg text-slate-300 font-mono text-[11px] space-y-1 max-h-40 overflow-y-auto">
-                  {result.bench.escapeLogs.map((log, i) => (
-                    <div key={i} className="text-violet-300/90">{log}</div>
+                  {result.bench.escapeLogs.map((log, index) => (
+                    <div key={`${index}-${log.substring(0, 10)}`} className="text-violet-300/90">{log}</div>
                   ))}
                 </div>
               ) : (
