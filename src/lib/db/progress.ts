@@ -2,11 +2,11 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { eq, and } from 'drizzle-orm';
 import { users, modules, chapters, userProgress, submissions } from './schema';
+import { calculateStreak } from '@/lib/search/searchEngine';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 
-// Ensure data directory exists
 const dbDir = path.join(process.cwd(), '.data');
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
@@ -15,7 +15,6 @@ if (!fs.existsSync(dbDir)) {
 const sqlite = new Database(path.join(dbDir, 'app.db'));
 export const db = drizzle(sqlite);
 
-// Initialize database tables if not existing
 sqlite.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -77,7 +76,6 @@ export function recordSubmission(input: RecordSubmissionInput) {
   const submissionId = randomUUID();
   const now = new Date().toISOString();
 
-  // Log submission
   db.insert(submissions)
     .values({
       id: submissionId,
@@ -92,7 +90,6 @@ export function recordSubmission(input: RecordSubmissionInput) {
     })
     .run();
 
-  // If submission passed, mark chapter as completed if not already marked
   if (input.passed) {
     const existing = db
       .select()
@@ -125,10 +122,21 @@ export function getUserProgress(userId: string) {
 
   const completedChapterIds = completedRecords.map((r) => r.chapterId);
 
+  const submissionRecords = db
+    .select()
+    .from(submissions)
+    .where(eq(submissions.userId, userId))
+    .all();
+
+  const submissionDates = submissionRecords.map((s) => s.createdAt);
+  const streakDays = calculateStreak(submissionDates);
+
   return {
     userId,
     completedChapterIds,
     completedCount: completedChapterIds.length,
+    submissionDates,
+    streakDays,
   };
 }
 

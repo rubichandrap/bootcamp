@@ -23,12 +23,22 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   useEffect(() => {
     if (query.trim() === '') {
-      // Show all chapters by default when empty search
       setResults(modules.flatMap((m) => m.chapters));
     } else {
       setResults(searchCurriculum(query, modules));
     }
   }, [query, modules]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
