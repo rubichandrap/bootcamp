@@ -234,7 +234,7 @@ export default function Home() {
       {/* Top Navigation Header */}
       <header className="h-14 border-b border-slate-800 bg-[#0d1117] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-violet-500/20">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-violet-500/20">
             <Zap size={18} />
           </div>
           <div>
@@ -270,7 +270,7 @@ export default function Home() {
             <span>Progress: {progressPercent}%</span>
             <div className="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700/60">
               <div
-                className="bg-gradient-to-r from-violet-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                className="bg-linear-to-r from-violet-500 to-emerald-400 h-full rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               ></div>
             </div>
@@ -297,7 +297,7 @@ export default function Home() {
             <button
               onClick={handleRun}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-violet-500/25 transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-violet-500/25 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Play size={14} fill="currentColor" />
               {isLoading ? 'Executing...' : 'Run & Verify (Cmd+Enter)'}
