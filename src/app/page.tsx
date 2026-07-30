@@ -10,6 +10,7 @@ import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
+import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
 import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
@@ -122,7 +123,7 @@ export default function Home() {
         body: JSON.stringify({
           userId: 'default-user',
           chapterId: currentChapter.slug,
-          code: '// Reading Chapter Completed',
+          code: READING_COMPLETION_MARKER,
           passed: true,
           testCount: 0,
           failedCount: 0,
