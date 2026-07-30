@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — App Skeleton & Basic Host RCE Execution Pipeline
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] SQLite database setup with Drizzle ORM schema defining `users`, `modules`, `chapters`, `user_progress`, and `submissions`.
-- [ ] Server Action / API route `/api/submissions` to log submission attempts and test results.
-- [ ] Database helper functions to fetch chapter completion states and overall module progress.
-- [ ] Integration tests verifying progress mutation and state persistence.
+- [x] SQLite database setup with Drizzle ORM schema defining `users`, `modules`, `chapters`, `user_progress`, and `submissions`.
+- [x] Server Action / API route `/api/submissions` to log submission attempts and test results.
+- [x] Database helper functions to fetch chapter completion states and overall module progress.
+- [x] Integration tests verifying progress mutation and state persistence.

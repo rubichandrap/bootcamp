@@ -1,9 +1,10 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { eq, and } from 'drizzle-orm';
-import { userProgress, submissions } from './schema';
+import { users, modules, chapters, userProgress, submissions } from './schema';
 import path from 'path';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
 
 // Ensure data directory exists
 const dbDir = path.join(process.cwd(), '.data');
@@ -16,6 +17,30 @@ export const db = drizzle(sqlite);
 
 // Initialize database tables if not existing
 sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE,
+    name TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS modules (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    description TEXT,
+    "order" INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS chapters (
+    id TEXT PRIMARY KEY,
+    module_id TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    title TEXT NOT NULL,
+    type TEXT NOT NULL,
+    "order" INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS user_progress (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -36,7 +61,7 @@ sqlite.exec(`
   );
 `);
 
-export { userProgress, submissions };
+export { users, modules, chapters, userProgress, submissions };
 
 export interface RecordSubmissionInput {
   userId: string;
@@ -49,7 +74,7 @@ export interface RecordSubmissionInput {
 }
 
 export function recordSubmission(input: RecordSubmissionInput) {
-  const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const submissionId = randomUUID();
   const now = new Date().toISOString();
 
   // Log submission
@@ -76,7 +101,7 @@ export function recordSubmission(input: RecordSubmissionInput) {
       .get();
 
     if (!existing) {
-      const progressId = `prog_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const progressId = randomUUID();
       db.insert(userProgress)
         .values({
           id: progressId,
@@ -105,4 +130,13 @@ export function getUserProgress(userId: string) {
     completedChapterIds,
     completedCount: completedChapterIds.length,
   };
+}
+
+export function calculateModuleProgress(userId: string, totalModuleChapterIds: string[]) {
+  if (totalModuleChapterIds.length === 0) return 0;
+  
+  const userCompleted = getUserProgress(userId).completedChapterIds;
+  const completedInModule = totalModuleChapterIds.filter((id) => userCompleted.includes(id));
+
+  return Math.round((completedInModule.length / totalModuleChapterIds.length) * 100);
 }

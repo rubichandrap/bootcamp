@@ -1,5 +1,29 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').unique(),
+  name: text('name'),
+  createdAt: text('created_at').notNull(),
+});
+
+export const modules = sqliteTable('modules', {
+  id: text('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  description: text('description'),
+  order: integer('order').notNull(),
+});
+
+export const chapters = sqliteTable('chapters', {
+  id: text('id').primaryKey(),
+  moduleId: text('module_id').notNull(),
+  slug: text('slug').notNull(),
+  title: text('title').notNull(),
+  type: text('type').notNull(), // 'reading' | 'challenge' | 'assessment'
+  order: integer('order').notNull(),
+});
+
 export const userProgress = sqliteTable('user_progress', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
