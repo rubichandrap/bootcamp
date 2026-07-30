@@ -41,4 +41,28 @@ describe('Command Palette Search & Streak Engine', () => {
     const streak = calculateStreak([today]);
     expect(streak).toBe(1);
   });
+
+  it('should safely search chapters with missing or undefined content without crashing', () => {
+    const mockMods: ModuleMeta[] = [
+      {
+        slug: 'test-mod',
+        title: 'Test Module',
+        description: '',
+        order: 1,
+        chapters: [
+          {
+            slug: 'no-content-ch',
+            moduleSlug: 'test-mod',
+            title: 'No Content Chapter',
+            type: 'reading',
+            order: 1,
+            content: undefined as any,
+          },
+        ],
+      },
+    ];
+
+    const results = searchCurriculum('content', mockMods);
+    expect(results.length).toBe(1);
+  });
 });
