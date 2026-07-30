@@ -9,7 +9,7 @@ import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
-import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
 
@@ -51,7 +51,7 @@ export default function Home() {
   
   const [code, setCode] = useState(DEFAULT_STARTER_CODE);
   const [testCode, setTestCode] = useState(DEFAULT_TEST_CODE);
-  const [activeTab, setActiveTab] = useState<'code' | 'test'>('code');
+  const [activeTab, setActiveTab] = useState<'code' | 'test' | 'solution'>('code');
   const [result, setResult] = useState<RCEExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
@@ -88,11 +88,22 @@ export default function Home() {
       setCurrentChapter(ch);
       setResult(null);
       setFailedAttempts(0);
+      setActiveTab('code');
 
       if (ch.starterCode) setCode(ch.starterCode);
       if (ch.testCode) setTestCode(ch.testCode);
     } catch (err) {
       console.error('Failed to select chapter', err);
+    }
+  };
+
+  const advanceToNextChapter = () => {
+    if (!currentChapter) return;
+    const allChapters = modules.flatMap((m) => m.chapters);
+    const currentIndex = allChapters.findIndex((c) => c.slug === currentChapter.slug);
+    if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
+      const next = allChapters[currentIndex + 1];
+      handleSelectChapter(next.moduleSlug, next.slug);
     }
   };
 
@@ -115,14 +126,7 @@ export default function Home() {
       if (data.userProgress?.completedChapterIds) {
         setCompletedChapterIds(data.userProgress.completedChapterIds);
       }
-
-      // Automatically advance to next chapter
-      const allChapters = modules.flatMap((m) => m.chapters);
-      const currentIndex = allChapters.findIndex((c) => c.slug === currentChapter.slug);
-      if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
-        const next = allChapters[currentIndex + 1];
-        handleSelectChapter(next.moduleSlug, next.slug);
-      }
+      advanceToNextChapter();
     } catch (err) {
       console.error('Failed to mark chapter read', err);
     }
@@ -160,6 +164,11 @@ export default function Home() {
       const subData = await subRes.json();
       if (subData.userProgress?.completedChapterIds) {
         setCompletedChapterIds(subData.userProgress.completedChapterIds);
+      }
+
+      // Auto-advance if submission passed
+      if (data.success) {
+        setTimeout(() => advanceToNextChapter(), 1500);
       }
     } catch (err: any) {
       setFailedAttempts((prev) => prev + 1);
@@ -308,18 +317,33 @@ export default function Home() {
                     >
                       <Code2 size={13} /> main_test.go
                     </button>
+                    <button
+                      onClick={() => isUnlocked && setActiveTab('solution')}
+                      disabled={!isUnlocked}
+                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                        activeTab === 'solution'
+                          ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+                          : isUnlocked
+                          ? 'text-emerald-400 hover:text-emerald-300'
+                          : 'text-slate-600 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      {isUnlocked ? <Key size={13} /> : <Lock size={13} />} Official Solution
+                    </button>
                   </div>
 
                   <span className="text-[11px] text-slate-500 font-mono">
-                    {activeTab === 'code' ? 'Solution Code' : 'Unit Tests (Read-Only)'}
+                    {activeTab === 'code' ? 'Solution Code' : activeTab === 'test' ? 'Unit Tests' : 'Reference Solution'}
                   </span>
                 </div>
 
                 <div className="flex-1">
                   {activeTab === 'code' ? (
                     <CodeEditor value={code} onChange={(v) => setCode(v || '')} />
-                  ) : (
+                  ) : activeTab === 'test' ? (
                     <CodeEditor value={testCode} onChange={(v) => setTestCode(v || '')} />
+                  ) : (
+                    <CodeEditor value={activeHint.solutionCode || '// Solution Unlocked'} onChange={() => {}} />
                   )}
                 </div>
               </div>
