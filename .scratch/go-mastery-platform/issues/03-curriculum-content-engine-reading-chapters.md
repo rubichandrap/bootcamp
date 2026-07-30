@@ -4,9 +4,9 @@
 
 **Blocked by:** 02 — SQLite Schema & Progress Tracking Persistence
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Content loader service reading MDX files and metadata from `content/modules/`.
-- [ ] MDX rendering component with high-contrast typography, heading anchors, and syntax highlighting for Go code blocks.
-- [ ] Chapter layout with sidebar navigation displaying Module titles and Chapter status badges.
-- [ ] "Mark as Read" button updating chapter completion status in SQLite and advancing to the next chapter.
+- [x] Content loader service reading MDX files and metadata from `content/modules/`.
+- [x] MDX rendering component with high-contrast typography, heading anchors, and syntax highlighting for Go code blocks.
+- [x] Chapter layout with sidebar navigation displaying Module titles and Chapter status badges.
+- [x] "Mark as Read" button updating chapter completion status in SQLite and advancing to the next chapter.
