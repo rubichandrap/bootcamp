@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { TerminalOutput } from '@/components/TerminalOutput';
 import { SidebarNav } from '@/components/SidebarNav';
+import { MdxRenderer } from '@/components/MdxRenderer';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
-import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Play, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
 
@@ -109,6 +110,14 @@ export default function Home() {
       if (data.userProgress?.completedChapterIds) {
         setCompletedChapterIds(data.userProgress.completedChapterIds);
       }
+
+      // Automatically advance to the next chapter in the track
+      const allChapters = modules.flatMap((m) => m.chapters);
+      const currentIndex = allChapters.findIndex((c) => c.slug === currentChapter.slug);
+      if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
+        const next = allChapters[currentIndex + 1];
+        handleSelectChapter(next.moduleSlug, next.slug);
+      }
     } catch (err) {
       console.error('Failed to mark chapter read', err);
     }
@@ -179,7 +188,7 @@ export default function Home() {
             <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-2">
               Go Mastery Platform
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
-                Vercel Aesthetic • SQLite Progress
+                Vercel Aesthetic • MDX Engine
               </span>
             </h1>
             <p className="text-[11px] text-slate-400">
@@ -233,11 +242,11 @@ export default function Home() {
                 )}
               </div>
 
-              <div className="prose prose-invert prose-sm text-slate-300 space-y-4 text-xs leading-relaxed">
-                <pre className="bg-transparent p-0 text-slate-200 whitespace-pre-wrap font-sans">
-                  {currentChapter?.content || 'Select a chapter to begin...'}
-                </pre>
-              </div>
+              {currentChapter?.content ? (
+                <MdxRenderer content={currentChapter.content} />
+              ) : (
+                <p className="text-xs text-slate-500 italic">Select a chapter to begin...</p>
+              )}
             </div>
 
             {currentChapter?.type === 'reading' && (
