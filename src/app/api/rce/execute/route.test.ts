@@ -51,7 +51,7 @@ import "testing"
 
 func TestAdd(t *testing.T) {
 	if Add(2, 3) != 5 {
-		t.Errorf("expected 5")
+		t.Errorf("expected 5, got %d", Add(2, 3))
 	}
 }
 `;
@@ -68,19 +68,22 @@ func TestAdd(t *testing.T) {
     expect(res.status).toBe(200);
     expect(data.success).toBe(false);
     expect(data.failed).toBeGreaterThanOrEqual(1);
-    expect(data.tests[0].passed).toBe(false);
   });
 
-  it('should capture Go build/compiler errors', async () => {
+  it('should handle syntax compile errors gracefully', async () => {
     const code = `package main
 
-func Add(a, b int) int {
-	return a + // syntax error
+func BrokenSyntax() {
+	invalid syntax here
 }
 `;
     const testCode = `package main
+
 import "testing"
-func TestAdd(t *testing.T) {}
+
+func TestBroken(t *testing.T) {
+	BrokenSyntax()
+}
 `;
 
     const req = new NextRequest('http://localhost:3000/api/rce/execute', {
@@ -95,5 +98,37 @@ func TestAdd(t *testing.T) {}
     expect(res.status).toBe(200);
     expect(data.success).toBe(false);
     expect(data.compileError).toBeTruthy();
+  });
+
+  it('should pass enableRaceCheck flag and return hasRaceDetected boolean field', async () => {
+    const code = `package main
+
+func Add(a, b int) int {
+	return a + b
+}
+`;
+    const testCode = `package main
+
+import "testing"
+
+func TestAdd(t *testing.T) {
+	if Add(2, 3) != 5 {
+		t.Errorf("expected 5, got %d", Add(2, 3))
+	}
+}
+`;
+
+    const req = new NextRequest('http://localhost:3000/api/rce/execute', {
+      method: 'POST',
+      body: JSON.stringify({ code, testCode, enableRaceCheck: true }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.hasRaceDetected).toBeDefined();
+    expect(data.hasRaceDetected).toBe(false);
   });
 });

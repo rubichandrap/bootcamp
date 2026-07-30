@@ -23,6 +23,7 @@ export interface RCEExecuteResponse {
   compileError?: string;
   rawOutput?: string;
   bench?: BenchMetrics;
+  hasRaceDetected?: boolean;
 }
 
 function getGoEnv() {
@@ -48,7 +49,7 @@ function getGoEnv() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, testCode } = await req.json();
+    const { code, testCode, enableRaceCheck } = await req.json();
 
     if (!code || !testCode) {
       return NextResponse.json(
@@ -69,10 +70,15 @@ export async function POST(req: NextRequest) {
       let stderr = '';
       let compileError: string | undefined = undefined;
 
+      const raceFlag = enableRaceCheck ? '-race' : '';
+      const hasBenchFunctions = testCode.includes('Benchmark');
+      const benchFlags = hasBenchFunctions ? '-bench=. -benchmem -gcflags="-m"' : '';
+      const cmd = `go test -v ${raceFlag} ${benchFlags} -json ./...`;
+
       try {
-        const result = await execAsync('go test -v -bench=. -benchmem -gcflags="-m" -json ./...', {
+        const result = await execAsync(cmd, {
           cwd: tmpDir,
-          timeout: 5000,
+          timeout: 8000,
           env: getGoEnv(),
         });
         stdout = result.stdout;
@@ -88,6 +94,10 @@ export async function POST(req: NextRequest) {
 
       // Parse benchmark metrics
       const bench = parseBenchOutput(stdout, stderr);
+
+      // Detect data race warnings in output
+      const rawText = stdout + '\n' + stderr;
+      const hasRaceDetected = rawText.includes('WARNING: DATA RACE') || rawText.includes('Found 1 data race');
 
       // Parse go test -json stream output
       const lines = stdout.split('\n').filter(Boolean);
@@ -114,10 +124,16 @@ export async function POST(req: NextRequest) {
               item.duration = evt.Elapsed || 0;
               overallPassed = false;
             }
+          } else if (evt.Action === 'output' && evt.Output && evt.Output.includes('build failed')) {
+            compileError = evt.Output;
           }
         } catch {
           // Ignore non-json lines
         }
+      }
+
+      if (!compileError && stderr.includes('syntax error')) {
+        compileError = stderr;
       }
 
       const tests: TestResultItem[] = Array.from(testsMap.values()).map((t) => ({
@@ -138,8 +154,9 @@ export async function POST(req: NextRequest) {
         failed: failedCount,
         tests,
         compileError,
-        rawOutput: (stdout + '\n' + stderr).trim(),
+        rawOutput: rawText.trim(),
         bench,
+        hasRaceDetected: enableRaceCheck ? hasRaceDetected : false,
       };
 
       return NextResponse.json(response, { status: 200 });
