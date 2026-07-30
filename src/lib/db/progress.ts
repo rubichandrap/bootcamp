@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { users, modules, chapters, userProgress, submissions } from './schema';
 import { calculateStreak } from '@/lib/metrics/streak';
 import path from 'path';
@@ -159,8 +159,16 @@ export function getUserProgress(userId: string) {
 export function calculateModuleProgress(userId: string, totalModuleChapterIds: string[]) {
   if (totalModuleChapterIds.length === 0) return 0;
   
-  const userCompleted = getUserProgress(userId).completedChapterIds;
-  const completedInModule = totalModuleChapterIds.filter((id) => userCompleted.includes(id));
+  const completedRecords = db
+    .select()
+    .from(userProgress)
+    .where(
+      and(
+        eq(userProgress.userId, userId),
+        inArray(userProgress.chapterId, totalModuleChapterIds)
+      )
+    )
+    .all();
 
-  return Math.round((completedInModule.length / totalModuleChapterIds.length) * 100);
+  return Math.round((completedRecords.length / totalModuleChapterIds.length) * 100);
 }

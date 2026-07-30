@@ -8,15 +8,16 @@ import {
   userProgress,
   submissions,
 } from './progress';
+import { eq } from 'drizzle-orm';
 
 describe('SQLite Progress Tracking & Submissions', () => {
-  const testUserId = 'user-1';
+  const testUserId = 'user-progress-test-1';
   const chapterId = 'ch-1-1';
 
   beforeEach(() => {
-    // Reset test database tables before each test run
-    db.delete(submissions).run();
-    db.delete(userProgress).run();
+    // Reset test database tables scoped to testUserId before each test run
+    db.delete(submissions).where(eq(submissions.userId, testUserId)).run();
+    db.delete(userProgress).where(eq(userProgress.userId, testUserId)).run();
   });
 
   it('should log a submission attempt and mark chapter completed when passed is true', () => {
