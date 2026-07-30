@@ -1,19 +1,7 @@
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { eq, and, inArray } from 'drizzle-orm';
-import { userProgress, submissions } from './schema';
+import { eq, and, inArray, gte, sql } from 'drizzle-orm';
+import { db } from '@/lib/db/connection';
+import { userProgress, submissions } from '@/lib/db/schema';
 import { calculateStreak } from '@/lib/metrics/streak';
-import path from 'path';
-import fs from 'fs';
-import { randomUUID } from 'crypto';
-
-const dbDir = path.join(process.cwd(), '.data');
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
-const sqlite = new Database(path.join(dbDir, 'app.db'));
-export const db = drizzle(sqlite);
 
 export { userProgress, submissions };
 
@@ -28,49 +16,51 @@ export interface RecordSubmissionInput {
 }
 
 export function recordSubmission(input: RecordSubmissionInput) {
-  const submissionId = randomUUID();
+  const submissionId = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  db.insert(submissions)
-    .values({
-      id: submissionId,
-      userId: input.userId,
-      chapterId: input.chapterId,
-      code: input.code,
-      passed: input.passed,
-      testCount: input.testCount,
-      failedCount: input.failedCount,
-      compileError: input.compileError || null,
-      createdAt: now,
-    })
-    .run();
+  db.transaction(() => {
+    db.insert(submissions)
+      .values({
+        id: submissionId,
+        userId: input.userId,
+        chapterId: input.chapterId,
+        code: input.code,
+        passed: input.passed,
+        testCount: input.testCount,
+        failedCount: input.failedCount,
+        compileError: input.compileError || null,
+        createdAt: now,
+      })
+      .run();
 
-  if (input.passed) {
-    const existing = db
-      .select()
-      .from(userProgress)
-      .where(and(eq(userProgress.userId, input.userId), eq(userProgress.chapterId, input.chapterId)))
-      .get();
+    if (input.passed) {
+      const existing = db
+        .select()
+        .from(userProgress)
+        .where(and(eq(userProgress.userId, input.userId), eq(userProgress.chapterId, input.chapterId)))
+        .get();
 
-    if (!existing) {
-      const progressId = randomUUID();
-      db.insert(userProgress)
-        .values({
-          id: progressId,
-          userId: input.userId,
-          chapterId: input.chapterId,
-          completedAt: now,
-        })
-        .run();
+      if (!existing) {
+        const progressId = crypto.randomUUID();
+        db.insert(userProgress)
+          .values({
+            id: progressId,
+            userId: input.userId,
+            chapterId: input.chapterId,
+            completedAt: now,
+          })
+          .run();
+      }
     }
-  }
+  });
 
   return { submissionId, success: true };
 }
 
 export function getFailedAttemptsCount(userId: string, chapterId: string): number {
-  const failedRecords = db
-    .select()
+  const result = db
+    .select({ count: sql<number>`count(*)` })
     .from(submissions)
     .where(
       and(
@@ -79,12 +69,12 @@ export function getFailedAttemptsCount(userId: string, chapterId: string): numbe
         eq(submissions.passed, false)
       )
     )
-    .all();
+    .get();
 
-  return failedRecords.length;
+  return result?.count ?? 0;
 }
 
-export function getUserProgress(userId: string) {
+export function getUserProgress(userId: string, options?: { dateWindowDays?: number }) {
   const completedRecords = db
     .select()
     .from(userProgress)
@@ -93,10 +83,20 @@ export function getUserProgress(userId: string) {
 
   const completedChapterIds = completedRecords.map((r) => r.chapterId);
 
+  const dateWindowDays = options?.dateWindowDays ?? 30;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - dateWindowDays);
+  const dateThreshold = cutoffDate.toISOString();
+
   const submissionRecords = db
     .select()
     .from(submissions)
-    .where(eq(submissions.userId, userId))
+    .where(
+      and(
+        eq(submissions.userId, userId),
+        gte(submissions.createdAt, dateThreshold)
+      )
+    )
     .all();
 
   const submissionDates = submissionRecords.map((s) => s.createdAt);
@@ -113,7 +113,7 @@ export function getUserProgress(userId: string) {
 
 export function calculateModuleProgress(userId: string, totalModuleChapterIds: string[]) {
   if (totalModuleChapterIds.length === 0) return 0;
-  
+
   const completedRecords = db
     .select()
     .from(userProgress)

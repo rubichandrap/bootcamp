@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/progress';
+import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/submissionRepo';
 import { getErrorMessage } from '@/lib/utils/errorUtils';
 
 export async function POST(req: NextRequest) {

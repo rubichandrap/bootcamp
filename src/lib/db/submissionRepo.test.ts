@@ -4,10 +4,10 @@ import {
   getUserProgress,
   getFailedAttemptsCount,
   calculateModuleProgress,
-  db,
   userProgress,
   submissions,
-} from './progress';
+} from './submissionRepo';
+import { db } from './connection';
 import { eq } from 'drizzle-orm';
 
 describe('SQLite Progress Tracking & Submissions', () => {
