@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/progress';
+import { getErrorMessage } from '@/lib/utils/errorUtils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,9 +35,9 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -65,9 +66,9 @@ export async function GET(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }

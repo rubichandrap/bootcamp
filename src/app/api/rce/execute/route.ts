@@ -5,6 +5,7 @@ import path from 'path';
 import os from 'os';
 import { promisify } from 'util';
 import { parseBenchOutput, BenchMetrics } from '@/lib/rce/benchParser';
+import { getErrorMessage } from '@/lib/utils/errorUtils';
 
 const execAsync = promisify(exec);
 
@@ -83,9 +84,10 @@ export async function POST(req: NextRequest) {
         });
         stdout = result.stdout;
         stderr = result.stderr;
-      } catch (err: any) {
-        stdout = err.stdout || '';
-        stderr = err.stderr || err.message || '';
+      } catch (err: unknown) {
+        const execErr = err as { stdout?: string; stderr?: string; message?: string };
+        stdout = execErr.stdout || '';
+        stderr = execErr.stderr || execErr.message || '';
 
         if (!stdout.includes('"Action":"output"') && stderr) {
           compileError = stderr;
@@ -163,9 +165,9 @@ export async function POST(req: NextRequest) {
     } finally {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }
