@@ -70,7 +70,8 @@ export default function Home() {
         setModules(mods);
 
         if (mods.length > 0 && mods[0].chapters.length > 0) {
-          setCurrentChapter(mods[0].chapters[0]);
+          const firstCh = mods[0].chapters[0];
+          handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
         }
 
         const progRes = await fetch('/api/submissions?userId=default-user');
@@ -94,11 +95,19 @@ export default function Home() {
       const ch: ChapterMeta = await res.json();
       setCurrentChapter(ch);
       setResult(null);
-      setFailedAttempts(0);
       setActiveTab('code');
 
       if (ch.starterCode) setCode(ch.starterCode);
       if (ch.testCode) setTestCode(ch.testCode);
+
+      // Fetch persistent failed attempts for this chapter from SQLite
+      const progRes = await fetch(`/api/submissions?userId=default-user&chapterId=${chSlug}`);
+      const progData = await progRes.json();
+      if (typeof progData.chapterFailedAttempts === 'number') {
+        setFailedAttempts(progData.chapterFailedAttempts);
+      } else {
+        setFailedAttempts(0);
+      }
     } catch (err) {
       console.error('Failed to select chapter', err);
     }
@@ -154,10 +163,6 @@ export default function Home() {
       const data: RCEExecuteResponse = await res.json();
       setResult(data);
 
-      if (!data.success) {
-        setFailedAttempts((prev) => prev + 1);
-      }
-
       const subRes = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -178,19 +183,23 @@ export default function Home() {
       if (typeof subData.userProgress?.streakDays === 'number') {
         setStreakDays(subData.userProgress.streakDays);
       }
+      if (typeof subData.chapterFailedAttempts === 'number') {
+        setFailedAttempts(subData.chapterFailedAttempts);
+      }
 
       // Auto-advance if submission passed
       if (data.success) {
         setTimeout(() => advanceToNextChapter(), 1500);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Execution failed';
       setFailedAttempts((prev) => prev + 1);
       setResult({
         success: false,
         passed: 0,
         failed: 1,
         tests: [],
-        compileError: err.message || 'Execution failed',
+        compileError: errorMessage,
       });
     } finally {
       setIsLoading(false);
