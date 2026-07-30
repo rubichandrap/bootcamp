@@ -19,8 +19,8 @@ export function recordSubmission(input: RecordSubmissionInput) {
   const submissionId = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  db.transaction(() => {
-    db.insert(submissions)
+  db.transaction((tx) => {
+    tx.insert(submissions)
       .values({
         id: submissionId,
         userId: input.userId,
@@ -35,7 +35,7 @@ export function recordSubmission(input: RecordSubmissionInput) {
       .run();
 
     if (input.passed) {
-      const existing = db
+      const existing = tx
         .select()
         .from(userProgress)
         .where(and(eq(userProgress.userId, input.userId), eq(userProgress.chapterId, input.chapterId)))
@@ -43,7 +43,7 @@ export function recordSubmission(input: RecordSubmissionInput) {
 
       if (!existing) {
         const progressId = crypto.randomUUID();
-        db.insert(userProgress)
+        tx.insert(userProgress)
           .values({
             id: progressId,
             userId: input.userId,

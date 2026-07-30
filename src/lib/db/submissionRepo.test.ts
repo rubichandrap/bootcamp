@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   recordSubmission,
   getUserProgress,
@@ -8,7 +8,7 @@ import {
   submissions,
 } from './submissionRepo';
 import { db } from './connection';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 describe('SQLite Progress Tracking & Submissions', () => {
   const testUserId = 'user-progress-test-1';
@@ -109,5 +109,181 @@ describe('SQLite Progress Tracking & Submissions', () => {
 
     const percent = calculateModuleProgress(testUserId, moduleChapters);
     expect(percent).toBe(50);
+  });
+
+  it('should use db.transaction for atomicity in recordSubmission', () => {
+    const txSpy = vi.spyOn(db, 'transaction');
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-tx-spy',
+      code: 'package main',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    expect(txSpy).toHaveBeenCalledTimes(1);
+    txSpy.mockRestore();
+  });
+
+  it('should roll back both inserts when the transaction fails', () => {
+    const testId = 'test-tx-rollback-' + crypto.randomUUID();
+
+    expect(() =>
+      db.transaction((tx) => {
+        tx.insert(submissions)
+          .values({
+            id: testId,
+            userId: testUserId,
+            chapterId: 'ch-tx-rollback',
+            code: 'rollback test',
+            passed: true,
+            testCount: 1,
+            failedCount: 0,
+            compileError: null,
+            createdAt: new Date().toISOString(),
+          })
+          .run();
+
+        // Duplicate primary key — triggers constraint violation
+        tx.insert(submissions)
+          .values({
+            id: testId,
+            userId: testUserId,
+            chapterId: 'ch-tx-rollback-2',
+            code: 'rollback test 2',
+            passed: true,
+            testCount: 1,
+            failedCount: 0,
+            compileError: null,
+            createdAt: new Date().toISOString(),
+          })
+          .run();
+      })
+    ).toThrow();
+
+    const result = db
+      .select({ count: sql<number>`count(*)` })
+      .from(submissions)
+      .where(eq(submissions.id, testId))
+      .get();
+
+    expect(result?.count).toBe(0);
+  });
+
+  it('should return 0 from getFailedAttemptsCount when user has no submissions', () => {
+    const count = getFailedAttemptsCount('user-no-submissions', 'any-chapter');
+    expect(count).toBe(0);
+  });
+
+  it('should return correct count from getFailedAttemptsCount with many mixed submissions', () => {
+    const manyChapter = 'ch-many-fails';
+    const manyUser = testUserId;
+
+    // 5 failed submissions
+    for (let i = 0; i < 5; i++) {
+      recordSubmission({
+        userId: manyUser,
+        chapterId: manyChapter,
+        code: `fail ${i}`,
+        passed: false,
+        testCount: 1,
+        failedCount: 1,
+      });
+    }
+
+    // 3 passing submissions (should not be counted)
+    for (let i = 0; i < 3; i++) {
+      recordSubmission({
+        userId: manyUser,
+        chapterId: manyChapter,
+        code: `pass ${i}`,
+        passed: true,
+        testCount: 1,
+        failedCount: 0,
+      });
+    }
+
+    const count = getFailedAttemptsCount(manyUser, manyChapter);
+    expect(count).toBe(5);
+  });
+
+  it('should filter out submissions older than the date window in getUserProgress', () => {
+    const oldDate = new Date();
+    oldDate.setDate(oldDate.getDate() - 60);
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - 1);
+
+    db.insert(submissions)
+      .values({
+        id: 'test-old-' + crypto.randomUUID(),
+        userId: testUserId,
+        chapterId: 'ch-old-submission',
+        code: 'old code',
+        passed: false,
+        testCount: 1,
+        failedCount: 1,
+        compileError: null,
+        createdAt: oldDate.toISOString(),
+      })
+      .run();
+
+    db.insert(submissions)
+      .values({
+        id: 'test-recent-' + crypto.randomUUID(),
+        userId: testUserId,
+        chapterId: 'ch-recent-submission',
+        code: 'recent code',
+        passed: true,
+        testCount: 1,
+        failedCount: 0,
+        compileError: null,
+        createdAt: recentDate.toISOString(),
+      })
+      .run();
+
+    const progress = getUserProgress(testUserId);
+
+    expect(progress.submissionDates).toHaveLength(1);
+  });
+
+  it('should include submissions within the custom date window', () => {
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - 3);
+    const recentDate2 = new Date();
+    recentDate2.setDate(recentDate2.getDate() - 5);
+
+    db.insert(submissions)
+      .values({
+        id: 'test-window-' + crypto.randomUUID(),
+        userId: testUserId,
+        chapterId: 'ch-window-1',
+        code: 'code',
+        passed: false,
+        testCount: 1,
+        failedCount: 1,
+        compileError: null,
+        createdAt: recentDate.toISOString(),
+      })
+      .run();
+
+    db.insert(submissions)
+      .values({
+        id: 'test-window-' + crypto.randomUUID(),
+        userId: testUserId,
+        chapterId: 'ch-window-2',
+        code: 'code',
+        passed: false,
+        testCount: 1,
+        failedCount: 1,
+        compileError: null,
+        createdAt: recentDate2.toISOString(),
+      })
+      .run();
+
+    const progress = getUserProgress(testUserId, { dateWindowDays: 10 });
+
+    expect(progress.submissionDates).toHaveLength(2);
   });
 });
