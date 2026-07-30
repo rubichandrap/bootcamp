@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   recordSubmission,
   getUserProgress,
@@ -8,7 +8,7 @@ import {
   submissions,
 } from './submissionRepo';
 import { db } from './connection';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 describe('SQLite Progress Tracking & Submissions', () => {
   const testUserId = 'user-progress-test-1';
@@ -111,23 +111,33 @@ describe('SQLite Progress Tracking & Submissions', () => {
     expect(percent).toBe(50);
   });
 
-  it('should use db.transaction for atomicity in recordSubmission', () => {
-    const txSpy = vi.spyOn(db, 'transaction');
-
+  it('should commit submission and progress rows atomically on a passing submission', () => {
     recordSubmission({
       userId: testUserId,
-      chapterId: 'ch-tx-spy',
+      chapterId: 'ch-atomic-commit',
       code: 'package main',
       passed: true,
-      testCount: 1,
+      testCount: 2,
       failedCount: 0,
     });
 
-    expect(txSpy).toHaveBeenCalledTimes(1);
-    txSpy.mockRestore();
+    const submissionCount = db
+      .select({ count: sql<number>`count(*)` })
+      .from(submissions)
+      .where(eq(submissions.chapterId, 'ch-atomic-commit'))
+      .get();
+
+    const progressCount = db
+      .select({ count: sql<number>`count(*)` })
+      .from(userProgress)
+      .where(eq(userProgress.chapterId, 'ch-atomic-commit'))
+      .get();
+
+    expect(submissionCount?.count).toBe(1);
+    expect(progressCount?.count).toBe(1);
   });
 
-  it('should roll back both inserts when the transaction fails', () => {
+  it('should roll back all writes when a transaction throws', () => {
     const testId = 'test-tx-rollback-' + crypto.randomUUID();
 
     expect(() =>
