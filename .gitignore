@@ -42,14 +42,22 @@ next-env.d.ts
 
 # AI artifacts
 .agents
+!.agents/.gitkeep
 .claude
+!.claude/.gitkeep
 .codex
+!.codex/.gitkeep
 .commandcode
+.commandcode/.gitkeep
 .gemini
+.gemini/.gitkeep
 .kiro
+.kiro/.gitkeep
 .opencode
+.opencode/.gitkeep
 
 skills-lock.json
 
 # Database
 *.db
+!.data/.gitkeep

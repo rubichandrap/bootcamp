@@ -1,0 +1,18 @@
+---
+title: "Module 1 Assessment: Fixed-Size Byte Buffer"
+type: "assessment"
+order: 4
+starterCode: "package main\n\ntype Buffer struct {\n\tbuf []byte\n}\n\nfunc NewBuffer(capacity int) *Buffer {\n\treturn &Buffer{buf: make([]byte, 0, capacity)}\n}\n\n// Write appends bytes to buffer up to capacity\nfunc (b *Buffer) Write(p []byte) int {\n\t// TODO: Implement zero-alloc buffer write\n\treturn 0\n}\n\nfunc (b *Buffer) Bytes() []byte {\n\treturn b.buf\n}\n"
+testCode: "package main\n\nimport (\n\t\"bytes\"\n\t\"testing\"\n)\n\nfunc TestBufferWrite(t *testing.T) {\n\tb := NewBuffer(10)\n\tn := b.Write([]byte(\"hello\"))\n\tif n != 5 || !bytes.Equal(b.Bytes(), []byte(\"hello\")) {\n\t\tt.Errorf(\"expected hello, got %s (wrote %d)\", b.Bytes(), n)\n\t}\n}\n"
+---
+
+# Module 1 Capstone Assessment: Fixed-Size Byte Buffer
+
+Congratulations on reaching the Module 1 Assessment!
+
+To prove complete mastery over Go memory allocation, value/pointer semantics, and slice headers, you must implement a zero-allocation `Buffer` struct.
+
+## Requirements
+
+1. `NewBuffer(capacity int)` initializes an empty byte buffer with pre-allocated capacity.
+2. `Write(p []byte)` appends data from `p` into `b.buf` without exceeding pre-allocated capacity and returns bytes written (`n`).

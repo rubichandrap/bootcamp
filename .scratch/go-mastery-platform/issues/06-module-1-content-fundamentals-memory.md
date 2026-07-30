@@ -4,10 +4,10 @@
 
 **Blocked by:** 04 — Interactive Challenge Workspace & Socratic Hints
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Reading Chapter 1.1 MDX: Pointers, Memory Addresses, and Value vs Reference Semantics.
-- [ ] Challenge Chapter 1.2 MDX & Go files: Slice Headers, Capacity Mutability, and Reallocation.
-- [ ] Challenge Chapter 1.3 MDX & Go files: Struct Memory Layout and Alignment.
-- [ ] Assessment Chapter 1.4 MDX & Go files: Building a Custom High-Performance Fixed-Size Byte Buffer.
-- [ ] Unit tests for all Module 1 challenges verified passing clean under `go test`.
+- [x] Reading Chapter 1.1 MDX: Pointers, Memory Addresses, and Value vs Reference Semantics.
+- [x] Challenge Chapter 1.2 MDX & Go files: Slice Headers, Capacity Mutability, and Reallocation.
+- [x] Challenge Chapter 1.3 MDX & Go files: Struct Memory Layout and Alignment.
+- [x] Assessment Chapter 1.4 MDX & Go files: Building a Custom High-Performance Fixed-Size Byte Buffer.
+- [x] Unit tests for all Module 1 challenges verified passing clean under `go test`.
