@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { eq, and } from 'drizzle-orm';
 import { users, modules, chapters, userProgress, submissions } from './schema';
-import { calculateStreak } from '@/lib/search/searchEngine';
+import { calculateStreak } from '@/lib/metrics/streak';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';

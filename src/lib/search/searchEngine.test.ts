@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { searchCurriculum, calculateStreak } from './searchEngine';
+import { searchCurriculum } from './searchEngine';
+import { calculateStreak } from '@/lib/metrics/streak';
 import { ModuleMeta } from '@/lib/content/contentEngine';
 
-describe('Command Palette Search & Streak Engine', () => {
+describe('Command Palette Search Engine', () => {
   const sampleModules: ModuleMeta[] = [
     {
       slug: '01-fundamentals',
