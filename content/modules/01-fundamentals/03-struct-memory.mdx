@@ -2,8 +2,30 @@
 title: "Struct Memory Layout & Alignment"
 type: "challenge"
 order: 3
-starterCode: "package main\n\ntype Stats struct {\n\tCount int64\n\tActive bool\n}\n\n// Reset clears stats\nfunc (s *Stats) Reset() {\n\t// TODO: Reset count to 0 and active to false\n}\n"
-testCode: "package main\n\nimport \"testing\"\n\nfunc TestStatsReset(t *testing.T) {\n\ts := &Stats{Count: 42, Active: true}\n\ts.Reset()\n\tif s.Count != 0 || s.Active != false {\n\t\tt.Errorf(\"Reset failed: %v\", s)\n\t}\n}\n"
+starterCode: |
+  package main
+
+  type Stats struct {
+  	Count  int64
+  	Active bool
+  }
+
+  // Reset clears stats
+  func (s *Stats) Reset() {
+  	// TODO: Reset count to 0 and active to false
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestStatsReset(t *testing.T) {
+  	s := &Stats{Count: 42, Active: true}
+  	s.Reset()
+  	if s.Count != 0 || s.Active {
+  		t.Errorf("Reset failed, expected empty stats, got count=%d, active=%v", s.Count, s.Active)
+  	}
+  }
 ---
 
 # Struct Memory Layout & Alignment

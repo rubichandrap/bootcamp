@@ -2,8 +2,57 @@
 title: "Module 1 Assessment: Fixed-Size Byte Buffer"
 type: "assessment"
 order: 4
-starterCode: "package main\n\ntype Buffer struct {\n\tbuf []byte\n}\n\nfunc NewBuffer(capacity int) *Buffer {\n\treturn &Buffer{buf: make([]byte, 0, capacity)}\n}\n\n// Write appends bytes to buffer up to capacity\nfunc (b *Buffer) Write(p []byte) int {\n\t// TODO: Implement zero-alloc buffer write\n\treturn 0\n}\n\nfunc (b *Buffer) Bytes() []byte {\n\treturn b.buf\n}\n"
-testCode: "package main\n\nimport (\n\t\"bytes\"\n\t\"testing\"\n)\n\nfunc TestBufferWrite(t *testing.T) {\n\tb := NewBuffer(10)\n\tn := b.Write([]byte(\"hello\"))\n\tif n != 5 || !bytes.Equal(b.Bytes(), []byte(\"hello\")) {\n\t\tt.Errorf(\"expected hello, got %s (wrote %d)\", b.Bytes(), n)\n\t}\n}\n"
+starterCode: |
+  package main
+
+  type Buffer struct {
+  	buf []byte
+  }
+
+  func NewBuffer(capacity int) *Buffer {
+  	return &Buffer{buf: make([]byte, 0, capacity)}
+  }
+
+  // Write appends bytes to buffer up to capacity
+  func (b *Buffer) Write(p []byte) int {
+  	// TODO: Implement zero-alloc buffer write up to capacity
+  	return 0
+  }
+
+  func (b *Buffer) Bytes() []byte {
+  	return b.buf
+  }
+testCode: |
+  package main
+
+  import (
+  	"bytes"
+  	"testing"
+  )
+
+  func TestBufferWrite(t *testing.T) {
+  	b := NewBuffer(10)
+  	n1 := b.Write([]byte("hello"))
+  	if n1 != 5 || !bytes.Equal(b.Bytes(), []byte("hello")) {
+  		t.Errorf("expected hello (5 bytes), got %s (wrote %d)", b.Bytes(), n1)
+  	}
+
+  	// Boundary capacity overflow check
+  	n2 := b.Write([]byte("world!"))
+  	if n2 != 5 || len(b.Bytes()) != 10 {
+  		t.Errorf("expected 5 bytes written on capacity boundary limit, got %d (len %d)", n2, len(b.Bytes()))
+  	}
+  }
+
+  func BenchmarkBufferWriteAllocs(b *testing.B) {
+  	buf := NewBuffer(100)
+  	p := []byte("a")
+  	b.ResetTimer()
+  	b.ReportAllocs()
+  	for i := 0; i < b.N; i++ {
+  		buf.Write(p)
+  	}
+  }
 ---
 
 # Module 1 Capstone Assessment: Fixed-Size Byte Buffer

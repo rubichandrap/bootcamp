@@ -2,8 +2,26 @@
 title: "Slice Header Internals & Mutability"
 type: "challenge"
 order: 2
-starterCode: "package main\n\n// AppendInt appends value to slice and returns the updated slice header.\nfunc AppendInt(slice []int, val int) []int {\n\t// TODO: Implement append logic\n\treturn nil\n}\n"
-testCode: "package main\n\nimport \"testing\"\n\nfunc TestAppendInt(t *testing.T) {\n\ts := []int{1, 2}\n\ts = AppendInt(s, 3)\n\tif len(s) != 3 || s[2] != 3 {\n\t\tt.Errorf(\"expected [1 2 3], got %v\", s)\n\t}\n}\n"
+starterCode: |
+  package main
+
+  // AppendInt appends value to slice and returns the updated slice header.
+  func AppendInt(slice []int, val int) []int {
+  	// TODO: Implement append logic
+  	return nil
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestAppendInt(t *testing.T) {
+  	s := []int{10, 20}
+  	s = AppendInt(s, 30)
+  	if len(s) != 3 || s[0] != 10 || s[1] != 20 || s[2] != 30 {
+  		t.Errorf("expected [10 20 30], got %v", s)
+  	}
+  }
 ---
 
 # Slice Header Internals & Mutability
@@ -20,4 +38,4 @@ type SliceHeader struct {
 
 ## Challenge
 
-Implement `AppendInt(slice []int, val int) []int` to append `val` to `slice` and return the modified slice.
+Implement `AppendInt(slice []int, val int) []int` to append `val` to `slice` and return the modified slice header.
