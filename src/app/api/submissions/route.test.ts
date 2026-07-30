@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 
 describe('GET /api/submissions endpoint', () => {
   it('should return chapterFailedAttempts count for a specific user and chapter', async () => {
-    const userId = 'user-lock-test';
+    const userId = `user-lock-test-${Date.now()}`;
     const chapterId = 'ch-lock-1';
 
     // Log 2 failing submissions
@@ -31,6 +31,6 @@ describe('GET /api/submissions endpoint', () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.chapterFailedAttempts).toBeGreaterThanOrEqual(2);
+    expect(data.chapterFailedAttempts).toBe(2);
   });
 });
