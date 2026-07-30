@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { promisify } from 'util';
+import { parseBenchOutput, BenchMetrics } from '@/lib/rce/benchParser';
 
 const execAsync = promisify(exec);
 
@@ -21,15 +22,15 @@ export interface RCEExecuteResponse {
   tests: TestResultItem[];
   compileError?: string;
   rawOutput?: string;
+  bench?: BenchMetrics;
 }
 
-// Find available Go binary path
 function getGoEnv() {
   const home = os.homedir();
   const gvmGoBin = path.join(home, '.gvm/gos/go1.20/bin');
   const gvmRoot = path.join(home, '.gvm/gos/go1.20');
   const currentPath = process.env.PATH || '';
-  
+
   const extendedPath = [
     gvmGoBin,
     '/usr/local/go/bin',
@@ -56,11 +57,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create unique temporary workspace directory in OS temp (/tmp on Linux)
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'go-rce-'));
 
     try {
-      // Create go.mod inside workspace for hermetic package execution
       const goModContent = `module challenge\n\ngo 1.20\n`;
       await fs.writeFile(path.join(tmpDir, 'go.mod'), goModContent, 'utf-8');
       await fs.writeFile(path.join(tmpDir, 'main.go'), code, 'utf-8');
@@ -71,7 +70,7 @@ export async function POST(req: NextRequest) {
       let compileError: string | undefined = undefined;
 
       try {
-        const result = await execAsync('go test -v -json ./...', {
+        const result = await execAsync('go test -v -bench=. -benchmem -gcflags="-m" -json ./...', {
           cwd: tmpDir,
           timeout: 5000,
           env: getGoEnv(),
@@ -82,11 +81,13 @@ export async function POST(req: NextRequest) {
         stdout = err.stdout || '';
         stderr = err.stderr || err.message || '';
 
-        // Distinguish compiler failure vs test failure
         if (!stdout.includes('"Action":"output"') && stderr) {
           compileError = stderr;
         }
       }
+
+      // Parse benchmark metrics
+      const bench = parseBenchOutput(stdout, stderr);
 
       // Parse go test -json stream output
       const lines = stdout.split('\n').filter(Boolean);
@@ -137,12 +138,12 @@ export async function POST(req: NextRequest) {
         failed: failedCount,
         tests,
         compileError,
-        rawOutput: stdout || stderr,
+        rawOutput: (stdout + '\n' + stderr).trim(),
+        bench,
       };
 
       return NextResponse.json(response, { status: 200 });
     } finally {
-      // Guaranteed cleanup of temporary directory (defer os.RemoveAll equivalent)
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
   } catch (error: any) {
