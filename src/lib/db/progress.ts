@@ -113,6 +113,22 @@ export function recordSubmission(input: RecordSubmissionInput) {
   return { submissionId, success: true };
 }
 
+export function getFailedAttemptsCount(userId: string, chapterId: string): number {
+  const failedRecords = db
+    .select()
+    .from(submissions)
+    .where(
+      and(
+        eq(submissions.userId, userId),
+        eq(submissions.chapterId, chapterId),
+        eq(submissions.passed, false)
+      )
+    )
+    .all();
+
+  return failedRecords.length;
+}
+
 export function getUserProgress(userId: string) {
   const completedRecords = db
     .select()

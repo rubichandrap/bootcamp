@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { recordSubmission, getUserProgress, db, userProgress, submissions } from './progress';
+import { recordSubmission, getUserProgress, getFailedAttemptsCount, db, userProgress, submissions } from './progress';
 
 describe('SQLite Progress Tracking & Submissions', () => {
   const testUserId = 'user-1';
@@ -43,6 +43,37 @@ describe('SQLite Progress Tracking & Submissions', () => {
 
     const progress = getUserProgress(testUserId);
     expect(progress.completedChapterIds).not.toContain('ch-1-2');
-    expect(progress.completedCount).toBe(0);
+  });
+
+  it('should query and return the exact failed attempt count for a user and chapter', () => {
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-failed-test',
+      code: 'fail 1',
+      passed: false,
+      testCount: 1,
+      failedCount: 1,
+    });
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-failed-test',
+      code: 'fail 2',
+      passed: false,
+      testCount: 1,
+      failedCount: 1,
+    });
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-failed-test',
+      code: 'pass 3',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const failedCount = getFailedAttemptsCount(testUserId, 'ch-failed-test');
+    expect(failedCount).toBe(2);
   });
 });

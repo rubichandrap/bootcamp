@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordSubmission, getUserProgress } from '@/lib/db/progress';
+import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/progress';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId = 'default-user', chapterId, code, passed, testCount, failedCount, compileError } = body;
+    const { userId, chapterId, code, passed, testCount, failedCount, compileError } = body;
 
-    if (!chapterId || code === undefined || passed === undefined) {
-      return NextResponse.json({ error: 'Missing required submission parameters' }, { status: 400 });
+    if (!userId || !chapterId || code === undefined || passed === undefined) {
+      return NextResponse.json(
+        { error: 'Missing required submission fields' },
+        { status: 400 }
+      );
     }
 
     const result = recordSubmission({
@@ -20,25 +23,52 @@ export async function POST(req: NextRequest) {
       compileError,
     });
 
-    const userProgressData = getUserProgress(userId);
+    const userProgress = getUserProgress(userId);
+    const chapterFailedAttempts = getFailedAttemptsCount(userId, chapterId);
 
-    return NextResponse.json({
-      ...result,
-      userProgress: userProgressData,
-    });
+    return NextResponse.json(
+      {
+        ...result,
+        userProgress,
+        chapterFailedAttempts,
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to record submission' }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || 'default-user';
+    const userId = searchParams.get('userId');
+    const chapterId = searchParams.get('chapterId');
 
-    const userProgressData = getUserProgress(userId);
-    return NextResponse.json(userProgressData);
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Missing userId parameter' },
+        { status: 400 }
+      );
+    }
+
+    const progress = getUserProgress(userId);
+    const chapterFailedAttempts = chapterId ? getFailedAttemptsCount(userId, chapterId) : 0;
+
+    return NextResponse.json(
+      {
+        ...progress,
+        chapterFailedAttempts,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to fetch progress' }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
