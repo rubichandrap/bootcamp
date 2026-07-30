@@ -9,6 +9,8 @@ import { getErrorMessage } from '@/lib/utils/errorUtils';
 
 const execAsync = promisify(exec);
 
+export const RCE_TIMEOUT_MS = 5000;
+
 export interface TestResultItem {
   name: string;
   passed: boolean;
@@ -29,8 +31,8 @@ export interface RCEExecuteResponse {
 
 function getGoEnv() {
   const home = os.homedir();
-  const gvmGoBin = path.join(home, '.gvm/gos/go1.20/bin');
-  const gvmRoot = path.join(home, '.gvm/gos/go1.20');
+  const gvmGoBin = process.env.GO_BIN_PATH || path.join(home, '.gvm/gos/go1.20/bin');
+  const gvmRoot = process.env.GOROOT || path.join(home, '.gvm/gos/go1.20');
   const currentPath = process.env.PATH || '';
 
   const extendedPath = [
@@ -79,7 +81,7 @@ export async function POST(req: NextRequest) {
       try {
         const result = await execAsync(cmd, {
           cwd: tmpDir,
-          timeout: 8000,
+          timeout: RCE_TIMEOUT_MS,
           env: getGoEnv(),
         });
         stdout = result.stdout;
