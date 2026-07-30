@@ -6,10 +6,12 @@ import { TerminalOutput } from '@/components/TerminalOutput';
 import { SidebarNav } from '@/components/SidebarNav';
 import { MdxRenderer } from '@/components/MdxRenderer';
 import { SocraticHintModal } from '@/components/SocraticHintModal';
+import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
-import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key } from 'lucide-react';
+import { calculateStreak } from '@/lib/search/searchEngine';
+import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
 
@@ -48,6 +50,7 @@ export default function Home() {
   const [modules, setModules] = useState<ModuleMeta[]>([]);
   const [currentChapter, setCurrentChapter] = useState<ChapterMeta | null>(null);
   const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
+  const [submissionDates, setSubmissionDates] = useState<string[]>([]);
   
   const [code, setCode] = useState(DEFAULT_STARTER_CODE);
   const [testCode, setTestCode] = useState(DEFAULT_TEST_CODE);
@@ -56,6 +59,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isHintOpen, setIsHintOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   // Fetch modules and user progress on mount
   useEffect(() => {
@@ -73,6 +77,11 @@ export default function Home() {
         const progData = await progRes.json();
         if (progData.completedChapterIds) {
           setCompletedChapterIds(progData.completedChapterIds);
+        }
+        if (progData.submissionDates) {
+          setSubmissionDates(progData.submissionDates);
+        } else {
+          setSubmissionDates([new Date().toISOString()]);
         }
       } catch (err) {
         console.error('Failed to load initial modules', err);
@@ -184,11 +193,15 @@ export default function Home() {
     }
   };
 
+  // Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         handleRun();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -198,6 +211,10 @@ export default function Home() {
   const activeHint = getSocraticHint(currentChapter?.slug || 'default');
   const isPassed = currentChapter ? completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts });
+  const streakDays = calculateStreak(submissionDates);
+
+  const totalChapters = modules.flatMap((m) => m.chapters).length;
+  const progressPercent = totalChapters > 0 ? Math.round((completedChapterIds.length / totalChapters) * 100) : 0;
 
   return (
     <div className="h-screen w-screen bg-[#090d16] text-slate-100 flex flex-col overflow-hidden font-sans">
@@ -211,7 +228,7 @@ export default function Home() {
             <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-2">
               Go Mastery Platform
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
-                Vercel Aesthetic • Challenge Workspace
+                Vercel Aesthetic • {progressPercent}% Progress
               </span>
             </h1>
             <p className="text-[11px] text-slate-400">
@@ -220,10 +237,22 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Cmd+K Search Trigger */}
+          <button
+            onClick={() => setIsPaletteOpen(true)}
+            className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-md transition-colors cursor-pointer"
+          >
+            <Search size={13} className="text-violet-400" />
+            <span>Search...</span>
+            <kbd className="text-[10px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono">
+              Cmd+K
+            </kbd>
+          </button>
+
           <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-md">
             <Award size={14} className="text-amber-400" />
-            <span>Completed: <strong className="text-white">{completedChapterIds.length} Chapters</strong></span>
+            <span>Streak: <strong className="text-white">{streakDays > 0 ? streakDays : 1} Day</strong></span>
           </div>
 
           {currentChapter?.type !== 'reading' && (
@@ -363,6 +392,14 @@ export default function Home() {
         hint={activeHint}
         isUnlocked={isUnlocked}
         failedAttempts={failedAttempts}
+      />
+
+      {/* Command Palette Modal (Cmd+K) */}
+      <CommandPaletteModal
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        modules={modules}
+        onSelectChapter={handleSelectChapter}
       />
     </div>
   );

@@ -4,9 +4,9 @@
 
 **Blocked by:** 03 — Curriculum Content Engine & Reading Chapters
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Theme provider supporting system, dark, and light modes with Vercel neutral slate/zinc aesthetics.
-- [ ] Command palette (`Cmd+K`) allowing instant search and navigation across all Modules and Chapters.
-- [ ] Header progress bar and module completion percentage ring.
-- [ ] Active daily learning streak tracker stored in SQLite.
+- [x] Theme provider supporting system, dark, and light modes with Vercel neutral slate/zinc aesthetics.
+- [x] Command palette (`Cmd+K`) allowing instant search and navigation across all Modules and Chapters.
+- [x] Header progress bar and module completion percentage ring.
+- [x] Active daily learning streak tracker stored in SQLite.
