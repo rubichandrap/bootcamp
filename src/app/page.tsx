@@ -5,9 +5,11 @@ import { CodeEditor } from '@/components/CodeEditor';
 import { TerminalOutput } from '@/components/TerminalOutput';
 import { SidebarNav } from '@/components/SidebarNav';
 import { MdxRenderer } from '@/components/MdxRenderer';
+import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
-import { Play, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
+import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
+import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
 
@@ -52,6 +54,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'code' | 'test'>('code');
   const [result, setResult] = useState<RCEExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isHintOpen, setIsHintOpen] = useState(false);
 
   // Fetch modules and user progress on mount
   useEffect(() => {
@@ -83,6 +87,7 @@ export default function Home() {
       const ch: ChapterMeta = await res.json();
       setCurrentChapter(ch);
       setResult(null);
+      setFailedAttempts(0);
 
       if (ch.starterCode) setCode(ch.starterCode);
       if (ch.testCode) setTestCode(ch.testCode);
@@ -111,7 +116,7 @@ export default function Home() {
         setCompletedChapterIds(data.userProgress.completedChapterIds);
       }
 
-      // Automatically advance to the next chapter in the track
+      // Automatically advance to next chapter
       const allChapters = modules.flatMap((m) => m.chapters);
       const currentIndex = allChapters.findIndex((c) => c.slug === currentChapter.slug);
       if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
@@ -135,6 +140,10 @@ export default function Home() {
       const data: RCEExecuteResponse = await res.json();
       setResult(data);
 
+      if (!data.success) {
+        setFailedAttempts((prev) => prev + 1);
+      }
+
       const subRes = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,6 +162,7 @@ export default function Home() {
         setCompletedChapterIds(subData.userProgress.completedChapterIds);
       }
     } catch (err: any) {
+      setFailedAttempts((prev) => prev + 1);
       setResult({
         success: false,
         passed: 0,
@@ -176,6 +186,10 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [code, testCode, currentChapter]);
 
+  const activeHint = getSocraticHint(currentChapter?.slug || 'default');
+  const isPassed = currentChapter ? completedChapterIds.includes(currentChapter.slug) : false;
+  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts });
+
   return (
     <div className="h-screen w-screen bg-[#090d16] text-slate-100 flex flex-col overflow-hidden font-sans">
       {/* Top Navigation Header */}
@@ -188,7 +202,7 @@ export default function Home() {
             <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-2">
               Go Mastery Platform
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
-                Vercel Aesthetic • MDX Engine
+                Vercel Aesthetic • Challenge Workspace
               </span>
             </h1>
             <p className="text-[11px] text-slate-400">
@@ -235,7 +249,7 @@ export default function Home() {
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-violet-400">
                   <BookOpen size={14} /> {currentChapter?.title || 'Loading...'}
                 </div>
-                {currentChapter && completedChapterIds.includes(currentChapter.slug) && (
+                {isPassed && (
                   <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 py-0.5 rounded-full font-medium">
                     <CheckCircle2 size={12} /> Completed
                   </span>
@@ -249,17 +263,23 @@ export default function Home() {
               )}
             </div>
 
-            {currentChapter?.type === 'reading' && (
-              <div className="pt-4 mt-6 border-t border-slate-800/60 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Finished reading this chapter?</span>
+            <div className="pt-4 mt-6 border-t border-slate-800/60 flex items-center justify-between">
+              <button
+                onClick={() => setIsHintOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors cursor-pointer"
+              >
+                <Sparkles size={14} /> Socratic Hint
+              </button>
+
+              {currentChapter?.type === 'reading' && (
                 <button
                   onClick={handleMarkAsRead}
                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
                 >
                   <CheckCircle2 size={14} /> Mark as Read &amp; Continue <ChevronRight size={14} />
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Code Editor & RCE Output Pane (for Challenge & Assessment Chapters) */}
@@ -311,6 +331,15 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Socratic Hint Modal */}
+      <SocraticHintModal
+        isOpen={isHintOpen}
+        onClose={() => setIsHintOpen(false)}
+        hint={activeHint}
+        isUnlocked={isUnlocked}
+        failedAttempts={failedAttempts}
+      />
     </div>
   );
 }
