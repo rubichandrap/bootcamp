@@ -1,0 +1,14 @@
+.agents
+.claude
+.codex
+.gemini
+.kiro
+.opencode
+.commandcode
+
+.scratch
+
+docs/adr
+docs/spec
+
+skills-lock.json
