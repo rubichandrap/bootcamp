@@ -54,8 +54,23 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, testCode }),
       });
-      const data = await res.json();
+      const data: RCEExecuteResponse = await res.json();
       setResult(data);
+
+      // Record submission to SQLite database
+      await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: 'default-user',
+          chapterId: 'ch-1-1',
+          code,
+          passed: data.success,
+          testCount: data.passed + data.failed,
+          failedCount: data.failed,
+          compileError: data.compileError,
+        }),
+      });
     } catch (err: any) {
       setResult({
         success: false,
