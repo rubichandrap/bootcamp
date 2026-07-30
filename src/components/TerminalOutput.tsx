@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, Terminal, Cpu, MemoryStick, Zap, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Terminal, Cpu, MemoryStick, Zap, AlertCircle, Flame } from 'lucide-react';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 
 interface TerminalOutputProps {
@@ -73,6 +73,17 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
         </div>
       ) : (
         <div className="space-y-4">
+          {result.hasRaceDetected && (
+            <div className="bg-rose-950/60 border border-rose-600/80 rounded-md p-3 text-rose-200 font-mono text-xs shadow-lg animate-pulse">
+              <div className="flex items-center gap-2 text-rose-400 font-bold text-sm mb-1">
+                <Flame size={18} className="text-rose-500" /> WARNING: DATA RACE DETECTED (-race)
+              </div>
+              <p className="text-[11px] text-rose-300/90 font-sans">
+                Goroutines accessed shared memory concurrently without synchronization! Use mutexes or channels to prevent data races.
+              </p>
+            </div>
+          )}
+
           {result.compileError && (
             <div className="bg-rose-950/40 border border-rose-800/60 rounded-md p-3 text-rose-300 font-mono text-xs">
               <div className="flex items-center gap-2 text-rose-400 font-semibold mb-1">

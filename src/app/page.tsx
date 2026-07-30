@@ -11,7 +11,7 @@ import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
 import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
-import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search } from 'lucide-react';
+import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search, Flame } from 'lucide-react';
 
 const DEFAULT_STARTER_CODE = `package main
 
@@ -60,6 +60,7 @@ export default function Home() {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [enableRaceCheck, setEnableRaceCheck] = useState(false);
 
   // Fetch modules and user progress on mount
   useEffect(() => {
@@ -158,7 +159,7 @@ export default function Home() {
       const res = await fetch('/api/rce/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, testCode }),
+        body: JSON.stringify({ code, testCode, enableRaceCheck }),
       });
       const data: RCEExecuteResponse = await res.json();
       setResult(data);
@@ -219,7 +220,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [code, testCode, currentChapter]);
+  }, [code, testCode, currentChapter, enableRaceCheck]);
 
   const activeHint = getSocraticHint(currentChapter?.slug || 'default');
   const isPassed = currentChapter ? completedChapterIds.includes(currentChapter.slug) : false;
@@ -250,6 +251,20 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Race Check UI Toggle */}
+          <button
+            onClick={() => setEnableRaceCheck((prev) => !prev)}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
+              enableRaceCheck
+                ? 'bg-rose-950/40 border-rose-600 text-rose-300 font-semibold'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Enable Go Data Race Detector (-race)"
+          >
+            <Flame size={13} className={enableRaceCheck ? 'text-rose-400' : 'text-slate-500'} />
+            <span>-race</span>
+          </button>
+
           {/* Header Progress Bar */}
           <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
             <span>Progress: {progressPercent}%</span>
