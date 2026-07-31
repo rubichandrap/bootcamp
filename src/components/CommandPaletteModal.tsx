@@ -85,51 +85,97 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           />
         </div>
 
-        {/* Results */}
-        <div className="max-h-72 overflow-y-auto p-2 space-y-1">
+        {/* Results grouped by Module */}
+        <div className="max-h-72 overflow-y-auto p-2 space-y-3">
           {results.length === 0 ? (
             <div className="p-6 text-center text-zinc-500 text-xs italic">
               No matching chapters found for &quot;{query}&quot;.
             </div>
           ) : (
-            results.map((ch, idx) => {
-              const isSelected = idx === selectedIndex;
-              return (
-                <button
-                  key={`${ch.trackSlug || 'go'}-${ch.moduleSlug}-${ch.slug}`}
-                  onClick={() => {
-                    onSelectChapter(ch.moduleSlug, ch.slug, ch.trackSlug);
-                    onClose();
-                  }}
-                  className={`w-full text-left p-2.5 rounded transition-colors flex items-center justify-between group cursor-pointer border font-mono ${
-                    isSelected
-                      ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-950 dark:text-white font-bold border-zinc-400 dark:border-zinc-700'
-                      : 'border-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <span
-                      className={`select-none font-bold ${
-                        isSelected ? 'text-zinc-900 dark:text-white opacity-100' : 'text-zinc-400 opacity-0 group-hover:opacity-100'
-                      }`}
-                    >
-                      &gt;
+            (() => {
+              const groupedModules: {
+                moduleKey: string;
+                moduleTitle: string;
+                trackSlug: string;
+                chapters: typeof results;
+              }[] = [];
+
+              const groupMap = new Map<string, typeof groupedModules[0]>();
+
+              for (const ch of results) {
+                const modKey = `${ch.trackSlug || 'go'}:${ch.moduleSlug}`;
+                let group = groupMap.get(modKey);
+                if (!group) {
+                  const parentMod = modules.find(
+                    (m) => m.slug === ch.moduleSlug && (m.trackSlug || 'go') === (ch.trackSlug || 'go')
+                  );
+                  const moduleTitle = parentMod?.title || ch.moduleSlug;
+                  group = {
+                    moduleKey: modKey,
+                    moduleTitle,
+                    trackSlug: ch.trackSlug || 'go',
+                    chapters: [],
+                  };
+                  groupMap.set(modKey, group);
+                  groupedModules.push(group);
+                }
+                group.chapters.push(ch);
+              }
+
+              return groupedModules.map((group) => (
+                <div key={group.moduleKey} className="space-y-1">
+                  {/* Module Group Header */}
+                  <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase border-b border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+                    <span className="truncate">┌─ MODULE: {group.moduleTitle}</span>
+                    <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-extrabold">
+                      [{group.trackSlug.toUpperCase()}]
                     </span>
-                    <span className="truncate">{ch.title}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[10px] shrink-0 text-zinc-500 font-normal">
-                    {ch.trackSlug && (
-                      <span className="uppercase text-cyan-700 dark:text-cyan-400 font-bold">
-                        [{ch.trackSlug}]
-                      </span>
-                    )}
-                    <span className="uppercase">[{ch.type}]</span>
-                    <span>[ENTER]</span>
-                  </div>
-                </button>
-              );
-            })
+                  {/* Chapter items */}
+                  {group.chapters.map((ch) => {
+                    const flatIndex = results.findIndex(
+                      (r) => r.slug === ch.slug && r.moduleSlug === ch.moduleSlug && r.trackSlug === ch.trackSlug
+                    );
+                    const isSelected = flatIndex === selectedIndex;
+                    return (
+                      <button
+                        key={`${ch.trackSlug || 'go'}-${ch.moduleSlug}-${ch.slug}`}
+                        onClick={() => {
+                          onSelectChapter(ch.moduleSlug, ch.slug, ch.trackSlug);
+                          onClose();
+                        }}
+                        className={`w-full text-left pl-4 pr-2.5 py-1.5 rounded transition-colors flex items-center justify-between group cursor-pointer border font-mono ${
+                          isSelected
+                            ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-950 dark:text-white font-bold border-zinc-400 dark:border-zinc-700'
+                            : 'border-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className={`select-none font-bold ${
+                              isSelected
+                                ? 'text-cyan-600 dark:text-cyan-400 opacity-100'
+                                : 'text-zinc-400 opacity-0 group-hover:opacity-100'
+                            }`}
+                          >
+                            &gt;
+                          </span>
+                          <span className="truncate">{ch.title}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[10px] shrink-0 text-zinc-500 font-normal">
+                          <span className="uppercase">[{ch.type}]</span>
+                          {isSelected && (
+                            <span className="text-cyan-600 dark:text-cyan-400 font-bold">[ENTER]</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ));
+            })()
           )}
         </div>
 
