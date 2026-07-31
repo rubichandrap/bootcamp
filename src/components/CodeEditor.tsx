@@ -9,6 +9,7 @@ interface CodeEditorProps {
   language?: string;
   theme?: string;
   filename?: string;
+  path?: string;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -17,6 +18,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   language = 'go',
   theme = 'vs-dark',
   filename = 'main.go',
+  path,
 }) => {
   return (
     <div className="h-full w-full border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-zinc-900 dark:bg-[#1e1e1e] flex flex-col font-mono">
@@ -27,6 +29,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
+          path={path || filename}
           defaultLanguage={language}
           language={language}
           theme={theme}

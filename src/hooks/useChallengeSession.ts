@@ -45,10 +45,16 @@ export function useChallengeSession() {
   const [result, setResult] = useState<RCEExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [enableRaceCheck, setEnableRaceCheck] = useState(false);
+  const [codeByChapter, setCodeByChapter] = useState<Record<string, string>>({});
+  const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
 
-  const updateCode = useCallback((newCode: string) => {
+  const updateCode = useCallback((newCode: string, chapterId?: string) => {
     setCode(newCode);
-  }, []);
+    const chId = chapterId || activeChapterId;
+    if (chId) {
+      setCodeByChapter((prev) => ({ ...prev, [chId]: newCode }));
+    }
+  }, [activeChapterId]);
 
   const updateTestCode = useCallback((newTestCode: string) => {
     setTestCode(newTestCode);
@@ -62,12 +68,27 @@ export function useChallengeSession() {
     setEnableRaceCheck((prev) => !prev);
   }, []);
 
-  const resetForChapter = useCallback((starterCode?: string, testCodeInput?: string) => {
-    setResult(null);
-    setActiveTab('code');
-    setCode(starterCode ?? DEFAULT_STARTER_CODE);
-    setTestCode(testCodeInput ?? DEFAULT_TEST_CODE);
-  }, []);
+  const resetForChapter = useCallback(
+    (starterCode?: string, testCodeInput?: string, savedSubmissionCode?: string, chapterId?: string) => {
+      setResult(null);
+      setActiveTab('code');
+      if (chapterId) {
+        setActiveChapterId(chapterId);
+      }
+      let initialCode = starterCode ?? DEFAULT_STARTER_CODE;
+      if (chapterId && codeByChapter[chapterId] !== undefined) {
+        initialCode = codeByChapter[chapterId];
+      } else if (savedSubmissionCode) {
+        initialCode = savedSubmissionCode;
+        if (chapterId) {
+          setCodeByChapter((prev) => ({ ...prev, [chapterId]: savedSubmissionCode }));
+        }
+      }
+      setCode(initialCode);
+      setTestCode(testCodeInput ?? DEFAULT_TEST_CODE);
+    },
+    [codeByChapter]
+  );
 
   const runChallengeSession = useCallback(
     async (chapterId: string, ports?: Partial<RunChallengePorts>) => {

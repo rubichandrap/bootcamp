@@ -2,6 +2,7 @@ import {
   recordSubmission as recordSubmissionRepo,
   getUserProgress as getUserProgressRepo,
   getFailedAttemptsCount,
+  getLatestSubmission as getLatestSubmissionRepo,
 } from '@/lib/db/submissionRepo';
 import {
   ProgressTrackerAdapter,
@@ -52,5 +53,14 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
 
   async getFailedAttempts(userId: string, chapterId: string): Promise<number> {
     return getFailedAttemptsCount(userId, chapterId);
+  }
+
+  async getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null> {
+    const sub = getLatestSubmissionRepo(userId, chapterId);
+    if (!sub) return null;
+    return {
+      code: sub.code,
+      passed: sub.passed,
+    };
   }
 }

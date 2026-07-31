@@ -52,11 +52,15 @@ export async function GET(req: NextRequest) {
     const chapterFailedAttempts = chapterId
       ? await progressAdapter.getFailedAttempts(userId, chapterId)
       : 0;
+    const latestSubmission = chapterId
+      ? await progressAdapter.getLatestSubmission(userId, chapterId)
+      : null;
 
     return NextResponse.json(
       {
         ...userProgress,
         chapterFailedAttempts,
+        latestSubmission,
       },
       { status: 200 }
     );

@@ -22,6 +22,7 @@ interface SidebarNavProps {
   currentChapter: ChapterMeta | null;
   completedChapterIds: string[];
   onSelectChapter: (modSlug: string, chSlug: string) => void;
+  width?: number;
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -29,9 +30,13 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   currentChapter,
   completedChapterIds,
   onSelectChapter,
+  width,
 }) => {
   return (
-    <aside className="h-full w-72 bg-zinc-900/90 dark:bg-[#09090b] border-r border-zinc-300 dark:border-zinc-800 flex flex-col shrink-0 font-mono text-xs text-zinc-800 dark:text-zinc-200 select-none">
+    <aside
+      className="h-full bg-zinc-900/90 dark:bg-[#09090b] border-r border-zinc-300 dark:border-zinc-800 flex flex-col shrink-0 font-mono text-xs text-zinc-800 dark:text-zinc-200 select-none"
+      style={{ width: width ? `${width}px` : '18rem' }}
+    >
       {/* Sidebar Header */}
       <div className="p-3 border-b border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-between">
         <h2 className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">

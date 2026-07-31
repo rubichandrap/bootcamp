@@ -41,6 +41,18 @@ export function useProgressTracker(
     [adapter]
   );
 
+  const getLatestSubmission = useCallback(
+    async (chapterId: string, userId = DEFAULT_USER_ID) => {
+      try {
+        return await adapter.getLatestSubmission(userId, chapterId);
+      } catch (err) {
+        console.error('Failed to fetch latest submission', err);
+        return null;
+      }
+    },
+    [adapter]
+  );
+
   const recordSubmission = useCallback(
     async (params: RecordSubmissionInput): Promise<RecordSubmissionResult | undefined> => {
       try {
@@ -77,6 +89,7 @@ export function useProgressTracker(
     setFailedAttempts,
     loadProgress,
     loadFailedAttempts,
+    getLatestSubmission,
     recordSubmission,
     incrementFailedAttempts,
     calculateProgressPercent,

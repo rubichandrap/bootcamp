@@ -4,6 +4,7 @@ import {
   getUserProgress,
   getFailedAttemptsCount,
   calculateModuleProgress,
+  getLatestSubmission,
   userProgress,
   submissions,
 } from './submissionRepo';
@@ -295,5 +296,30 @@ describe('SQLite Progress Tracking & Submissions', () => {
     const progress = getUserProgress(testUserId, { dateWindowDays: 10 });
 
     expect(progress.submissionDates).toHaveLength(2);
+  });
+
+  it('should return the latest submission for a user and chapter', () => {
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-latest-test',
+      code: 'code 1',
+      passed: false,
+      testCount: 1,
+      failedCount: 1,
+    });
+
+    recordSubmission({
+      userId: testUserId,
+      chapterId: 'ch-latest-test',
+      code: 'code 2 - latest answer',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const latest = getLatestSubmission(testUserId, 'ch-latest-test');
+    expect(latest).not.toBeNull();
+    expect(latest?.code).toBe('code 2 - latest answer');
+    expect(latest?.passed).toBe(true);
   });
 });

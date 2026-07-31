@@ -1,4 +1,4 @@
-import { eq, and, inArray, gte, sql } from 'drizzle-orm';
+import { eq, and, inArray, gte, sql, desc } from 'drizzle-orm';
 import { db } from '@/lib/db/connection';
 import { userProgress, submissions } from '@/lib/db/schema';
 import { calculateStreak } from '@/lib/metrics/streak';
@@ -127,3 +127,21 @@ export function calculateModuleProgress(userId: string, totalModuleChapterIds: s
 
   return Math.round((completedRecords.length / totalModuleChapterIds.length) * 100);
 }
+
+export function getLatestSubmission(userId: string, chapterId: string) {
+  const result = db
+    .select()
+    .from(submissions)
+    .where(
+      and(
+        eq(submissions.userId, userId),
+        eq(submissions.chapterId, chapterId)
+      )
+    )
+    .orderBy(desc(submissions.createdAt))
+    .limit(1)
+    .get();
+
+  return result || null;
+}
+

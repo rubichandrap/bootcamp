@@ -27,6 +27,7 @@ export interface ProgressTrackerAdapter {
   getProgress(userId: string): Promise<UserProgress>;
   recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult>;
   getFailedAttempts(userId: string, chapterId: string): Promise<number>;
+  getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null>;
 }
 
 export function calculateProgressPercent(
@@ -112,6 +113,24 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
     const data: unknown = await res.json();
     const dataObj = isObjectRecord(data) ? data : {};
     return typeof dataObj.chapterFailedAttempts === 'number' ? dataObj.chapterFailedAttempts : 0;
+  }
+
+  async getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null> {
+    const res = await fetch(
+      `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}`
+    );
+    if (!res.ok) {
+      throw new Error(`getLatestSubmission failed with status ${res.status}`);
+    }
+    const data: unknown = await res.json();
+    const dataObj = isObjectRecord(data) ? data : {};
+    if (isObjectRecord(dataObj.latestSubmission) && typeof dataObj.latestSubmission.code === 'string') {
+      return {
+        code: dataObj.latestSubmission.code,
+        passed: Boolean(dataObj.latestSubmission.passed),
+      };
+    }
+    return null;
   }
 }
 
