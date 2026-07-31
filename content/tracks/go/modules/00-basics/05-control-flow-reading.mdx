@@ -1,0 +1,58 @@
+---
+title: "Control Flow: If, Switch & For Loops"
+type: "reading"
+order: 5
+---
+
+# Control Flow: If, Switch & For Loops
+
+Go provides clean control flow structures. Notably, Go has only **one** looping keyword: `for`.
+
+## Conditional Expressions (`if` / `else`)
+
+```go
+if score >= 90 {
+    return "A"
+} else if score >= 80 {
+    return "B"
+} else {
+    return "C"
+}
+```
+
+Go allows an optional initialization statement inside `if`:
+
+```go
+if err := doSomething(); err != nil {
+    return err
+}
+```
+
+## `switch` Statements
+
+Go `switch` statements evaluate expressions top-to-bottom and break automatically (no implicit fallthrough).
+
+```go
+switch day {
+case "Saturday", "Sunday":
+    return "Weekend"
+default:
+    return "Weekday"
+}
+```
+
+## `for` Loops
+
+Go uses `for` for standard loops, while loops, and infinite loops:
+
+```go
+// 1. Standard C-style loop
+for i := 0; i < 5; i++ {
+    total += i
+}
+
+// 2. Condition-only loop (like 'while')
+for total < 100 {
+    total += 10
+}
+```

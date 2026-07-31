@@ -1,0 +1,37 @@
+---
+title: "Go Memory Models & Pointer Semantics"
+type: "reading"
+order: 1
+---
+
+# Go Memory Models & Pointer Semantics
+
+Unlike languages with reference semantics (such as JavaScript or Python), Go gives software engineers explicit control over **value vs pointer semantics** while retaining safety.
+
+## Value Semantics vs Pointer Semantics
+
+In Go, **everything is passed by value**. When you pass a variable into a function, Go creates a copy of that value on the stack.
+
+```go
+type Counter struct {
+    Count int
+}
+
+func IncValue(c Counter) {
+    c.Count++ // Operates on a copy on stack!
+}
+
+func IncPointer(c *Counter) {
+    c.Count++ // Mutates original caller memory!
+}
+```
+
+## Key Operators
+
+- **`&` (Address-of)**: Gets the memory location of a variable (`p := &x`).
+- **`*` (Dereference)**: Accesses or modifies the value stored at a memory address (`*p = 42`).
+
+## Stack vs Heap Allocation (Escape Analysis)
+
+- **Stack**: Very fast, zero GC overhead. Variables that do not escape a function stay on the stack.
+- **Heap**: Used when pointers escape function scope or outlive stack frames.

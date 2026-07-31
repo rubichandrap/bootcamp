@@ -1,0 +1,7 @@
+{
+  "slug": "typescript",
+  "title": "TypeScript Mastery",
+  "description": "Master type safety, generics, utility types, and modern asynchronous TypeScript.",
+  "language": "typescript",
+  "order": 2
+}

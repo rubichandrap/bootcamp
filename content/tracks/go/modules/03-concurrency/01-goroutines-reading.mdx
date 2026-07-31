@@ -1,0 +1,27 @@
+---
+title: "Goroutines & CSP Concurrency Model"
+type: "reading"
+order: 1
+---
+
+# Goroutines & CSP Concurrency Model
+
+Go uses **Communicating Sequential Processes (CSP)** as its concurrency paradigm: *"Do not communicate by sharing memory; instead, share memory by communicating."*
+
+## Goroutines
+
+A **goroutine** is an independently executing thread managed by the Go runtime (M:N scheduler). Goroutines start with a tiny stack allocation (~2KB) that grows dynamically.
+
+Starting a goroutine:
+
+```go
+go myFunction()
+```
+
+An anonymous goroutine closure:
+
+```go
+go func() {
+    fmt.Println("Running concurrently!")
+}()
+```

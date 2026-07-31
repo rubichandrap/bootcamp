@@ -1,0 +1,41 @@
+---
+title: "Go Program Structure & Functions"
+type: "reading"
+order: 1
+---
+
+# Go Program Structure & Functions
+
+Welcome to Go! Go is an open-source programming language designed at Google for simplicity, reliability, and speed.
+
+## Package Declarations
+
+Every Go source file begins with a `package` declaration. Packages group related source files together into a single unit.
+
+```go
+package main
+```
+
+- Executable Go programs start in `package main`.
+- Other packages (like `math`, `fmt`, or `strings`) provide reusable libraries.
+
+## Function Anatomy
+
+Functions are defined using the `func` keyword. Go requires explicit parameter types and explicit return types.
+
+```go
+func Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+Key parts of a Go function declaration:
+1. `func`: Keyword introducing a function.
+2. `Greet`: Name of the function (capitalized names are exported/public).
+3. `(name string)`: Parameter name followed by parameter type.
+4. `string` (after parentheses): Return type.
+5. `return`: Explicit statement returning a value matching the return type.
+
+## Returning Values
+
+Unlike some languages with implicit returns, Go requires an explicit `return` statement when a function declares a return type.

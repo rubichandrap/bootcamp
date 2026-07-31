@@ -1,0 +1,69 @@
+---
+title: "Module 01 Capstone: Entity Registry"
+type: "assessment"
+order: 7
+starterCode: |
+  package main
+
+  type Product struct {
+  	ID    int
+  	Name  string
+  	Price float64
+  }
+
+  type Store struct {
+  	products map[int]Product
+  }
+
+  func NewStore() *Store {
+  	return &Store{products: make(map[int]Product)}
+  }
+
+  func (s *Store) AddProduct(p Product) {
+  	// TODO: Add product to map
+  }
+
+  func (s *Store) GetProduct(id int) (Product, bool) {
+  	// TODO: Retrieve product using comma-ok idiom
+  	return Product{}, false
+  }
+
+  func (s *Store) ListProductsAbove(minPrice float64) []Product {
+  	// TODO: Return slice of products with Price >= minPrice
+  	return nil
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestStoreRegistry(t *testing.T) {
+  	s := NewStore()
+  	s.AddProduct(Product{ID: 1, Name: "Keyboard", Price: 75.0})
+  	s.AddProduct(Product{ID: 2, Name: "Mouse", Price: 25.0})
+  	s.AddProduct(Product{ID: 3, Name: "Monitor", Price: 200.0})
+
+  	p, found := s.GetProduct(1)
+  	if !found || p.Name != "Keyboard" {
+  		t.Errorf("failed to get product 1, got %v (found %v)", p, found)
+  	}
+
+  	filtered := s.ListProductsAbove(50.0)
+  	if len(filtered) != 2 {
+  		t.Fatalf("expected 2 products above $50, got %d", len(filtered))
+  	}
+  }
+---
+
+# Module 01 Capstone: Entity Registry
+
+Congratulations on completing the Composite Data Types module!
+
+In this **CapStone Assessment**, you will demonstrate your understanding of structs, pointer method receivers, maps, and slice filtering.
+
+## Requirements
+
+1. `NewStore()` returns a `*Store` initialized with a non-nil `map[int]Product`.
+2. `AddProduct(p Product)` adds a product to `s.products`.
+3. `GetProduct(id int) (Product, bool)` looks up product by ID using comma-ok idiom.
+4. `ListProductsAbove(minPrice float64) []Product` returns a slice of products with `Price >= minPrice`.

@@ -7,6 +7,7 @@ export { userProgress, submissions };
 
 export interface RecordSubmissionInput {
   userId: string;
+  trackId?: string;
   chapterId: string;
   code: string;
   passed: boolean;
@@ -18,12 +19,14 @@ export interface RecordSubmissionInput {
 export function recordSubmission(input: RecordSubmissionInput) {
   const submissionId = crypto.randomUUID();
   const now = new Date().toISOString();
+  const trackId = input.trackId || 'go';
 
   db.transaction((tx) => {
     tx.insert(submissions)
       .values({
         id: submissionId,
         userId: input.userId,
+        trackId,
         chapterId: input.chapterId,
         code: input.code,
         passed: input.passed,
@@ -38,7 +41,13 @@ export function recordSubmission(input: RecordSubmissionInput) {
       const existing = tx
         .select()
         .from(userProgress)
-        .where(and(eq(userProgress.userId, input.userId), eq(userProgress.chapterId, input.chapterId)))
+        .where(
+          and(
+            eq(userProgress.userId, input.userId),
+            eq(userProgress.trackId, trackId),
+            eq(userProgress.chapterId, input.chapterId)
+          )
+        )
         .get();
 
       if (!existing) {
@@ -47,6 +56,7 @@ export function recordSubmission(input: RecordSubmissionInput) {
           .values({
             id: progressId,
             userId: input.userId,
+            trackId,
             chapterId: input.chapterId,
             completedAt: now,
           })
@@ -58,13 +68,14 @@ export function recordSubmission(input: RecordSubmissionInput) {
   return { submissionId, success: true };
 }
 
-export function getFailedAttemptsCount(userId: string, chapterId: string): number {
+export function getFailedAttemptsCount(userId: string, chapterId: string, trackId: string = 'go'): number {
   const result = db
     .select({ count: sql<number>`count(*)` })
     .from(submissions)
     .where(
       and(
         eq(submissions.userId, userId),
+        eq(submissions.trackId, trackId),
         eq(submissions.chapterId, chapterId),
         eq(submissions.passed, false)
       )
@@ -74,12 +85,20 @@ export function getFailedAttemptsCount(userId: string, chapterId: string): numbe
   return result?.count ?? 0;
 }
 
-export function getUserProgress(userId: string, options?: { dateWindowDays?: number }) {
-  const completedRecords = db
-    .select()
-    .from(userProgress)
-    .where(eq(userProgress.userId, userId))
-    .all();
+export function getUserProgress(userId: string, options?: { trackId?: string; dateWindowDays?: number }) {
+  const trackId = options?.trackId;
+
+  const completedRecords = trackId
+    ? db
+        .select()
+        .from(userProgress)
+        .where(and(eq(userProgress.userId, userId), eq(userProgress.trackId, trackId)))
+        .all()
+    : db
+        .select()
+        .from(userProgress)
+        .where(eq(userProgress.userId, userId))
+        .all();
 
   const completedChapterIds = completedRecords.map((r) => r.chapterId);
 
@@ -88,6 +107,7 @@ export function getUserProgress(userId: string, options?: { dateWindowDays?: num
   cutoffDate.setDate(cutoffDate.getDate() - dateWindowDays);
   const dateThreshold = cutoffDate.toISOString();
 
+  // Streak is computed across ALL submissions regardless of trackId
   const submissionRecords = db
     .select()
     .from(submissions)
@@ -104,6 +124,7 @@ export function getUserProgress(userId: string, options?: { dateWindowDays?: num
 
   return {
     userId,
+    trackId,
     completedChapterIds,
     completedCount: completedChapterIds.length,
     submissionDates,
@@ -111,7 +132,11 @@ export function getUserProgress(userId: string, options?: { dateWindowDays?: num
   };
 }
 
-export function calculateModuleProgress(userId: string, totalModuleChapterIds: string[]) {
+export function calculateModuleProgress(
+  userId: string,
+  totalModuleChapterIds: string[],
+  trackId: string = 'go'
+) {
   if (totalModuleChapterIds.length === 0) return 0;
 
   const completedRecords = db
@@ -120,6 +145,7 @@ export function calculateModuleProgress(userId: string, totalModuleChapterIds: s
     .where(
       and(
         eq(userProgress.userId, userId),
+        eq(userProgress.trackId, trackId),
         inArray(userProgress.chapterId, totalModuleChapterIds)
       )
     )
@@ -128,13 +154,14 @@ export function calculateModuleProgress(userId: string, totalModuleChapterIds: s
   return Math.round((completedRecords.length / totalModuleChapterIds.length) * 100);
 }
 
-export function getLatestSubmission(userId: string, chapterId: string) {
+export function getLatestSubmission(userId: string, chapterId: string, trackId: string = 'go') {
   const result = db
     .select()
     .from(submissions)
     .where(
       and(
         eq(submissions.userId, userId),
+        eq(submissions.trackId, trackId),
         eq(submissions.chapterId, chapterId)
       )
     )
@@ -144,4 +171,3 @@ export function getLatestSubmission(userId: string, chapterId: string) {
 
   return result || null;
 }
-

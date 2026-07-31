@@ -1,0 +1,5 @@
+{
+  "title": "Go Memory Models & Interfaces",
+  "description": "Master Go pointer semantics, stack vs heap escape analysis, slice header internals, and polymorphism with interfaces.",
+  "order": 2
+}

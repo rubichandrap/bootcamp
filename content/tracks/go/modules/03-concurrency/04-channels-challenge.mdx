@@ -1,0 +1,41 @@
+---
+title: "Channel Sender Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  package main
+
+  // SendMsg spawns a goroutine to send msg to the provided send-only channel ch.
+  func SendMsg(ch chan<- string, msg string) {
+  	// TODO: Spawn goroutine sending msg to ch
+  }
+testCode: |
+  package main
+
+  import (
+  	"testing"
+  	"time"
+  )
+
+  func TestSendMsg(t *testing.T) {
+  	ch := make(chan string)
+  	SendMsg(ch, "ping")
+
+  	select {
+  	case res := <-ch:
+  		if res != "ping" {
+  			t.Errorf("expected 'ping', got %q", res)
+  		}
+  	case <-time.After(1 * time.Second):
+  		t.Fatal("timeout: goroutine failed to send message to channel")
+  	}
+  }
+---
+
+# Channel Sender Challenge
+
+Reinforce sending messages onto channels via background goroutines!
+
+## Tasks
+
+Implement `SendMsg(ch chan<- string, msg string)` to spawn a goroutine sending `msg` into send-only channel `ch`.

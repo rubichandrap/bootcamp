@@ -1,0 +1,54 @@
+---
+title: "Declaring & Using Variables Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  package main
+
+  // FormatScore formats student score and status into a string.
+  // Example: "Alice scored 95 (Passed: true)"
+  func FormatScore(name string, score int, passed bool) string {
+  	// TODO: Declare result variable using short declaration := or var
+  	// Hint: Use fmt.Sprintf or string concatenation
+  	return ""
+  }
+
+  // GetZeroValues returns the zero values for int, string, and bool as a formatted string.
+  // Expected format: "0 |  | false"
+  func GetZeroValues() (int, string, bool) {
+  	// TODO: Declare var i int, var s string, var b bool without initializers
+  	// and return them to demonstrate Go zero values.
+  	var i int
+  	var s string
+  	var b bool
+  	return i, s, b
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestFormatScore(t *testing.T) {
+  	got := FormatScore("Bob", 88, true)
+  	want := "Bob scored 88 (Passed: true)"
+  	if got != want {
+  		t.Errorf("expected %q, got %q", want, got)
+  	}
+  }
+
+  func TestGetZeroValues(t *testing.T) {
+  	i, s, b := GetZeroValues()
+  	if i != 0 || s != "" || b != false {
+  		t.Errorf("expected zero values 0, \"\", false; got %d, %q, %v", i, s, b)
+  	}
+  }
+---
+
+# Declaring & Using Variables Challenge
+
+Reinforce what you just learned about `var`, short variable declarations (`:=`), and Go zero values!
+
+## Tasks
+
+1. Implement `FormatScore(name string, score int, passed bool) string` using `fmt.Sprintf` or string formatting.
+2. Implement `GetZeroValues()` by returning uninitialized `var` variables for `int`, `string`, and `bool`.

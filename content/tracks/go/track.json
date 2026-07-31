@@ -1,0 +1,7 @@
+{
+  "slug": "go",
+  "title": "Go Mastery",
+  "description": "Learn idiomatic Go, concurrency patterns, and low-level memory concepts.",
+  "language": "go",
+  "order": 1
+}

@@ -1,0 +1,35 @@
+---
+title: "Arrays, Slices & Backing Memory"
+type: "reading"
+order: 3
+---
+
+# Arrays, Slices & Backing Memory
+
+In Go, an **array** has a fixed length defined at compile time (`[5]int`), while a **slice** is a dynamic, flexible view into an underlying array (`[]int`).
+
+## Creating Slices
+
+```go
+// 1. Literal declaration
+nums := []int{10, 20, 30}
+
+// 2. Using make(type, len, cap)
+buf := make([]int, 0, 100) // len=0, cap=100
+```
+
+## Appending & Re-slicing
+
+The built-in `append` function appends items to a slice, allocating a larger backing array if capacity is exceeded:
+
+```go
+nums = append(nums, 40)
+```
+
+Iterating slices with `range`:
+
+```go
+for index, value := range nums {
+    fmt.Println(index, value)
+}
+```

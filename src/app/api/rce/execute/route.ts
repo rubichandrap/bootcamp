@@ -12,7 +12,7 @@ export type { TestResultItem, RCEExecuteResponse };
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, testCode, enableRaceCheck } = await req.json();
+    const { code, testCode, trackId, enableRaceCheck } = await req.json();
 
     if (!code || !testCode) {
       return NextResponse.json(
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     const response = await executeSubmission({
       code,
       testCode,
+      trackId,
       enableRaceCheck,
     });
 

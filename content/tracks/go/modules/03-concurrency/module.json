@@ -1,0 +1,5 @@
+{
+  "title": "Concurrency Primitives & Pipelines",
+  "description": "Master Goroutines, Channels, CSP concurrency models, select multiplexing, and concurrent streaming pipelines.",
+  "order": 3
+}

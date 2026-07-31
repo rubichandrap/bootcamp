@@ -1,0 +1,40 @@
+---
+title: "Interfaces & Idiomatic Error Handling"
+type: "reading"
+order: 5
+---
+
+# Interfaces & Idiomatic Error Handling
+
+In Go, interfaces are satisfied **implicitly**. A type implements an interface simply by implementing all methods declared in the interface signature.
+
+## Defining Interfaces
+
+```go
+type Stringer interface {
+    String() string
+}
+```
+
+## The Built-in `error` Interface
+
+Errors in Go are values! The built-in `error` type is a single-method interface:
+
+```go
+type error interface {
+    Error() string
+}
+```
+
+Creating custom error structs:
+
+```go
+type ValidationError struct {
+    Field string
+    Msg   string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("validation failed on %s: %s", e.Field, e.Msg)
+}
+```

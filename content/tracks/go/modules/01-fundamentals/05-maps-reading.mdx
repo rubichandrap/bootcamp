@@ -1,0 +1,42 @@
+---
+title: "Maps & Key-Value Operations"
+type: "reading"
+order: 5
+---
+
+# Maps & Key-Value Operations
+
+A **map** is Go's built-in hash table type that maps keys of type `K` to values of type `V` (`map[K]V`).
+
+## Initializing Maps
+
+```go
+// 1. Map literal
+counts := map[string]int{
+    "apple":  3,
+    "banana": 5,
+}
+
+// 2. Using make
+userRoles := make(map[int]string)
+userRoles[101] = "Admin"
+```
+
+## The Comma-OK Idiom
+
+To check if a key exists in a map without triggering a default zero value:
+
+```go
+role, exists := userRoles[101]
+if exists {
+    fmt.Println("Found role:", role)
+}
+```
+
+## Deleting Keys
+
+Use the built-in `delete(m, key)` function to remove a key from a map:
+
+```go
+delete(userRoles, 101)
+```

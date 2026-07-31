@@ -1,0 +1,45 @@
+---
+title: "Module 00 Capstone: CLI Metric Evaluator"
+type: "assessment"
+order: 7
+starterCode: |
+  package main
+
+  // EvaluateScores processes a sequence of numerical scores (1-100), calculates average,
+  // and returns a summary formatted as:
+  // "Processed <count> scores: Total=<sum>, Average=<avg>"
+  // If count is 0, return "No scores provided".
+  func EvaluateScores(scores []int) string {
+  	// TODO: Implement using for loops, variable tracking, and conditional branch checks
+  	return ""
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestEvaluateScores(t *testing.T) {
+  	if got := EvaluateScores(nil); got != "No scores provided" {
+  		t.Errorf("expected 'No scores provided', got %q", got)
+  	}
+
+  	scores := []int{80, 90, 100}
+  	want := "Processed 3 scores: Total=270, Average=90"
+  	if got := EvaluateScores(scores); got != want {
+  		t.Errorf("expected %q, got %q", want, got)
+  	}
+  }
+---
+
+# Module 00 Capstone: CLI Metric Evaluator
+
+Congratulations on completing the Go Syntax & Core Control Flow module!
+
+In this **CapStone Assessment**, you will demonstrate your understanding of function declarations, variable arithmetic, formatting strings, and `for` loops.
+
+## Requirements
+
+1. `EvaluateScores(scores []int)` processes an slice of integer scores.
+2. If `scores` is empty (length 0), return `"No scores provided"`.
+3. Compute total sum and average score (`sum / count`).
+4. Return string formatted as `"Processed <count> scores: Total=<sum>, Average=<avg>"`.

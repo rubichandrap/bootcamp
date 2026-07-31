@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Terminal, Flame, Sun, Moon, Menu } from 'lucide-react';
+import { Search, Terminal, Flame, Sun, Moon, Menu, Layers } from 'lucide-react';
 import { Theme } from '@/hooks/useTheme';
 
 export function formatTitlebarText(trackTitle: string, activeModuleTitle?: string): string {
@@ -15,24 +15,40 @@ export function formatStreakBadge(streakDays: number): string {
   return `🔥 STREAK: ${streakDays}d`;
 }
 
+export interface TrackOption {
+  slug: string;
+  title: string;
+}
+
+const DEFAULT_TRACKS: TrackOption[] = [
+  { slug: 'go', title: 'Go Mastery' },
+  { slug: 'typescript', title: 'TypeScript Mastery' },
+];
+
 interface TerminalHeaderProps {
   trackTitle?: string;
+  activeTrackSlug?: string;
   activeModuleTitle?: string;
   streakDays?: number;
   theme: Theme;
+  tracks?: TrackOption[];
   onToggleTheme: () => void;
   onOpenSearch: () => void;
   onToggleSidebar?: () => void;
+  onSelectTrack?: (trackSlug: string) => void;
 }
 
 export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
   trackTitle = 'Go Mastery',
+  activeTrackSlug = 'go',
   activeModuleTitle,
   streakDays = 0,
   theme,
+  tracks = DEFAULT_TRACKS,
   onToggleTheme,
   onOpenSearch,
   onToggleSidebar,
+  onSelectTrack,
 }) => {
   return (
     <header className="h-10 bg-zinc-100 dark:bg-[#09090b] border-b border-zinc-300 dark:border-zinc-800 flex items-center justify-between px-3 font-mono text-xs text-zinc-700 dark:text-zinc-300 select-none shrink-0">
@@ -63,8 +79,27 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Badges & Controls */}
+      {/* Right: Track Selector, Badges & Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Track Switcher */}
+        {onSelectTrack && (
+          <div className="relative flex items-center gap-1 px-2 py-0.5 rounded border border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+            <Layers size={13} className="shrink-0" />
+            <select
+              value={activeTrackSlug}
+              onChange={(e) => onSelectTrack(e.target.value)}
+              className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+              aria-label="Select Language Track"
+            >
+              {tracks.map((t) => (
+                <option key={t.slug} value={t.slug} className="bg-zinc-900 text-white">
+                  [{t.slug.toUpperCase()}] {t.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Search trigger */}
         <button
           onClick={onOpenSearch}
