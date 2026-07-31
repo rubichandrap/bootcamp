@@ -17,6 +17,9 @@ export async function executeRce(params: ExecuteRceParams): Promise<RCEExecuteRe
       enableRaceCheck: params.enableRaceCheck,
     }),
   });
+  if (!res.ok) {
+    throw new Error(`RCE API request failed with status ${res.status}`);
+  }
   return res.json();
 }
 

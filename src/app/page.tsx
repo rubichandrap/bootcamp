@@ -28,13 +28,9 @@ export default function Home() {
   // Chapter selection handler that coordinates across hooks
   const handleSelectChapter = useCallback(
     async (modSlug: string, chSlug: string) => {
-      const ch = await chapterLifecycle.selectChapter(modSlug, chSlug);
-      if (ch) {
-        challengeSession.resetForChapter(ch.starterCode, ch.testCode);
-        await progressTracker.loadFailedAttempts(chSlug);
-      }
+      await chapterLifecycle.selectChapter(modSlug, chSlug);
     },
-    [chapterLifecycle, challengeSession, progressTracker]
+    [chapterLifecycle]
   );
 
   // Fetch modules and user progress on mount
@@ -50,6 +46,14 @@ export default function Home() {
     }
     loadInitialData();
   }, []);
+
+  // Fetch per-Chapter failed attempts and reset editor when currentChapter changes
+  const currentChapter = chapterLifecycle.currentChapter;
+  useEffect(() => {
+    if (!currentChapter) return;
+    challengeSession.resetForChapter(currentChapter.starterCode, currentChapter.testCode);
+    progressTracker.loadFailedAttempts(currentChapter.slug);
+  }, [currentChapter?.slug]);
 
   const handleRun = useCallback(() => {
     if (!chapterLifecycle.currentChapter) return;
@@ -85,7 +89,6 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [chapterLifecycle.currentChapter, handleRun]);
 
-  const currentChapter = chapterLifecycle.currentChapter;
   const activeHint = getSocraticHint(currentChapter?.slug || 'default');
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
