@@ -83,7 +83,7 @@ export default function Home() {
     });
   }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
 
-  // 4. Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search)
+  // 4. Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search, Cmd+H for hint)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -94,6 +94,9 @@ export default function Home() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setIsHintOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);

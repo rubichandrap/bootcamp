@@ -19,21 +19,40 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onSelectChapter,
 }) => {
   const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const results =
     query.trim() === ''
       ? modules.flatMap((m) => m.chapters)
       : searchCurriculum(query, modules);
 
+  // Reset selected index when query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
+  // Handle keyboard navigation (ArrowUp, ArrowDown, Enter, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (results.length > 0 ? (prev + 1) % results.length : 0));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (results.length > 0 ? (prev - 1 + results.length) % results.length : 0));
+      } else if (e.key === 'Enter' && results[selectedIndex]) {
+        e.preventDefault();
+        const sel = results[selectedIndex];
+        onSelectChapter(sel.moduleSlug, sel.slug);
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, results, selectedIndex, onSelectChapter]);
 
   if (!isOpen) return null;
 
@@ -73,37 +92,46 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               No matching chapters found for &quot;{query}&quot;.
             </div>
           ) : (
-            results.map((ch) => (
-              <button
-                key={`${ch.moduleSlug}-${ch.slug}`}
-                onClick={() => {
-                  onSelectChapter(ch.moduleSlug, ch.slug);
-                  onClose();
-                }}
-                className="w-full text-left p-2.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-900 transition-colors flex items-center justify-between group cursor-pointer border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 font-mono"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <span className="text-zinc-400 opacity-0 group-hover:opacity-100 select-none">
-                    &gt;
-                  </span>
-                  <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                    {ch.title}
-                  </span>
-                </div>
+            results.map((ch, idx) => {
+              const isSelected = idx === selectedIndex;
+              return (
+                <button
+                  key={`${ch.moduleSlug}-${ch.slug}`}
+                  onClick={() => {
+                    onSelectChapter(ch.moduleSlug, ch.slug);
+                    onClose();
+                  }}
+                  className={`w-full text-left p-2.5 rounded transition-colors flex items-center justify-between group cursor-pointer border font-mono ${
+                    isSelected
+                      ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-950 dark:text-white font-bold border-zinc-400 dark:border-zinc-700'
+                      : 'border-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span
+                      className={`select-none font-bold ${
+                        isSelected ? 'text-zinc-900 dark:text-white opacity-100' : 'text-zinc-400 opacity-0 group-hover:opacity-100'
+                      }`}
+                    >
+                      &gt;
+                    </span>
+                    <span className="truncate">{ch.title}</span>
+                  </div>
 
-                <div className="flex items-center gap-2 text-[10px] shrink-0 text-zinc-500 font-normal">
-                  <span className="uppercase">[{ch.type}]</span>
-                  <span>[ENTER]</span>
-                </div>
-              </button>
-            ))
+                  <div className="flex items-center gap-2 text-[10px] shrink-0 text-zinc-500 font-normal">
+                    <span className="uppercase">[{ch.type}]</span>
+                    <span>[ENTER]</span>
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
 
         {/* Footer */}
         <div className="p-2 bg-zinc-100 dark:bg-zinc-900/60 border-t border-zinc-300 dark:border-zinc-800 text-[10px] text-zinc-500 flex items-center justify-between px-3">
           <span>Press [ESC] to exit modal</span>
-          <span>[UP/DOWN] Navigate</span>
+          <span>[UP/DOWN] Navigate | [ENTER] Select</span>
         </div>
       </div>
     </div>

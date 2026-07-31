@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Lock, Unlock } from 'lucide-react';
 import { SocraticHint } from '@/lib/hints/socraticHints';
 
@@ -19,6 +19,16 @@ export const SocraticHintModal: React.FC<SocraticHintModalProps> = ({
   isUnlocked,
   failedAttempts,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
