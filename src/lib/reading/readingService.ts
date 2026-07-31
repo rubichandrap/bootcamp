@@ -1,4 +1,4 @@
-import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
+import { READING_PROGRESS_MARKER } from '@/lib/content/contentConstants';
 import {
   RecordSubmissionParams,
   RecordSubmissionResult,
@@ -22,7 +22,7 @@ export async function markAsRead(
   const result = await ports.recordSubmission({
     userId: params.userId || DEFAULT_USER_ID,
     chapterId: params.chapterId,
-    code: READING_COMPLETION_MARKER,
+    code: READING_PROGRESS_MARKER,
     passed: true,
     testCount: 0,
     failedCount: 0,

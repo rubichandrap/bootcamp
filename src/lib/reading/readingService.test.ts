@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { markAsRead } from './readingService';
-import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
+import { READING_PROGRESS_MARKER } from '@/lib/content/contentConstants';
 
 describe('readingService', () => {
   describe('markAsRead', () => {
-    it('records a submission with READING_COMPLETION_MARKER and calls onAdvance', async () => {
+    it('records a submission with READING_PROGRESS_MARKER and calls onAdvance', async () => {
       const mockRecordSubmission = vi.fn().mockResolvedValue({
         completedChapterIds: ['ch-reading-1'],
         streakDays: 2,
@@ -19,7 +19,7 @@ describe('readingService', () => {
       expect(mockRecordSubmission).toHaveBeenCalledWith({
         userId: 'default-user',
         chapterId: 'ch-reading-1',
-        code: READING_COMPLETION_MARKER,
+        code: READING_PROGRESS_MARKER,
         passed: true,
         testCount: 0,
         failedCount: 0,
