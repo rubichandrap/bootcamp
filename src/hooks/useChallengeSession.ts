@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
+import { SubmissionExecutionResult as RCEExecuteResponse } from '@/lib/rce/rceEngine';
 import {
   runChallenge as runChallengeService,
   RunChallengePorts,
