@@ -25,7 +25,7 @@ export default function Home() {
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
-  // Chapter selection handler that coordinates across hooks
+  // Chapter selection handler
   const handleSelectChapter = useCallback(
     async (modSlug: string, chSlug: string) => {
       await chapterLifecycle.selectChapter(modSlug, chSlug);
@@ -33,21 +33,27 @@ export default function Home() {
     [chapterLifecycle]
   );
 
-  // Fetch modules and user progress on mount
+  // 1. Initial data loading effect
   useEffect(() => {
     async function loadInitialData() {
       await progressTracker.loadProgress();
-      const mods = await chapterLifecycle.loadModules();
-
-      if (mods.length > 0 && mods[0].chapters.length > 0) {
-        const firstCh = mods[0].chapters[0];
-        await handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
-      }
+      await chapterLifecycle.loadModules();
     }
     loadInitialData();
   }, []);
 
-  // Fetch per-Chapter failed attempts and reset editor when currentChapter changes
+  // 2. Auto-select first Chapter when modules load
+  useEffect(() => {
+    if (!chapterLifecycle.currentChapter && chapterLifecycle.modules.length > 0) {
+      const firstMod = chapterLifecycle.modules[0];
+      if (firstMod.chapters.length > 0) {
+        const firstCh = firstMod.chapters[0];
+        handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
+      }
+    }
+  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, handleSelectChapter]);
+
+  // 3. Fetch per-Chapter failed attempts and reset editor when currentChapter changes
   const currentChapter = chapterLifecycle.currentChapter;
   useEffect(() => {
     if (!currentChapter) return;
@@ -72,7 +78,7 @@ export default function Home() {
     });
   }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
 
-  // Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search)
+  // 4. Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {

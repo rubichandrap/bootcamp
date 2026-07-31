@@ -12,7 +12,7 @@ export function useReadingSession() {
     async (chapterSlug: string, ports: MarkAsReadPorts) => {
       try {
         await markAsReadService(
-          { currentChapterSlug: chapterSlug },
+          { chapterId: chapterSlug },
           {
             recordSubmission: ports.recordSubmission,
             onAdvance: ports.onAdvance,

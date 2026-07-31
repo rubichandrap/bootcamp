@@ -1,3 +1,5 @@
+export const DEFAULT_USER_ID = 'default-user';
+
 export interface ProgressData {
   completedChapterIds: string[];
   streakDays: number;
@@ -19,7 +21,7 @@ export interface RecordSubmissionResult {
   chapterFailedAttempts?: number;
 }
 
-export async function fetchProgress(userId = 'default-user'): Promise<ProgressData> {
+export async function fetchProgress(userId = DEFAULT_USER_ID): Promise<ProgressData> {
   const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}`);
   const data = await res.json();
   return {
@@ -31,7 +33,7 @@ export async function fetchProgress(userId = 'default-user'): Promise<ProgressDa
 export async function recordSubmission(
   params: RecordSubmissionParams
 ): Promise<RecordSubmissionResult> {
-  const userId = params.userId || 'default-user';
+  const userId = params.userId || DEFAULT_USER_ID;
   const res = await fetch('/api/submissions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -57,11 +59,11 @@ export async function recordSubmission(
 }
 
 export async function fetchFailedAttemptsForChapter(
-  chapterSlug: string,
-  userId = 'default-user'
+  chapterId: string,
+  userId = DEFAULT_USER_ID
 ): Promise<number> {
   const res = await fetch(
-    `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterSlug)}`
+    `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}`
   );
   const data = await res.json();
   return typeof data.chapterFailedAttempts === 'number' ? data.chapterFailedAttempts : 0;

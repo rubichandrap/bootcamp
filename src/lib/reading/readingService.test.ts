@@ -12,7 +12,7 @@ describe('readingService', () => {
       const mockOnAdvance = vi.fn();
 
       const result = await markAsRead(
-        { currentChapterSlug: 'ch-reading-1' },
+        { chapterId: 'ch-reading-1' },
         { recordSubmission: mockRecordSubmission, onAdvance: mockOnAdvance }
       );
 

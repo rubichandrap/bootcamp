@@ -66,7 +66,7 @@ describe('challengeService', () => {
 
       const runPromise = runChallenge(
         {
-          currentChapterSlug: 'ch-1',
+          chapterId: 'ch-1',
           code: 'package main',
           testCode: 'package main_test',
           enableRaceCheck: false,
@@ -123,7 +123,7 @@ describe('challengeService', () => {
 
       const res = await runChallenge(
         {
-          currentChapterSlug: 'ch-1',
+          chapterId: 'ch-1',
           code: 'package main',
           testCode: 'package main_test',
         },
@@ -139,14 +139,15 @@ describe('challengeService', () => {
       expect(mockOnAdvance).not.toHaveBeenCalled();
     });
 
-    it('handles RCE API failure gracefully when RCE execution throws', async () => {
+    it('invokes incrementFailedAttempts port when RCE API fails', async () => {
       const mockExecuteRce = vi.fn().mockRejectedValue(new Error('Network error'));
       const mockRecordSubmission = vi.fn();
       const mockOnAdvance = vi.fn();
+      const mockIncrementFailedAttempts = vi.fn();
 
       const res = await runChallenge(
         {
-          currentChapterSlug: 'ch-1',
+          chapterId: 'ch-1',
           code: 'package main',
           testCode: 'package main_test',
         },
@@ -154,6 +155,7 @@ describe('challengeService', () => {
           executeRce: mockExecuteRce,
           recordSubmission: mockRecordSubmission,
           onAdvance: mockOnAdvance,
+          incrementFailedAttempts: mockIncrementFailedAttempts,
         }
       );
 
@@ -164,7 +166,7 @@ describe('challengeService', () => {
         tests: [],
         compileError: 'Network error',
       });
-      expect(res.isRceFailure).toBe(true);
+      expect(mockIncrementFailedAttempts).toHaveBeenCalledTimes(1);
       expect(mockRecordSubmission).not.toHaveBeenCalled();
       expect(mockOnAdvance).not.toHaveBeenCalled();
     });

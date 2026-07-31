@@ -3,6 +3,7 @@ import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import {
   executeRce as executeRceService,
   runChallenge as runChallengeService,
+  ExecuteRceParams,
 } from '@/lib/challenges/challengeService';
 import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
 
@@ -40,9 +41,10 @@ func TestFactorial(t *testing.T) {
 `;
 
 export interface RunChallengePorts {
+  executeRce?: (params: ExecuteRceParams) => Promise<RCEExecuteResponse>;
   recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
   onAdvance: () => void;
-  incrementFailedAttempts: () => void;
+  incrementFailedAttempts?: () => void;
 }
 
 export function useChallengeSession() {
@@ -61,30 +63,25 @@ export function useChallengeSession() {
   }, []);
 
   const runChallengeSession = useCallback(
-    async (
-      chapterSlug: string,
-      ports: RunChallengePorts
-    ) => {
+    async (chapterId: string, ports: RunChallengePorts) => {
       setIsLoading(true);
       try {
         const res = await runChallengeService(
           {
-            currentChapterSlug: chapterSlug,
+            chapterId,
             code,
             testCode,
             enableRaceCheck,
           },
           {
-            executeRce: executeRceService,
+            executeRce: ports.executeRce || executeRceService,
             recordSubmission: ports.recordSubmission,
             onAdvance: ports.onAdvance,
+            incrementFailedAttempts: ports.incrementFailedAttempts,
           }
         );
 
         setResult(res.result);
-        if (res.isRceFailure) {
-          ports.incrementFailedAttempts();
-        }
       } finally {
         setIsLoading(false);
       }

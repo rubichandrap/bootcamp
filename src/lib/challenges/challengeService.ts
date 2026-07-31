@@ -1,5 +1,9 @@
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
-import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
+import {
+  RecordSubmissionParams,
+  RecordSubmissionResult,
+  DEFAULT_USER_ID,
+} from '@/lib/progress/progressService';
 
 export interface ExecuteRceParams {
   code: string;
@@ -24,7 +28,7 @@ export async function executeRce(params: ExecuteRceParams): Promise<RCEExecuteRe
 }
 
 export interface RunChallengeParams {
-  currentChapterSlug: string;
+  chapterId: string;
   code: string;
   testCode: string;
   enableRaceCheck?: boolean;
@@ -35,6 +39,7 @@ export interface RunChallengePorts {
   executeRce: (params: ExecuteRceParams) => Promise<RCEExecuteResponse>;
   recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
   onAdvance: () => void;
+  incrementFailedAttempts?: () => void;
 }
 
 export interface RunChallengeResult {
@@ -55,8 +60,8 @@ export async function runChallenge(
     });
 
     const progressResult = await ports.recordSubmission({
-      userId: params.userId || 'default-user',
-      chapterId: params.currentChapterSlug,
+      userId: params.userId || DEFAULT_USER_ID,
+      chapterId: params.chapterId,
       code: params.code,
       passed: data.success,
       testCount: data.passed + data.failed,
@@ -76,6 +81,7 @@ export async function runChallenge(
     };
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Execution failed';
+    ports.incrementFailedAttempts?.();
     return {
       result: {
         success: false,

@@ -1,8 +1,12 @@
 import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
-import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
+import {
+  RecordSubmissionParams,
+  RecordSubmissionResult,
+  DEFAULT_USER_ID,
+} from '@/lib/progress/progressService';
 
 export interface MarkAsReadParams {
-  currentChapterSlug: string;
+  chapterId: string;
   userId?: string;
 }
 
@@ -16,8 +20,8 @@ export async function markAsRead(
   ports: MarkAsReadPorts
 ): Promise<RecordSubmissionResult> {
   const result = await ports.recordSubmission({
-    userId: params.userId || 'default-user',
-    chapterId: params.currentChapterSlug,
+    userId: params.userId || DEFAULT_USER_ID,
+    chapterId: params.chapterId,
     code: READING_COMPLETION_MARKER,
     passed: true,
     testCount: 0,
