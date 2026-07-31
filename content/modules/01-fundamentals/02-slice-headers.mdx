@@ -1,0 +1,41 @@
+---
+title: "Slice Header Internals & Mutability"
+type: "challenge"
+order: 2
+starterCode: |
+  package main
+
+  // AppendInt appends value to slice and returns the updated slice header.
+  func AppendInt(slice []int, val int) []int {
+  	// TODO: Implement append logic
+  	return nil
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestAppendInt(t *testing.T) {
+  	s := []int{10, 20}
+  	s = AppendInt(s, 30)
+  	if len(s) != 3 || s[0] != 10 || s[1] != 20 || s[2] != 30 {
+  		t.Errorf("expected [10 20 30], got %v", s)
+  	}
+  }
+---
+
+# Slice Header Internals & Mutability
+
+In Go, a **slice** is not an array. A slice is a lightweight 3-word struct header:
+
+```go
+type SliceHeader struct {
+    Data uintptr // Pointer to backing array
+    Len  int     // Length
+    Cap  int     // Capacity
+}
+```
+
+## Challenge
+
+Implement `AppendInt(slice []int, val int) []int` to append `val` to `slice` and return the modified slice header.
