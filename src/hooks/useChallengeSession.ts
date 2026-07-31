@@ -104,12 +104,5 @@ export function useChallengeSession() {
     toggleRaceCheck,
     resetForChapter,
     runChallengeSession,
-    // Preserved for backwards compatibility with existing UI props
-    setCode,
-    setTestCode,
-    setActiveTab,
-    setResult,
-    setIsLoading,
-    setEnableRaceCheck,
   };
 }
