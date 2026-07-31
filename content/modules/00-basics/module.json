@@ -1,0 +1,5 @@
+{
+  "title": "Go Syntax & Core Concepts",
+  "description": "Master basic Go syntax, variables, pointers, structs, slices, and channels.",
+  "order": 0
+}

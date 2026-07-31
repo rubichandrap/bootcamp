@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Sparkles, X, Lightbulb, Lock, Unlock } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Lock, Unlock } from 'lucide-react';
 import { SocraticHint } from '@/lib/hints/socraticHints';
 
 interface SocraticHintModalProps {
@@ -19,59 +19,67 @@ export const SocraticHintModal: React.FC<SocraticHintModalProps> = ({
   isUnlocked,
   failedAttempts,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#0d1117] border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 font-sans text-xs">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2 text-violet-400 font-semibold text-sm">
-            <Sparkles size={18} className="text-amber-400" />
-            <span>Socratic Learning Assistant</span>
-          </div>
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 font-mono">
+      <div className="bg-white dark:bg-[#09090b] border border-zinc-300 dark:border-zinc-800 rounded max-w-md w-full p-4 shadow-2xl space-y-3 text-xs text-zinc-800 dark:text-zinc-200">
+        {/* Terminal Window Bar */}
+        <div className="flex items-center justify-between border-b border-zinc-300 dark:border-zinc-800 pb-2 font-bold">
+          <span>┌─ [HINT SYSTEM] Socratic Assistant ──────┐</span>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors"
+            className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 p-0.5"
+            title="Close [ESC]"
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
 
         {/* Conceptual Hint */}
-        <div className="bg-violet-950/20 border border-violet-800/40 rounded-lg p-4 space-y-2">
-          <div className="flex items-center gap-2 font-semibold text-violet-300">
-            <Lightbulb size={16} /> {hint.title}
+        <div className="border border-amber-500/40 bg-amber-500/10 rounded p-3 space-y-1.5 text-amber-600 dark:text-amber-300">
+          <div className="font-bold text-xs flex items-center gap-1.5">
+            <span>#</span>
+            <span>{hint.title}</span>
           </div>
-          <p className="text-slate-300 leading-relaxed">{hint.body}</p>
+          <p className="text-zinc-800 dark:text-zinc-300 leading-relaxed text-xs">
+            {hint.body}
+          </p>
         </div>
 
         {/* Solution Unlock Status */}
-        <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-between text-[11px]">
+        <div className="p-2.5 border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-100 dark:bg-zinc-900/60 flex items-center justify-between text-[11px]">
           <div className="flex items-center gap-2">
             {isUnlocked ? (
-              <Unlock size={14} className="text-emerald-400" />
+              <Unlock size={14} className="text-emerald-500 dark:text-emerald-400" />
             ) : (
-              <Lock size={14} className="text-amber-400" />
+              <Lock size={14} className="text-amber-500 dark:text-amber-400" />
             )}
-            <span className="text-slate-300">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100">
               {isUnlocked
-                ? 'Official Solution Unlocked!'
-                : `Official Solution Locks (${failedAttempts}/3 attempts)`}
+                ? '[SOLUTION UNLOCKED]'
+                : `[SOLUTION LOCKED: ${failedAttempts}/3 SUBMISSIONS]`}
             </span>
           </div>
-          {!isUnlocked && (
-            <span className="text-[10px] text-slate-500 italic">
-              Solve or complete 3 attempts
-            </span>
-          )}
         </div>
 
+        {/* Footer Actions */}
         <div className="pt-2 flex justify-end">
           <button
             onClick={onClose}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-md font-medium text-xs transition-colors cursor-pointer"
+            className="bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 rounded font-bold text-xs transition-colors cursor-pointer border border-zinc-400 dark:border-zinc-700"
           >
-            Back to Coding
+            [BACK TO CODING: ESC]
           </button>
         </div>
       </div>

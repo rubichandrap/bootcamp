@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   calculateProgressPercent,
-  DrizzleProgressAdapter,
   HttpProgressAdapter,
 } from './progressTracker';
+import { DrizzleProgressAdapter } from './drizzleProgressAdapter';
 import { db } from '@/lib/db/connection';
 import { userProgress, submissions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -74,6 +74,23 @@ describe('ProgressTracker Domain & Adapters', () => {
       const failedCount = await drizzleAdapter.getFailedAttempts(testUserId, 'ch-2');
       expect(failedCount).toBe(1);
     });
+
+    it('returns latest submission for a chapter', async () => {
+      await drizzleAdapter.recordSubmission({
+        userId: testUserId,
+        chapterId: 'ch-latest-1',
+        code: 'func solve() { return 42 }',
+        passed: true,
+        testCount: 1,
+        failedCount: 0,
+      });
+
+      const latest = await drizzleAdapter.getLatestSubmission(testUserId, 'ch-latest-1');
+      expect(latest).toEqual({
+        code: 'func solve() { return 42 }',
+        passed: true,
+      });
+    });
   });
 
   describe('HttpProgressAdapter', () => {
@@ -134,6 +151,22 @@ describe('ProgressTracker Domain & Adapters', () => {
       const attempts = await httpAdapter.getFailedAttempts('u-1', 'ch-9');
       expect(fetch).toHaveBeenCalledWith('/api/submissions?userId=u-1&chapterId=ch-9');
       expect(attempts).toBe(3);
+    });
+
+    it('getLatestSubmission calls GET /api/submissions and parses latestSubmission', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          latestSubmission: { code: 'package main\nfunc main(){}', passed: true },
+        }),
+      });
+
+      const latest = await httpAdapter.getLatestSubmission('u-1', 'ch-1');
+      expect(fetch).toHaveBeenCalledWith('/api/submissions?userId=u-1&chapterId=ch-1');
+      expect(latest).toEqual({
+        code: 'package main\nfunc main(){}',
+        passed: true,
+      });
     });
 
     it('throws error when fetch response is not ok', async () => {

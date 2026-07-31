@@ -1,0 +1,56 @@
+---
+title: "Pointers & Memory Addresses 101"
+type: "challenge"
+order: 3
+starterCode: |
+  package main
+
+  // DoublePointer doubles the integer value stored at the target pointer address.
+  func DoublePointer(val *int) {
+  	// TODO: Mutate the value at memory address val by doubling it
+  }
+
+  // SwapSwaps exchanges the values stored at memory addresses a and b.
+  func Swap(a, b *int) {
+  	// TODO: Swap the integer values pointed to by a and b
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestDoublePointer(t *testing.T) {
+  	x := 21
+  	DoublePointer(&x)
+  	if x != 42 {
+  		t.Errorf("expected 42, got %d", x)
+  	}
+  }
+
+  func TestSwap(t *testing.T) {
+  	a, b := 10, 20
+  	Swap(&a, &b)
+  	if a != 20 || b != 10 {
+  		t.Errorf("expected a=20, b=10, got a=%d, b=%d", a, b)
+  	}
+  }
+---
+
+# Pointers & Memory Addresses 101
+
+In Go, a **pointer** holds the memory address of a variable.
+
+## Key Syntax
+- **`&` (Address-of Operator)**: Generates a pointer to its operand (`p := &x`).
+- **`*` (Dereference Operator)**: Accesses or mutates the underlying value stored at the pointer's address (`*p = 100`).
+
+```go
+func Double(val *int) {
+    *val = *val * 2 // Dereference to mutate caller variable
+}
+```
+
+## Challenge
+
+1. Implement `DoublePointer(val *int)` to double the integer value at address `val`.
+2. Implement `Swap(a, b *int)` to swap the integer values at memory addresses `a` and `b`.

@@ -1,0 +1,67 @@
+---
+title: "Arrays & Slices Fundamentals"
+type: "challenge"
+order: 5
+starterCode: |
+  package main
+
+  // FilterEvens returns a new slice containing only even integers from numbers.
+  func FilterEvens(numbers []int) []int {
+  	// TODO: Filter even numbers into a slice and return it
+  	return nil
+  }
+
+  // SliceSum returns the sum of all elements in numbers.
+  func SliceSum(numbers []int) int {
+  	// TODO: Compute and return the total sum
+  	return 0
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestFilterEvens(t *testing.T) {
+  	nums := []int{1, 2, 3, 4, 5, 6}
+  	got := FilterEvens(nums)
+  	want := []int{2, 4, 6}
+  	if len(got) != len(want) {
+  		t.Fatalf("expected len %d, got %d", len(want), len(got))
+  	}
+  	for i, v := range want {
+  		if got[i] != v {
+  			t.Errorf("at index %d: expected %d, got %d", i, v, got[i])
+  		}
+  	}
+  }
+
+  func TestSliceSum(t *testing.T) {
+  	nums := []int{10, 20, 30}
+  	got := SliceSum(nums)
+  	if got != 60 {
+  		t.Errorf("expected sum 60, got %d", got)
+  	}
+  }
+---
+
+# Arrays & Slices Fundamentals
+
+In Go, an **array** has a fixed length defined at compile time (`[5]int`), while a **slice** is a dynamically sized, flexible view into an underlying array (`[]int`).
+
+## Creating & Appending Slices
+
+```go
+// Literal declaration
+s := []int{1, 2, 3}
+
+// Using make(type, len, cap)
+buf := make([]int, 0, 10)
+
+// Appending items
+buf = append(buf, 42)
+```
+
+## Challenge
+
+1. Implement `FilterEvens(numbers []int) []int` to return a slice containing only even integers.
+2. Implement `SliceSum(numbers []int) int` to calculate and return the total sum of elements.

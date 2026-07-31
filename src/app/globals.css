@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+:root, html.light {
+  --background: #fcfcfc;
+  --foreground: #09090b;
+  --panel-bg: #f4f4f5;
+  --panel-border: #e4e4e7;
+  --text-muted: #71717a;
+
+  --color-pass: #16a34a;
+  --color-fail: #dc2626;
+  --color-warn: #d97706;
 }
+
+html.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --panel-bg: #121215;
+  --panel-border: #27272a;
+  --text-muted: #a1a1aa;
+  
+  --color-pass: #22c55e;
+  --color-fail: #ef4444;
+  --color-warn: #eab308;
+}
+
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mono);
+  font-feature-settings: "liga" 0;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Custom scrollbar for terminal panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--panel-border);
+  border-radius: 0px;
 }

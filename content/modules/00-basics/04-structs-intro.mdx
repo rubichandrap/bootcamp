@@ -1,0 +1,71 @@
+---
+title: "Structs & Methods"
+type: "challenge"
+order: 4
+starterCode: |
+  package main
+
+  // User represents a user with Name and Age.
+  type User struct {
+  	Name string
+  	Age  int
+  }
+
+  // NewUser constructs a new User struct.
+  func NewUser(name string, age int) User {
+  	// TODO: Return a User struct initialized with name and age
+  	return User{}
+  }
+
+  // Birthday increments the user's Age by 1.
+  func (u *User) Birthday() {
+  	// TODO: Increment the User's Age using pointer receiver
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestNewUser(t *testing.T) {
+  	u := NewUser("Alice", 30)
+  	if u.Name != "Alice" || u.Age != 30 {
+  		t.Errorf("expected Alice 30, got %s %d", u.Name, u.Age)
+  	}
+  }
+
+  func TestBirthday(t *testing.T) {
+  	u := NewUser("Bob", 20)
+  	u.Birthday()
+  	if u.Age != 21 {
+  		t.Errorf("expected Age=21 after Birthday(), got %d", u.Age)
+  	}
+  }
+---
+
+# Structs & Methods
+
+A **`struct`** is a typed collection of fields used to group related data together.
+
+```go
+type User struct {
+    Name string
+    Age  int
+}
+```
+
+## Pointer Receivers vs Value Receivers
+
+Methods in Go can have **value receivers** `(u User)` or **pointer receivers** `(u *User)`:
+- **Value receiver**: Operates on a copy of the struct. Changes do not affect the original caller.
+- **Pointer receiver**: Operates on a pointer to the struct. Mutates the original caller state.
+
+```go
+func (u *User) Birthday() {
+    u.Age++ // Mutates receiver
+}
+```
+
+## Challenge
+
+1. Implement `NewUser(name string, age int) User` to return an initialized `User` struct.
+2. Implement `(u *User) Birthday()` to increment the `User`'s `Age` by `1`.

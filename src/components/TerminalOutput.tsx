@@ -1,8 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, Terminal, Cpu, MemoryStick, Zap, AlertCircle, Flame } from 'lucide-react';
+import { Terminal, Cpu, MemoryStick, AlertTriangle, Flame, CheckCircle2, XCircle } from 'lucide-react';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
+
+export type ConsoleTab = 'tests' | 'perf' | 'escape';
+
+export interface ConsoleTabItem {
+  id: ConsoleTab;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+export const CONSOLE_TABS: ConsoleTabItem[] = [
+  { id: 'tests', label: '[TESTS]' },
+  { id: 'perf', label: '[PERF]', icon: <Cpu size={12} /> },
+  { id: 'escape', label: '[ESCAPE]', icon: <MemoryStick size={12} /> },
+];
 
 interface TerminalOutputProps {
   result: RCEExecuteResponse | null;
@@ -10,121 +24,126 @@ interface TerminalOutputProps {
 }
 
 export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoading }) => {
-  const [activeTab, setActiveTab] = useState<'tests' | 'perf' | 'escape'>('tests');
+  const [activeTab, setActiveTab] = useState<ConsoleTab>('tests');
 
   return (
-    <div className="h-full w-full bg-[#0d1117] text-slate-200 border border-slate-800 rounded-lg p-4 font-mono text-sm overflow-y-auto flex flex-col">
-      {/* Terminal Header & Navigation */}
-      <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-xs font-sans">
+    <div className="h-full w-full bg-zinc-50 dark:bg-[#09090b] text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-800 rounded p-3 font-mono text-xs overflow-y-auto flex flex-col select-text">
+      {/* Console Titlebar / Tabs */}
+      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-300 dark:border-zinc-800 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 font-medium text-slate-300">
-            <Terminal size={15} className="text-violet-400" />
-            <span>Console</span>
+          <div className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-zinc-100">
+            <Terminal size={14} className="text-zinc-500" />
+            <span>RCE CONSOLE STREAM</span>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-0.5 rounded-md text-[11px]">
-            <button
-              onClick={() => setActiveTab('tests')}
-              className={`px-2.5 py-0.5 rounded transition-colors ${
-                activeTab === 'tests' ? 'bg-violet-600/30 text-violet-300 font-medium' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Test Results
-            </button>
-            <button
-              onClick={() => setActiveTab('perf')}
-              className={`px-2.5 py-0.5 rounded transition-colors flex items-center gap-1 ${
-                activeTab === 'perf' ? 'bg-violet-600/30 text-violet-300 font-medium' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Cpu size={12} /> Performance &amp; Allocations
-            </button>
-            <button
-              onClick={() => setActiveTab('escape')}
-              className={`px-2.5 py-0.5 rounded transition-colors flex items-center gap-1 ${
-                activeTab === 'escape' ? 'bg-violet-600/30 text-violet-300 font-medium' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <MemoryStick size={12} /> Escape Analysis
-            </button>
+          {/* Mapped CLI Tab Switcher */}
+          <div className="flex items-center gap-1 bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 p-0.5 rounded text-[11px]">
+            {CONSOLE_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-2 py-0.5 rounded font-mono transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-zinc-900 dark:bg-zinc-800 text-zinc-100 font-bold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
         {result && (
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-              <CheckCircle2 size={14} /> {result.passed} Passed
+          <div className="flex items-center gap-3 text-[11px] font-semibold">
+            <span className="text-emerald-500 dark:text-emerald-400">
+              [PASS: {result.passed}]
             </span>
-            <span className="flex items-center gap-1 text-rose-400 font-semibold">
-              <XCircle size={14} /> {result.failed} Failed
+            <span className="text-red-500 dark:text-red-400">
+              [FAIL: {result.failed}]
             </span>
           </div>
         )}
       </div>
 
+      {/* Console Output Body */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-full text-slate-400 gap-2 font-sans text-sm animate-pulse">
-          <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-          Compiling, benchmarking &amp; executing `go test -benchmem`...
+        <div className="flex items-center justify-center flex-1 text-zinc-400 gap-2 text-xs font-mono">
+          <span className="animate-spin text-zinc-300">/</span>
+          <span>$ go test -v -benchmem ./... (executing...)</span>
         </div>
       ) : !result ? (
-        <div className="flex items-center justify-center h-full text-slate-500 font-sans text-xs italic">
-          Click &quot;Run &amp; Verify Code&quot; to execute tests against host RCE engine.
+        <div className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-xs font-mono space-y-1">
+          <div>$ go test -v ./...</div>
+          <div className="text-[11px] text-zinc-600 dark:text-zinc-600">
+            [Press ⌘↵ or click RUN to execute code against RCE Engine]
+          </div>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 font-mono text-xs flex-1 overflow-y-auto">
+          {/* Race Warning Banner */}
           {result.hasRaceDetected && (
-            <div className="bg-rose-950/60 border border-rose-600/80 rounded-md p-3 text-rose-200 font-mono text-xs shadow-lg animate-pulse">
-              <div className="flex items-center gap-2 text-rose-400 font-bold text-sm mb-1">
-                <Flame size={18} className="text-rose-500" /> WARNING: DATA RACE DETECTED (-race)
+            <div className="border border-red-500/80 bg-red-500/10 rounded p-2.5 text-red-400">
+              <div className="flex items-center gap-2 font-bold text-xs mb-1">
+                <Flame size={14} className="text-red-500" />
+                <span>WARNING: DATA RACE DETECTED (-race flag)</span>
               </div>
-              <p className="text-[11px] text-rose-300/90 font-sans">
-                Goroutines accessed shared memory concurrently without synchronization! Use mutexes or channels to prevent data races.
+              <p className="text-[11px] text-red-300">
+                Goroutines accessed shared memory concurrently without synchronization!
               </p>
             </div>
           )}
 
+          {/* Compilation Error Banner */}
           {result.compileError && (
-            <div className="bg-rose-950/40 border border-rose-800/60 rounded-md p-3 text-rose-300 font-mono text-xs">
-              <div className="flex items-center gap-2 text-rose-400 font-semibold mb-1">
-                <AlertTriangle size={15} /> Build / Compilation Error
+            <div className="border border-red-500/80 bg-red-500/10 rounded p-2.5 text-red-300">
+              <div className="flex items-center gap-2 font-bold text-xs mb-1 text-red-400">
+                <AlertTriangle size={14} />
+                <span>BUILD / COMPILE ERROR</span>
               </div>
-              <pre className="whitespace-pre-wrap overflow-x-auto">{result.compileError}</pre>
+              <pre className="whitespace-pre-wrap overflow-x-auto text-[11px] font-mono text-red-200">
+                {result.compileError}
+              </pre>
             </div>
           )}
 
+          {/* Test Breakdown Tab */}
           {activeTab === 'tests' && result.tests.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs uppercase tracking-wider text-slate-400 font-sans font-semibold">
-                Test Breakdown
+              <div className="text-[11px] text-zinc-500 font-bold uppercase tracking-wide">
+                $ go test -v
               </div>
               {result.tests.map((test) => (
                 <div
                   key={test.name}
-                  className={`p-3 rounded-md border text-xs font-mono transition-colors ${
+                  className={`p-2.5 rounded border text-xs font-mono ${
                     test.passed
-                      ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300'
-                      : 'bg-rose-950/20 border-rose-800/40 text-rose-300'
+                      ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-300'
+                      : 'border-red-500/40 bg-red-500/5 text-red-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between font-semibold mb-1">
-                    <span className="flex items-center gap-2">
+                  <div className="flex items-center justify-between font-bold">
+                    <div className="flex items-center gap-2">
                       {test.passed ? (
-                        <CheckCircle2 size={14} className="text-emerald-400" />
+                        <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
                       ) : (
-                        <XCircle size={14} className="text-rose-400" />
+                        <XCircle size={13} className="text-red-400 shrink-0" />
                       )}
-                      {test.name}
-                    </span>
-                    <span className="text-[11px] opacity-70">
+                      <span>=== RUN   {test.name}</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-normal">
                       {test.duration ? `${(test.duration * 1000).toFixed(1)}ms` : '0ms'}
                     </span>
                   </div>
                   {test.output && (
-                    <pre className="mt-2 p-2 bg-black/40 rounded text-[11px] opacity-90 overflow-x-auto whitespace-pre-wrap">
+                    <pre className="mt-1.5 p-2 bg-zinc-900/90 rounded text-[11px] text-zinc-300 overflow-x-auto whitespace-pre-wrap">
                       {test.output}
                     </pre>
                   )}
+                  <div className="mt-1 text-[10px] font-semibold text-zinc-500">
+                    --- {test.passed ? 'PASS' : 'FAIL'}: {test.name}
+                  </div>
                 </div>
               ))}
             </div>
@@ -132,57 +151,47 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
 
           {/* Performance & Allocations Tab */}
           {activeTab === 'perf' && (
-            <div className="space-y-3 font-sans">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Memory &amp; Benchmark Metrics (`go test -benchmem`)
+            <div className="space-y-2.5 font-mono">
+              <div className="text-[11px] text-zinc-500 font-bold uppercase">
+                $ go test -benchmem
               </div>
 
               {result.bench?.hasBench ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                      <span className="text-[10px] text-slate-400 uppercase">Bytes / Op</span>
-                      <span className="text-lg font-bold text-violet-300 font-mono">
-                        {result.bench.bytesPerOp} <span className="text-xs font-normal text-slate-400">B/op</span>
-                      </span>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-2 border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-100 dark:bg-zinc-900/60">
+                      <div className="text-[10px] text-zinc-500">Bytes / Op</div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                        {result.bench.bytesPerOp} B/op
+                      </div>
                     </div>
-
-                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                      <span className="text-[10px] text-slate-400 uppercase">Allocs / Op</span>
-                      <span className="text-lg font-bold text-cyan-300 font-mono">
-                        {result.bench.allocsPerOp} <span className="text-xs font-normal text-slate-400">allocs</span>
-                      </span>
+                    <div className="p-2 border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-100 dark:bg-zinc-900/60">
+                      <div className="text-[10px] text-zinc-500">Allocs / Op</div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                        {result.bench.allocsPerOp} allocs
+                      </div>
                     </div>
-
-                    <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col">
-                      <span className="text-[10px] text-slate-400 uppercase">Speed / Op</span>
-                      <span className="text-lg font-bold text-emerald-300 font-mono">
-                        {result.bench.nsPerOp} <span className="text-xs font-normal text-slate-400">ns/op</span>
-                      </span>
+                    <div className="p-2 border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-100 dark:bg-zinc-900/60">
+                      <div className="text-[10px] text-zinc-500">Speed / Op</div>
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                        {result.bench.nsPerOp} ns/op
+                      </div>
                     </div>
                   </div>
 
-                  {/* Allocation Warning Alert */}
                   {result.bench.allocsPerOp > 0 ? (
-                    <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-lg text-amber-300 text-xs flex items-center gap-2">
-                      <AlertCircle size={15} className="text-amber-400 shrink-0" />
-                      <span>
-                        <strong>Memory Allocation Alert:</strong> Code triggers {result.bench.allocsPerOp} heap allocation(s) ({result.bench.bytesPerOp} bytes/op). Check Escape Analysis tab for heap escape details.
-                      </span>
+                    <div className="p-2 border border-amber-500/50 bg-amber-500/10 rounded text-amber-500 text-xs">
+                      [ALLOCATION WARNING] {result.bench.allocsPerOp} heap allocation(s) ({result.bench.bytesPerOp} B/op).
                     </div>
                   ) : (
-                    <div className="p-3 bg-emerald-950/30 border border-emerald-800/50 rounded-lg text-emerald-300 text-xs flex items-center gap-2">
-                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-                      <span>
-                        <strong>Zero Heap Allocations:</strong> Code operates entirely on the stack with 0 allocs/op!
-                      </span>
+                    <div className="p-2 border border-emerald-500/50 bg-emerald-500/10 rounded text-emerald-500 text-xs">
+                      [ZERO ALLOCATIONS] 0 allocs/op achieved!
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs flex items-center gap-2">
-                  <Zap size={14} className="text-amber-400" />
-                  Add a `BenchmarkX(b *testing.B)` function to your test suite to view live allocations.
+                <div className="p-2 border border-zinc-300 dark:border-zinc-800 rounded text-zinc-500 text-xs">
+                  No benchmarks detected. Add `BenchmarkX(b *testing.B)` to view allocations.
                 </div>
               )}
             </div>
@@ -191,18 +200,17 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
           {/* Escape Analysis Tab */}
           {activeTab === 'escape' && (
             <div className="space-y-2 font-mono text-xs">
-              <div className="text-xs font-semibold text-slate-400 font-sans uppercase tracking-wider mb-2">
-                Compiler Escape Analysis &amp; Inlining (&quot;-gcflags=-m&quot;)
+              <div className="text-[11px] text-zinc-500 font-bold uppercase">
+                $ go build -gcflags=&quot;-m&quot;
               </div>
-
               {result.bench?.escapeLogs && result.bench.escapeLogs.length > 0 ? (
-                <div className="p-3 bg-black/60 border border-slate-800 rounded-lg text-slate-300 font-mono text-[11px] space-y-1 max-h-40 overflow-y-auto">
+                <div className="p-2 border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/80 rounded text-[11px] text-zinc-700 dark:text-zinc-300 space-y-1">
                   {result.bench.escapeLogs.map((log, index) => (
-                    <div key={`${index}-${log.substring(0, 10)}`} className="text-violet-300/90">{log}</div>
+                    <div key={`${index}-${log.substring(0, 10)}`}>{log}</div>
                   ))}
                 </div>
               ) : (
-                <div className="text-slate-500 italic text-xs font-sans">
+                <div className="text-zinc-500 italic text-xs">
                   No heap escape logs detected. All stack variables remained in stack frames.
                 </div>
               )}

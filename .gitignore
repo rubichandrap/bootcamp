@@ -61,3 +61,6 @@ skills-lock.json
 # Database
 *.db
 !.data/.gitkeep
+
+# Graphifyy artifacts
+graphify-out
