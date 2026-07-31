@@ -99,10 +99,10 @@ export default function Home() {
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
 
-  const totalChapters = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters).length;
+  const allChapterIds = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters.map((c) => c.slug));
   const progressPercent = progressTracker.calculateProgressPercent(
     progressTracker.completedChapterIds,
-    totalChapters
+    allChapterIds
   );
 
   return (

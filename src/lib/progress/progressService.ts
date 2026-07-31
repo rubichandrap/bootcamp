@@ -55,7 +55,7 @@ export function incrementFailedAttempts(currentFailedAttempts: number): number {
 
 export function calculateProgressPercent(
   completedChapterIds: string[],
-  totalChapters: number | string[]
+  totalChapters: string[]
 ): number {
   return calculatePercentDomain(completedChapterIds, totalChapters);
 }

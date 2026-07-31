@@ -14,7 +14,7 @@ export interface UserProgress {
 }
 
 export interface RecordSubmissionInput {
-  userId?: string;
+  userId: string;
   chapterId: string;
   code: string;
   passed: boolean;
@@ -30,27 +30,23 @@ export interface RecordSubmissionResult {
 }
 
 export interface ProgressTrackerAdapter {
-  getProgress(userId?: string): Promise<UserProgress>;
+  getProgress(userId: string): Promise<UserProgress>;
   recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult>;
   getFailedAttempts(userId: string, chapterId: string): Promise<number>;
 }
 
 export function calculateProgressPercent(
   completedChapterIds: string[],
-  totalChapters: string[] | number
+  totalChapterIds: string[]
 ): number {
-  if (typeof totalChapters === 'number') {
-    if (totalChapters <= 0) return 0;
-    return Math.round((completedChapterIds.length / totalChapters) * 100);
-  }
-  if (totalChapters.length === 0) return 0;
+  if (totalChapterIds.length === 0) return 0;
   const completedSet = new Set(completedChapterIds);
-  const count = totalChapters.filter((id) => completedSet.has(id)).length;
-  return Math.round((count / totalChapters.length) * 100);
+  const count = totalChapterIds.filter((id) => completedSet.has(id)).length;
+  return Math.round((count / totalChapterIds.length) * 100);
 }
 
 export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
-  async getProgress(userId = DEFAULT_USER_ID): Promise<UserProgress> {
+  async getProgress(userId: string): Promise<UserProgress> {
     const raw = getUserProgressRepo(userId);
     return {
       userId: raw.userId,
@@ -61,9 +57,8 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
   }
 
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
-    const targetUserId = input.userId || DEFAULT_USER_ID;
     const res = recordSubmissionRepo({
-      userId: targetUserId,
+      userId: input.userId,
       chapterId: input.chapterId,
       code: input.code,
       passed: input.passed,
@@ -72,8 +67,8 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
       compileError: input.compileError,
     });
 
-    const userProgress = await this.getProgress(targetUserId);
-    const chapterFailedAttempts = await this.getFailedAttempts(targetUserId, input.chapterId);
+    const userProgress = await this.getProgress(input.userId);
+    const chapterFailedAttempts = await this.getFailedAttempts(input.userId, input.chapterId);
 
     return {
       userProgress,
@@ -87,6 +82,15 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
   }
 }
 
+function parseUserProgress(data: any, fallbackUserId: string): UserProgress {
+  return {
+    userId: data?.userId || fallbackUserId,
+    completedChapterIds: Array.isArray(data?.completedChapterIds) ? data.completedChapterIds : [],
+    completedCount: typeof data?.completedCount === 'number' ? data.completedCount : 0,
+    streakDays: typeof data?.streakDays === 'number' ? data.streakDays : 0,
+  };
+}
+
 export class HttpProgressAdapter implements ProgressTrackerAdapter {
   async getProgress(userId = DEFAULT_USER_ID): Promise<UserProgress> {
     const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}`);
@@ -94,12 +98,7 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
       throw new Error(`fetchProgress failed with status ${res.status}`);
     }
     const data = await res.json();
-    return {
-      userId: data.userId || userId,
-      completedChapterIds: Array.isArray(data.completedChapterIds) ? data.completedChapterIds : [],
-      completedCount: typeof data.completedCount === 'number' ? data.completedCount : 0,
-      streakDays: typeof data.streakDays === 'number' ? data.streakDays : 0,
-    };
+    return parseUserProgress(data, userId);
   }
 
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
@@ -123,18 +122,7 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
     }
     const data = await res.json();
     return {
-      userProgress: {
-        userId: data.userProgress?.userId || userId,
-        completedChapterIds: Array.isArray(data.userProgress?.completedChapterIds)
-          ? data.userProgress.completedChapterIds
-          : [],
-        completedCount:
-          typeof data.userProgress?.completedCount === 'number'
-            ? data.userProgress.completedCount
-            : 0,
-        streakDays:
-          typeof data.userProgress?.streakDays === 'number' ? data.userProgress.streakDays : 0,
-      },
+      userProgress: parseUserProgress(data.userProgress, userId),
       chapterFailedAttempts:
         typeof data.chapterFailedAttempts === 'number' ? data.chapterFailedAttempts : 0,
       submissionId: data.submissionId || '',

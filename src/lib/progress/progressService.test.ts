@@ -60,6 +60,7 @@ describe('progressService', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const result = await recordSubmission({
+        userId: 'default-user',
         chapterId: 'ch-1',
         code: 'package main',
         passed: true,
@@ -133,14 +134,14 @@ describe('progressService', () => {
   });
 
   describe('calculateProgressPercent', () => {
-    it('returns 0 when total chapters count is 0', () => {
-      expect(calculateProgressPercent(['ch-1'], 0)).toBe(0);
+    it('returns 0 when total chapters is empty', () => {
+      expect(calculateProgressPercent(['ch-1'], [])).toBe(0);
     });
 
     it('returns rounded percentage of completed chapters', () => {
-      expect(calculateProgressPercent(['ch-1'], 3)).toBe(33);
-      expect(calculateProgressPercent(['ch-1', 'ch-2'], 4)).toBe(50);
-      expect(calculateProgressPercent(['ch-1', 'ch-2', 'ch-3'], 3)).toBe(100);
+      expect(calculateProgressPercent(['ch-1'], ['ch-1', 'ch-2', 'ch-3'])).toBe(33);
+      expect(calculateProgressPercent(['ch-1', 'ch-2'], ['ch-1', 'ch-2', 'ch-3', 'ch-4'])).toBe(50);
+      expect(calculateProgressPercent(['ch-1', 'ch-2', 'ch-3'], ['ch-1', 'ch-2', 'ch-3'])).toBe(100);
     });
   });
 });
