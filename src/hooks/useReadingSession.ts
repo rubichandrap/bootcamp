@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { markAsRead as markAsReadService } from '@/lib/reading/readingService';
-import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
+import { RecordSubmissionInput, RecordSubmissionResult } from '@/lib/progress/progressTracker';
 
 export interface MarkAsReadPorts {
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
+  recordSubmission: (params: RecordSubmissionInput) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
 }
 

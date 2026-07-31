@@ -57,7 +57,7 @@ describe('Command Palette Search Engine', () => {
             title: 'No Content Chapter',
             type: 'reading',
             order: 1,
-            content: undefined as any,
+            content: undefined as unknown as string,
           },
         ],
       },

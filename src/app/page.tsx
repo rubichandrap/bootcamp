@@ -99,10 +99,10 @@ export default function Home() {
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
 
-  const totalChapters = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters).length;
+  const allChapterIds = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters.map((c) => c.slug));
   const progressPercent = progressTracker.calculateProgressPercent(
     progressTracker.completedChapterIds,
-    totalChapters
+    allChapterIds
   );
 
   return (
@@ -129,7 +129,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {/* Race Check UI Toggle */}
           <button
-            onClick={() => challengeSession.setEnableRaceCheck((prev) => !prev)}
+            onClick={() => challengeSession.toggleRaceCheck()}
             className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
               challengeSession.enableRaceCheck
                 ? 'bg-rose-950/40 border-rose-600 text-rose-300 font-semibold'
@@ -243,7 +243,7 @@ export default function Home() {
                 <div className="h-10 bg-[#161b22] border-b border-slate-800 px-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => challengeSession.setActiveTab('code')}
+                      onClick={() => challengeSession.selectTab('code')}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                         challengeSession.activeTab === 'code'
                           ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
@@ -253,7 +253,7 @@ export default function Home() {
                       <Code2 size={13} /> main.go
                     </button>
                     <button
-                      onClick={() => challengeSession.setActiveTab('test')}
+                      onClick={() => challengeSession.selectTab('test')}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                         challengeSession.activeTab === 'test'
                           ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
@@ -263,7 +263,7 @@ export default function Home() {
                       <Code2 size={13} /> main_test.go
                     </button>
                     <button
-                      onClick={() => isUnlocked && challengeSession.setActiveTab('solution')}
+                      onClick={() => isUnlocked && challengeSession.selectTab('solution')}
                       disabled={!isUnlocked}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                         challengeSession.activeTab === 'solution'
@@ -290,12 +290,12 @@ export default function Home() {
                   {challengeSession.activeTab === 'code' ? (
                     <CodeEditor
                       value={challengeSession.code}
-                      onChange={(v) => challengeSession.setCode(v || '')}
+                      onChange={(v) => challengeSession.updateCode(v || '')}
                     />
                   ) : challengeSession.activeTab === 'test' ? (
                     <CodeEditor
                       value={challengeSession.testCode}
-                      onChange={(v) => challengeSession.setTestCode(v || '')}
+                      onChange={(v) => challengeSession.updateTestCode(v || '')}
                     />
                   ) : (
                     <CodeEditor value={activeHint.solutionCode || '// Solution Unlocked'} onChange={() => {}} />

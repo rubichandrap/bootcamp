@@ -19,15 +19,11 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onSelectChapter,
 }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ChapterMeta[]>([]);
 
-  useEffect(() => {
-    if (query.trim() === '') {
-      setResults(modules.flatMap((m) => m.chapters));
-    } else {
-      setResults(searchCurriculum(query, modules));
-    }
-  }, [query, modules]);
+  const results =
+    query.trim() === ''
+      ? modules.flatMap((m) => m.chapters)
+      : searchCurriculum(query, modules);
 
   // Handle Escape key to close modal
   useEffect(() => {

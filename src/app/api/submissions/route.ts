@@ -1,40 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/submissionRepo';
+import { DrizzleProgressAdapter } from '@/lib/progress/progressTracker';
 import { getErrorMessage } from '@/lib/utils/errorUtils';
+
+const progressAdapter = new DrizzleProgressAdapter();
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { userId, chapterId, code, passed, testCount, failedCount, compileError } = body;
 
-    if (!userId || !chapterId || code === undefined || passed === undefined) {
+    if (!userId || !chapterId || typeof code !== 'string' || typeof passed !== 'boolean') {
       return NextResponse.json(
         { error: 'Missing required submission fields' },
         { status: 400 }
       );
     }
 
-    const result = recordSubmission({
+    const result = await progressAdapter.recordSubmission({
       userId,
       chapterId,
       code,
       passed,
-      testCount: testCount || 0,
-      failedCount: failedCount || 0,
-      compileError,
+      testCount: typeof testCount === 'number' ? testCount : 0,
+      failedCount: typeof failedCount === 'number' ? failedCount : 0,
+      compileError: typeof compileError === 'string' ? compileError : undefined,
     });
 
-    const userProgress = getUserProgress(userId);
-    const chapterFailedAttempts = getFailedAttemptsCount(userId, chapterId);
-
-    return NextResponse.json(
-      {
-        ...result,
-        userProgress,
-        chapterFailedAttempts,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(result, { status: 201 });
   } catch (error: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(error) },
@@ -45,7 +37,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const searchParams = req.nextUrl.searchParams;
     const userId = searchParams.get('userId');
     const chapterId = searchParams.get('chapterId');
 
@@ -56,12 +48,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const progress = getUserProgress(userId);
-    const chapterFailedAttempts = chapterId ? getFailedAttemptsCount(userId, chapterId) : 0;
+    const userProgress = await progressAdapter.getProgress(userId);
+    const chapterFailedAttempts = chapterId
+      ? await progressAdapter.getFailedAttempts(userId, chapterId)
+      : 0;
 
     return NextResponse.json(
       {
-        ...progress,
+        ...userProgress,
         chapterFailedAttempts,
       },
       { status: 200 }
