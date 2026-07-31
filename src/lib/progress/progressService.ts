@@ -23,6 +23,9 @@ export interface RecordSubmissionResult {
 
 export async function fetchProgress(userId = DEFAULT_USER_ID): Promise<ProgressData> {
   const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}`);
+  if (!res.ok) {
+    throw new Error(`fetchProgress failed with status ${res.status}`);
+  }
   const data = await res.json();
   return {
     completedChapterIds: Array.isArray(data.completedChapterIds) ? data.completedChapterIds : [],
@@ -47,6 +50,9 @@ export async function recordSubmission(
       compileError: params.compileError,
     }),
   });
+  if (!res.ok) {
+    throw new Error(`recordSubmission failed with status ${res.status}`);
+  }
   const data = await res.json();
   return {
     completedChapterIds: Array.isArray(data.userProgress?.completedChapterIds)
@@ -65,6 +71,9 @@ export async function fetchFailedAttemptsForChapter(
   const res = await fetch(
     `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}`
   );
+  if (!res.ok) {
+    throw new Error(`fetchFailedAttemptsForChapter failed with status ${res.status}`);
+  }
   const data = await res.json();
   return typeof data.chapterFailedAttempts === 'number' ? data.chapterFailedAttempts : 0;
 }

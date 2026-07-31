@@ -2,6 +2,9 @@ import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 
 export async function fetchModules(): Promise<ModuleMeta[]> {
   const res = await fetch('/api/modules');
+  if (!res.ok) {
+    throw new Error(`fetchModules failed with status ${res.status}`);
+  }
   return res.json();
 }
 
@@ -12,6 +15,9 @@ export async function fetchChapter(
   const res = await fetch(
     `/api/modules?module=${encodeURIComponent(moduleSlug)}&chapter=${encodeURIComponent(chapterSlug)}`
   );
+  if (!res.ok) {
+    throw new Error(`fetchChapter failed with status ${res.status}`);
+  }
   return res.json();
 }
 

@@ -110,6 +110,18 @@ describe('progressService', () => {
       const count = await fetchFailedAttemptsForChapter('ch-2');
       expect(count).toBe(0);
     });
+
+    it('throws an error if response is not ok', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      await expect(fetchFailedAttemptsForChapter('ch-2')).rejects.toThrow(
+        'fetchFailedAttemptsForChapter failed with status 500'
+      );
+    });
   });
 
   describe('incrementFailedAttempts', () => {

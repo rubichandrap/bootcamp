@@ -6,6 +6,7 @@ import {
   incrementFailedAttempts as incrementFailedAttemptsHelper,
   RecordSubmissionParams,
   RecordSubmissionResult,
+  DEFAULT_USER_ID,
 } from '@/lib/progress/progressService';
 
 export function useProgressTracker() {
@@ -13,7 +14,7 @@ export function useProgressTracker() {
   const [streakDays, setStreakDays] = useState<number>(0);
   const [failedAttempts, setFailedAttempts] = useState<number>(0);
 
-  const loadProgress = useCallback(async (userId = 'default-user') => {
+  const loadProgress = useCallback(async (userId = DEFAULT_USER_ID) => {
     try {
       const data = await fetchProgress(userId);
       setCompletedChapterIds(data.completedChapterIds);
@@ -23,13 +24,13 @@ export function useProgressTracker() {
     }
   }, []);
 
-  const loadFailedAttempts = useCallback(async (chapterSlug: string, userId = 'default-user') => {
+  const loadFailedAttempts = useCallback(async (chapterSlug: string, userId = DEFAULT_USER_ID) => {
     try {
       const count = await fetchFailedAttemptsForChapter(chapterSlug, userId);
       setFailedAttempts(count);
     } catch (err) {
       console.error('Failed to fetch failed attempts', err);
-      setFailedAttempts(0);
+      // Retain local failedAttempts count on network error to allow unlock during outages
     }
   }, []);
 

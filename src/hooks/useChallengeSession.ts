@@ -58,8 +58,8 @@ export function useChallengeSession() {
   const resetForChapter = useCallback((starterCode?: string, testCodeInput?: string) => {
     setResult(null);
     setActiveTab('code');
-    if (starterCode) setCode(starterCode);
-    if (testCodeInput) setTestCode(testCodeInput);
+    setCode(starterCode ?? DEFAULT_STARTER_CODE);
+    setTestCode(testCodeInput ?? DEFAULT_TEST_CODE);
   }, []);
 
   const runChallengeSession = useCallback(
