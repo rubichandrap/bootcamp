@@ -3,6 +3,7 @@ import {
   getUserProgress as getUserProgressRepo,
   getFailedAttemptsCount,
 } from '@/lib/db/submissionRepo';
+import { db } from '@/lib/db/connection';
 
 export const DEFAULT_USER_ID = 'default-user';
 
@@ -57,23 +58,35 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
   }
 
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
-    const res = recordSubmissionRepo({
-      userId: input.userId,
-      chapterId: input.chapterId,
-      code: input.code,
-      passed: input.passed,
-      testCount: input.testCount,
-      failedCount: input.failedCount,
-      compileError: input.compileError,
+    let submissionRes: { submissionId: string; success: boolean };
+    let userProgress: UserProgress;
+    let chapterFailedAttempts: number;
+
+    db.transaction(() => {
+      submissionRes = recordSubmissionRepo({
+        userId: input.userId,
+        chapterId: input.chapterId,
+        code: input.code,
+        passed: input.passed,
+        testCount: input.testCount,
+        failedCount: input.failedCount,
+        compileError: input.compileError,
+      });
+
+      const rawProgress = getUserProgressRepo(input.userId);
+      userProgress = {
+        userId: rawProgress.userId,
+        completedChapterIds: rawProgress.completedChapterIds,
+        completedCount: rawProgress.completedCount,
+        streakDays: rawProgress.streakDays,
+      };
+      chapterFailedAttempts = getFailedAttemptsCount(input.userId, input.chapterId);
     });
 
-    const userProgress = await this.getProgress(input.userId);
-    const chapterFailedAttempts = await this.getFailedAttempts(input.userId, input.chapterId);
-
     return {
-      userProgress,
-      chapterFailedAttempts,
-      submissionId: res.submissionId,
+      userProgress: userProgress!,
+      chapterFailedAttempts: chapterFailedAttempts!,
+      submissionId: submissionRes!.submissionId,
     };
   }
 

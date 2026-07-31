@@ -7,9 +7,9 @@ const progressAdapter = new DrizzleProgressAdapter();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, chapterId, code, passed } = body;
+    const { userId, chapterId, code, passed, testCount, failedCount, compileError } = body;
 
-    if (!userId || !chapterId || code === undefined || passed === undefined) {
+    if (!userId || !chapterId || typeof code !== 'string' || typeof passed !== 'boolean') {
       return NextResponse.json(
         { error: 'Missing required submission fields' },
         { status: 400 }
@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
       chapterId,
       code,
       passed,
-      testCount: body.testCount || 0,
-      failedCount: body.failedCount || 0,
-      compileError: body.compileError,
+      testCount: typeof testCount === 'number' ? testCount : 0,
+      failedCount: typeof failedCount === 'number' ? failedCount : 0,
+      compileError: typeof compileError === 'string' ? compileError : undefined,
     });
 
     return NextResponse.json(result, { status: 201 });
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const searchParams = req.nextUrl.searchParams;
     const userId = searchParams.get('userId');
     const chapterId = searchParams.get('chapterId');
 
