@@ -1,0 +1,46 @@
+---
+title: "Pointer Mutation & Swapping Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  package main
+
+  // DoublePointer doubles the integer value stored at memory address val.
+  func DoublePointer(val *int) {
+  	// TODO: Dereference val and double its value
+  }
+
+  // Swap exchanges the integer values stored at memory addresses a and b.
+  func Swap(a, b *int) {
+  	// TODO: Swap integer values at pointers a and b
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestDoublePointer(t *testing.T) {
+  	x := 21
+  	DoublePointer(&x)
+  	if x != 42 {
+  		t.Errorf("expected 42, got %d", x)
+  	}
+  }
+
+  func TestSwap(t *testing.T) {
+  	a, b := 10, 20
+  	Swap(&a, &b)
+  	if a != 20 || b != 10 {
+  		t.Errorf("expected a=20, b=10, got a=%d, b=%d", a, b)
+  	}
+  }
+---
+
+# Pointer Mutation & Swapping Challenge
+
+Practice pointer dereferencing (`*`) and address manipulation (`&`)!
+
+## Tasks
+
+1. Implement `DoublePointer(val *int)` to double the target integer in memory.
+2. Implement `Swap(a, b *int)` to swap the integer values stored at pointers `a` and `b`.

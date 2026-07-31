@@ -1,15 +1,15 @@
-# Go Mastery Platform
+# Developer Mastery Platform
 
-An interactive platform for developers (from beginners to experienced engineers) to learn and master idiomatic Go via reading materials, code execution, and test-driven verification.
+An interactive platform for developers (from beginners to experienced engineers) to learn and master programming languages (Go, TypeScript, etc.) via reading materials, code execution, and test-driven verification.
 
 ## Language
 
 **Track**:
-The top-level structured curriculum for mastering Go, containing ordered Modules from beginner to expert.
+The top-level structured curriculum dedicated to a specific programming language (e.g., Go, TypeScript), containing ordered Modules from beginner to expert.
 _Avoid_: Course, pathway, syllabus
 
 **Module**:
-A group of related Chapters focused on a cohesive Go theme (e.g., "Fundamentals", "Concurrency & Channels", "Interfaces & Polymorphism").
+A group of related Chapters focused on a cohesive language theme (e.g., "Fundamentals", "Concurrency & Channels", "Interfaces & Polymorphism").
 _Avoid_: Category, section, topic group
 
 **Chapter**:
@@ -17,28 +17,28 @@ A distinct learning unit within a Module. Can be a Reading Chapter, Challenge Ch
 _Avoid_: Lesson, step
 
 **Reading Chapter**:
-A Chapter dedicated to theoretical concepts and code breakdown without an embedded code editor.
+A Chapter dedicated to theoretical concepts, code breakdown, and mental models without an embedded code editor.
 
 **Challenge Chapter**:
-A Chapter with embedded Monaco Editor and RCE test runner requiring hands-on coding to make tests pass.
+A Chapter with an embedded Monaco Editor and RCE test runner, strictly bounded to reinforcing only the concepts taught in its preceding Reading Chapter.
 
 **Assessment Chapter**:
-The final Chapter of a Module containing a comprehensive test and submission to prove mastery before unlocking the next Module.
+The final Chapter of a Module containing a comprehensive test integrating all concepts in the Module to prove mastery before unlocking the next Module.
 
 **Submission**:
-A learner's submitted Go code for a Challenge or Assessment Chapter sent to the RCE Engine.
+A learner's submitted code for a Challenge or Assessment Chapter sent to the RCE Engine.
 _Avoid_: Answer, attempt, code run
 
 **Progress**:
-The learner's standing in the Track, derived from Submission records: which Chapters are completed, the daily streak, and per-Chapter failed-attempt counts.
+The learner's standing in a Track, derived from Submission records: which Chapters are completed per Track, overall platform progress, daily streak, and per-Chapter failed-attempt counts.
 _Avoid_: Completion, achievement, stats
 
 **Streak**:
-The number of consecutive days a learner has made at least one Submission.
+The number of consecutive days a learner has made at least one Submission across any Track.
 _Avoid_: Run, chain, streak count
 
 **RCE Engine**:
-The Remote Code Execution service responsible for securely building and executing learner submissions against challenge test suites using `go test`.
+The Remote Code Execution service responsible for securely building and executing learner submissions against language-specific test suites (e.g., `go test` for Go, `vitest`/`node` for TypeScript).
 _Avoid_: Runner, compiler, playground
 
 **Theme Engine**:
@@ -48,5 +48,3 @@ _Avoid_: Color scheme switcher, palette toggle
 **Workspace Layout**:
 The adaptive arrangement of Reading Guide, Code Editor, and RCE Engine console panes within a Chapter view, supporting side-by-side split view on desktop/tablet devices and segmented tabbed views on mobile devices.
 _Avoid_: Page grid, split screen wrapper
-
-

@@ -17,7 +17,9 @@ describe('useProgressTracker hook contract and seam', () => {
       chapterFailedAttempts: 0,
       submissionId: 'sub-1',
     }),
+    getFailedSubmissions: vi.fn().mockResolvedValue(2),
     getFailedAttempts: vi.fn().mockResolvedValue(2),
+    getLatestSubmission: vi.fn().mockResolvedValue(null),
     ...overrides,
   });
 

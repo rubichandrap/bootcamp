@@ -1,5 +1,0 @@
-{
-  "title": "Go Fundamentals & Memory Models",
-  "description": "Master pointers, value vs reference semantics, slice headers, and memory allocation in Go.",
-  "order": 1
-}

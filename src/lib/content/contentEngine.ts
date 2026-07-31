@@ -2,11 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 
-const CONTENT_DIR = path.join(process.cwd(), 'content/modules');
+const TRACKS_DIR = path.join(process.cwd(), 'content/tracks');
 
 export interface ChapterMeta {
   slug: string;
   moduleSlug: string;
+  trackSlug: string;
   title: string;
   type: 'reading' | 'challenge' | 'assessment';
   order: number;
@@ -17,36 +18,106 @@ export interface ChapterMeta {
 
 export interface ModuleMeta {
   slug: string;
+  trackSlug: string;
   title: string;
   description: string;
   order: number;
   chapters: ChapterMeta[];
 }
 
-export function getAllModules(): ModuleMeta[] {
-  if (!fs.existsSync(CONTENT_DIR)) {
+export interface TrackMeta {
+  slug: string;
+  title: string;
+  description: string;
+  language: string;
+  order: number;
+  modules: ModuleMeta[];
+}
+
+function readJsonFile<T>(filePath: string, fallback: T): T {
+  if (fs.existsSync(filePath)) {
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch {
+      // Fallback on invalid JSON
+    }
+  }
+  return fallback;
+}
+
+export function getAllTracks(): TrackMeta[] {
+  if (!fs.existsSync(TRACKS_DIR)) {
+    return [];
+  }
+
+  const trackDirs = fs
+    .readdirSync(TRACKS_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+
+  const tracks: TrackMeta[] = [];
+
+  for (const trackSlug of trackDirs) {
+    const trackPath = path.join(TRACKS_DIR, trackSlug);
+    const metaPath = path.join(trackPath, 'track.json');
+
+    const trackInfo = readJsonFile(metaPath, {
+      title: trackSlug.toUpperCase(),
+      description: '',
+      language: trackSlug,
+      order: 99,
+    });
+
+    const modules = getAllModules(trackSlug);
+
+    tracks.push({
+      slug: trackSlug,
+      title: trackInfo.title,
+      description: trackInfo.description,
+      language: trackInfo.language,
+      order: trackInfo.order,
+      modules,
+    });
+  }
+
+  tracks.sort((a, b) => a.order - b.order);
+  return tracks;
+}
+
+export function getTrack(trackSlug: string): TrackMeta | null {
+  const tracks = getAllTracks();
+  return tracks.find((t) => t.slug === trackSlug) || null;
+}
+
+export const getTrackBySlug = getTrack;
+
+export function getModule(trackSlug: string, moduleSlug: string): ModuleMeta | null {
+  const modules = getAllModules(trackSlug);
+  return modules.find((m) => m.slug === moduleSlug) || null;
+}
+
+export function getAllModules(trackSlug: string = 'go'): ModuleMeta[] {
+  const modulesDir = path.join(TRACKS_DIR, trackSlug, 'modules');
+  if (!fs.existsSync(modulesDir)) {
     return [];
   }
 
   const moduleDirs = fs
-    .readdirSync(CONTENT_DIR, { withFileTypes: true })
+    .readdirSync(modulesDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name);
 
   const modules: ModuleMeta[] = [];
 
   for (const modSlug of moduleDirs) {
-    const modPath = path.join(CONTENT_DIR, modSlug);
+    const modPath = path.join(modulesDir, modSlug);
     const metaPath = path.join(modPath, 'module.json');
 
-    let modInfo = { title: modSlug, description: '', order: 99 };
-    if (fs.existsSync(metaPath)) {
-      try {
-        modInfo = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-      } catch {
-        // Fallback
-      }
-    }
+    const modInfo = readJsonFile(metaPath, {
+      title: modSlug,
+      description: '',
+      order: 99,
+    });
 
     const files = fs.readdirSync(modPath).filter((f) => f.endsWith('.mdx'));
     const chapters: ChapterMeta[] = [];
@@ -61,6 +132,7 @@ export function getAllModules(): ModuleMeta[] {
       chapters.push({
         slug: chSlug,
         moduleSlug: modSlug,
+        trackSlug,
         title: data.title || chSlug,
         type: data.type || 'reading',
         order: data.order || 99,
@@ -74,6 +146,7 @@ export function getAllModules(): ModuleMeta[] {
 
     modules.push({
       slug: modSlug,
+      trackSlug,
       title: modInfo.title,
       description: modInfo.description,
       order: modInfo.order,
@@ -85,8 +158,12 @@ export function getAllModules(): ModuleMeta[] {
   return modules;
 }
 
-export function getChapterBySlug(moduleSlug: string, chapterSlug: string): ChapterMeta | null {
-  const filePath = path.join(CONTENT_DIR, moduleSlug, `${chapterSlug}.mdx`);
+export function getChapter(
+  trackSlug: string,
+  moduleSlug: string,
+  chapterSlug: string
+): ChapterMeta | null {
+  const filePath = path.join(TRACKS_DIR, trackSlug, 'modules', moduleSlug, `${chapterSlug}.mdx`);
   if (!fs.existsSync(filePath)) {
     return null;
   }
@@ -97,6 +174,7 @@ export function getChapterBySlug(moduleSlug: string, chapterSlug: string): Chapt
   return {
     slug: chapterSlug,
     moduleSlug,
+    trackSlug,
     title: data.title || chapterSlug,
     type: data.type || 'reading',
     order: data.order || 99,
@@ -104,4 +182,15 @@ export function getChapterBySlug(moduleSlug: string, chapterSlug: string): Chapt
     starterCode: data.starterCode,
     testCode: data.testCode,
   };
+}
+
+export function getChapterBySlug(
+  trackOrModuleSlug: string,
+  moduleOrChapterSlug: string,
+  maybeChapterSlug?: string
+): ChapterMeta | null {
+  if (maybeChapterSlug !== undefined) {
+    return getChapter(trackOrModuleSlug, moduleOrChapterSlug, maybeChapterSlug);
+  }
+  return getChapter('go', trackOrModuleSlug, moduleOrChapterSlug);
 }

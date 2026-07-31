@@ -1,0 +1,50 @@
+---
+title: "Control Flow Logic Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  package main
+
+  // CategorizeAge returns "Child" (<13), "Teenager" (13-19), or "Adult" (20+) using if/else.
+  func CategorizeAge(age int) string {
+  	// TODO: Return age category string using if/else
+  	return ""
+  }
+
+  // SumUpToN computes the sum of all integers from 1 up to n using a for loop.
+  func SumUpToN(n int) int {
+  	// TODO: Use a for loop to compute sum from 1 to n
+  	return 0
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestCategorizeAge(t *testing.T) {
+  	if got := CategorizeAge(8); got != "Child" {
+  		t.Errorf("expected Child, got %q", got)
+  	}
+  	if got := CategorizeAge(15); got != "Teenager" {
+  		t.Errorf("expected Teenager, got %q", got)
+  	}
+  	if got := CategorizeAge(25); got != "Adult" {
+  		t.Errorf("expected Adult, got %q", got)
+  	}
+  }
+
+  func TestSumUpToN(t *testing.T) {
+  	if got := SumUpToN(10); got != 55 {
+  		t.Errorf("expected sum 55 for n=10, got %d", got)
+  	}
+  }
+---
+
+# Control Flow Logic Challenge
+
+Apply `if/else` conditionals and `for` loops to process numbers and categories!
+
+## Tasks
+
+1. Implement `CategorizeAge(age int) string` returning `"Child"`, `"Teenager"`, or `"Adult"`.
+2. Implement `SumUpToN(n int) int` using a `for` loop to add up integers from `1` to `n`.

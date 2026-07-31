@@ -1,0 +1,34 @@
+---
+title: "Channels & Synchronous Streaming"
+type: "reading"
+order: 3
+---
+
+# Channels & Synchronous Streaming
+
+Channels are typed conduits that synchronize and transfer data between concurrent goroutines.
+
+## Declaring & Using Channels
+
+```go
+// Unbuffered channel
+ch := make(chan string)
+
+// Send into channel
+ch <- "message"
+
+// Receive from channel
+msg := <-ch
+```
+
+## Channel Directions in Functions
+
+Restricting channel operations improves compile-time type safety:
+- Send-only: `ch chan<- string`
+- Receive-only: `ch <-chan string`
+
+```go
+func SendMsg(ch chan<- string, msg string) {
+    ch <- msg
+}
+```

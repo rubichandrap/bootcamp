@@ -1,0 +1,39 @@
+---
+title: "Spawning Worker Goroutines Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  package main
+
+  import "sync/atomic"
+
+  // SpawnWorkers spawns n goroutines, each incrementing counter by 1 using atomic.AddInt64.
+  func SpawnWorkers(counter *int64, n int) {
+  	// TODO: Use a loop to spawn n goroutines calling atomic.AddInt64(counter, 1)
+  }
+testCode: |
+  package main
+
+  import (
+  	"sync/atomic"
+  	"testing"
+  	"time"
+  )
+
+  func TestSpawnWorkers(t *testing.T) {
+  	var counter int64
+  	SpawnWorkers(&counter, 10)
+  	time.Sleep(50 * time.Millisecond)
+  	if atomic.LoadInt64(&counter) != 10 {
+  		t.Errorf("expected counter 10, got %d", counter)
+  	}
+  }
+---
+
+# Spawning Worker Goroutines Challenge
+
+Practice spawning concurrent goroutines using the `go` keyword!
+
+## Tasks
+
+Implement `SpawnWorkers(counter *int64, n int)` to spawn `n` background goroutines that each increment `counter` using `atomic.AddInt64(counter, 1)`.

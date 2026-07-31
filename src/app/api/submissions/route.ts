@@ -7,7 +7,7 @@ const progressAdapter = new DrizzleProgressAdapter();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, chapterId, code, passed, testCount, failedCount, compileError } = body;
+    const { userId, trackId, chapterId, code, passed, testCount, failedCount, compileError } = body;
 
     if (!userId || !chapterId || typeof code !== 'string' || typeof passed !== 'boolean') {
       return NextResponse.json(
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
 
     const result = await progressAdapter.recordSubmission({
       userId,
+      trackId: typeof trackId === 'string' ? trackId : undefined,
       chapterId,
       code,
       passed,
@@ -39,6 +40,7 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const userId = searchParams.get('userId');
+    const trackId = searchParams.get('trackId') || undefined;
     const chapterId = searchParams.get('chapterId');
 
     if (!userId) {
@@ -48,12 +50,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const userProgress = await progressAdapter.getProgress(userId);
+    const userProgress = await progressAdapter.getProgress(userId, trackId);
     const chapterFailedAttempts = chapterId
-      ? await progressAdapter.getFailedAttempts(userId, chapterId)
+      ? await progressAdapter.getFailedSubmissions(userId, chapterId, trackId)
       : 0;
     const latestSubmission = chapterId
-      ? await progressAdapter.getLatestSubmission(userId, chapterId)
+      ? await progressAdapter.getLatestSubmission(userId, chapterId, trackId)
       : null;
 
     return NextResponse.json(

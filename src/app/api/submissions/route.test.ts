@@ -33,4 +33,26 @@ describe('GET /api/submissions endpoint', () => {
     expect(res.status).toBe(200);
     expect(data.chapterFailedAttempts).toBe(2);
   });
+
+  it('should support trackId filtering on POST and GET', async () => {
+    const userId = `user-track-test-${Date.now()}`;
+    const chapterId = 'ts-ch-1';
+
+    const postReq = new NextRequest('http://localhost:3000/api/submissions', {
+      method: 'POST',
+      body: JSON.stringify({ userId, trackId: 'typescript', chapterId, code: 'const a = 1;', passed: true }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const postRes = await POST(postReq);
+    expect(postRes.status).toBe(201);
+
+    const getReq = new NextRequest(`http://localhost:3000/api/submissions?userId=${userId}&trackId=typescript`, {
+      method: 'GET',
+    });
+
+    const getRes = await GET(getReq);
+    const data = await getRes.json();
+    expect(getRes.status).toBe(200);
+    expect(data.completedChapterIds).toContain('ts-ch-1');
+  });
 });

@@ -1,0 +1,45 @@
+---
+title: "Variables, Primitive Types & Zero Values"
+type: "reading"
+order: 3
+---
+
+# Variables, Primitive Types & Zero Values
+
+Go is statically and strongly typed. Variables must be declared before use, and their types are determined at compile time.
+
+## Primitive Data Types
+
+Go provides standard primitive types:
+- **Integers**: `int`, `int8`, `int16`, `int32`, `int64`, `uint`
+- **Floating Point**: `float32`, `float64`
+- **Booleans**: `bool` (`true` or `false`)
+- **Strings**: `string` (immutable text sequence)
+
+## Declaring Variables
+
+### 1. `var` Keyword
+Used to declare variables with an explicit type or initial value.
+
+```go
+var age int = 25
+var city string = "Jakarta"
+```
+
+### 2. Short Variable Declaration (`:=`)
+Inside functions, `:=` declares and initializes a variable with type inference.
+
+```go
+func main() {
+    score := 100       // Inferred as int
+    message := "Go"    // Inferred as string
+    isReady := true    // Inferred as bool
+}
+```
+
+## Zero Values
+
+If a variable is declared without an initial value, Go automatically assigns its type's **zero value**:
+- `int` / `float64`: `0` / `0.0`
+- `bool`: `false`
+- `string`: `""` (empty string)

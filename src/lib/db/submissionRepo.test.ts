@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   recordSubmission,
   getUserProgress,
+  getTrackProgress,
+  getOverallProgress,
+  getStreak,
+  getFailedSubmissionsCount,
   getFailedAttemptsCount,
   calculateModuleProgress,
   getLatestSubmission,
@@ -321,5 +325,66 @@ describe('SQLite Progress Tracking & Submissions', () => {
     expect(latest).not.toBeNull();
     expect(latest?.code).toBe('code 2 - latest answer');
     expect(latest?.passed).toBe(true);
+  });
+
+  it('should isolate completed chapters by trackId while keeping a unified streak', () => {
+    recordSubmission({
+      userId: testUserId,
+      trackId: 'go',
+      chapterId: 'go-ch-1',
+      code: 'package main',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    recordSubmission({
+      userId: testUserId,
+      trackId: 'typescript',
+      chapterId: 'ts-ch-1',
+      code: 'const x = 1;',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const goProgress = getUserProgress(testUserId, { trackId: 'go' });
+    expect(goProgress.completedChapterIds).toEqual(['go-ch-1']);
+    expect(goProgress.completedCount).toBe(1);
+
+    const tsProgress = getUserProgress(testUserId, { trackId: 'typescript' });
+    expect(tsProgress.completedChapterIds).toEqual(['ts-ch-1']);
+    expect(tsProgress.completedCount).toBe(1);
+
+    const overallProgress = getUserProgress(testUserId);
+    expect(overallProgress.completedChapterIds).toHaveLength(2);
+    expect(overallProgress.streakDays).toBeGreaterThanOrEqual(1);
+  });
+
+  it('provides explicit getTrackProgress, getOverallProgress, and getStreak helpers', () => {
+    recordSubmission({
+      userId: testUserId,
+      trackId: 'typescript',
+      chapterId: '01-hello-world-reading',
+      code: 'const x = 1;',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const trackProg = getTrackProgress(testUserId, 'typescript');
+    expect(trackProg.trackId).toBe('typescript');
+    expect(trackProg.completedChapterIds).toContain('01-hello-world-reading');
+    expect(trackProg.totalCount).toBeGreaterThan(0);
+    expect(typeof trackProg.percentage).toBe('number');
+
+    const overallProg = getOverallProgress(testUserId);
+    expect(overallProg.completedCount).toBeGreaterThanOrEqual(1);
+
+    const streak = getStreak(testUserId);
+    expect(streak).toBeGreaterThanOrEqual(1);
+
+    const failedCount = getFailedSubmissionsCount(testUserId, '01-hello-world-reading', 'typescript');
+    expect(failedCount).toBe(0);
   });
 });

@@ -1,0 +1,40 @@
+---
+title: "Non-Blocking Multiplexer Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  package main
+
+  // MultiplexRead attempts to read from ch1 or ch2.
+  // Returns value received or "Timeout" if neither responds.
+  func MultiplexRead(ch1, ch2 <-chan string) string {
+  	// TODO: Use select with select cases for ch1, ch2, and default/timeout case
+  	return ""
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestMultiplexRead(t *testing.T) {
+  	ch1 := make(chan string, 1)
+  	ch2 := make(chan string, 1)
+
+  	ch1 <- "fast payload"
+  	if got := MultiplexRead(ch1, ch2); got != "fast payload" {
+  		t.Errorf("expected 'fast payload', got %q", got)
+  	}
+
+  	if got := MultiplexRead(ch1, ch2); got != "Timeout" {
+  		t.Errorf("expected 'Timeout' when empty, got %q", got)
+  	}
+  }
+---
+
+# Non-Blocking Multiplexer Challenge
+
+Practice channel selection using `select`!
+
+## Tasks
+
+Implement `MultiplexRead(ch1, ch2 <-chan string) string` using `select` to return data from `ch1` or `ch2`, or `"Timeout"` if neither is ready.

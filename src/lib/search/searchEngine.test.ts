@@ -7,6 +7,7 @@ describe('Command Palette Search Engine', () => {
   const sampleModules: ModuleMeta[] = [
     {
       slug: '01-fundamentals',
+      trackSlug: 'go',
       title: 'Go Fundamentals',
       description: 'Pointers and memory',
       order: 1,
@@ -14,6 +15,7 @@ describe('Command Palette Search Engine', () => {
         {
           slug: '01-memory-models',
           moduleSlug: '01-fundamentals',
+          trackSlug: 'go',
           title: 'Go Memory Models',
           type: 'reading',
           order: 1,
@@ -22,6 +24,7 @@ describe('Command Palette Search Engine', () => {
         {
           slug: '02-slice-headers',
           moduleSlug: '01-fundamentals',
+          trackSlug: 'go',
           title: 'Slice Header Internals',
           type: 'challenge',
           order: 2,
@@ -47,6 +50,7 @@ describe('Command Palette Search Engine', () => {
     const mockMods: ModuleMeta[] = [
       {
         slug: 'test-mod',
+        trackSlug: 'go',
         title: 'Test Module',
         description: '',
         order: 1,
@@ -54,6 +58,7 @@ describe('Command Palette Search Engine', () => {
           {
             slug: 'no-content-ch',
             moduleSlug: 'test-mod',
+            trackSlug: 'go',
             title: 'No Content Chapter',
             type: 'reading',
             order: 1,

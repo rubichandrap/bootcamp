@@ -1,0 +1,52 @@
+---
+title: "Defining Structs & Methods Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  package main
+
+  // User represents a user with Name and Age fields.
+  type User struct {
+  	Name string
+  	Age  int
+  }
+
+  // NewUser constructs a new User struct with name and age.
+  func NewUser(name string, age int) User {
+  	// TODO: Return initialized User
+  	return User{}
+  }
+
+  // Birthday increments the user's Age by 1 using pointer receiver.
+  func (u *User) Birthday() {
+  	// TODO: Increment u.Age by 1
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestNewUser(t *testing.T) {
+  	u := NewUser("Alice", 30)
+  	if u.Name != "Alice" || u.Age != 30 {
+  		t.Errorf("expected Alice 30, got %s %d", u.Name, u.Age)
+  	}
+  }
+
+  func TestBirthday(t *testing.T) {
+  	u := NewUser("Bob", 20)
+  	u.Birthday()
+  	if u.Age != 21 {
+  		t.Errorf("expected Age=21 after Birthday(), got %d", u.Age)
+  	}
+  }
+---
+
+# Defining Structs & Methods Challenge
+
+Test your understanding of struct instantiation and pointer receivers!
+
+## Tasks
+
+1. Implement `NewUser(name string, age int) User` to return an initialized `User`.
+2. Implement pointer receiver method `(u *User) Birthday()` to increment `u.Age` by `1`.

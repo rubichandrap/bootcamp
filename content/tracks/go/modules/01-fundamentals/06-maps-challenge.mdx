@@ -1,0 +1,50 @@
+---
+title: "Map Lookups & Frequency Count Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  package main
+
+  // WordFrequency counts the frequency of each word in words slice.
+  func WordFrequency(words []string) map[string]int {
+  	// TODO: Create a map[string]int and populate counts
+  	return nil
+  }
+
+  // LookupUser checks if userID exists in users map and returns role or "Guest" if missing.
+  func LookupUser(users map[int]string, userID int) string {
+  	// TODO: Use comma-ok idiom to look up userID
+  	return "Guest"
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestWordFrequency(t *testing.T) {
+  	words := []string{"go", "java", "go", "python", "go"}
+  	counts := WordFrequency(words)
+  	if counts["go"] != 3 || counts["java"] != 1 || counts["python"] != 1 {
+  		t.Errorf("unexpected frequency map: %v", counts)
+  	}
+  }
+
+  func TestLookupUser(t *testing.T) {
+  	m := map[int]string{1: "Admin", 2: "Editor"}
+  	if got := LookupUser(m, 1); got != "Admin" {
+  		t.Errorf("expected Admin, got %q", got)
+  	}
+  	if got := LookupUser(m, 99); got != "Guest" {
+  		t.Errorf("expected Guest, got %q", got)
+  	}
+  }
+---
+
+# Map Lookups & Frequency Count Challenge
+
+Apply map initialization, comma-ok lookup, and frequency counting!
+
+## Tasks
+
+1. Implement `WordFrequency(words []string) map[string]int`.
+2. Implement `LookupUser(users map[int]string, userID int) string` using comma-ok lookup.

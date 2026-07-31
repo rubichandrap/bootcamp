@@ -1,0 +1,26 @@
+---
+title: "Slice Header Internals & Capacity Allocation"
+type: "reading"
+order: 3
+---
+
+# Slice Header Internals & Capacity Allocation
+
+In Go, a **slice header** is a 3-word struct:
+
+```go
+type SliceHeader struct {
+    Data uintptr // Pointer to backing array in memory
+    Len  int     // Current length (number of populated elements)
+    Cap  int     // Total capacity before reallocation
+}
+```
+
+## Zero-Allocation Buffers
+
+When high-performance software requires zero heap allocations, pre-allocating slice capacity with `make([]byte, 0, capacity)` ensures writing data reuses the existing backing array without re-allocating memory.
+
+```go
+// Pre-allocate backing array of 1024 bytes
+buf := make([]byte, 0, 1024)
+```

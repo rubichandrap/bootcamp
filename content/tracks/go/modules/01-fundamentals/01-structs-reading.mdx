@@ -1,0 +1,46 @@
+---
+title: "Structs & Method Receivers"
+type: "reading"
+order: 1
+---
+
+# Structs & Method Receivers
+
+A **`struct`** in Go is a typed collection of fields used to group related data into cohesive domain models.
+
+## Defining a Struct
+
+```go
+type User struct {
+    ID   int
+    Name string
+    Age  int
+}
+```
+
+Instantiation:
+```go
+u := User{ID: 1, Name: "Alice", Age: 30}
+```
+
+## Methods & Receivers
+
+In Go, methods are functions bound to a specific type via a **receiver**:
+
+### 1. Value Receiver `(u User)`
+Operates on a copy of the struct. Modifications inside the method do **not** affect the caller.
+
+```go
+func (u User) Format() string {
+    return fmt.Sprintf("%s (%d)", u.Name, u.Age)
+}
+```
+
+### 2. Pointer Receiver `(u *User)`
+Operates directly on the pointer address of the struct. Allows the method to mutate the struct fields.
+
+```go
+func (u *User) Birthday() {
+    u.Age++ // Mutates receiver state directly
+}
+```

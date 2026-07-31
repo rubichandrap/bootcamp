@@ -18,6 +18,7 @@ describe('chapterService', () => {
       const mockModules: ModuleMeta[] = [
         {
           slug: 'mod-1',
+          trackSlug: 'go',
           title: 'Module 1',
           description: 'Desc 1',
           order: 1,
@@ -27,6 +28,7 @@ describe('chapterService', () => {
               title: 'Chapter 1',
               type: 'reading',
               moduleSlug: 'mod-1',
+              trackSlug: 'go',
               order: 1,
               content: '# Content 1',
             },
@@ -53,6 +55,7 @@ describe('chapterService', () => {
         title: 'Chapter 1',
         type: 'challenge',
         moduleSlug: 'mod-1',
+        trackSlug: 'go',
         order: 1,
         content: '# Content 1',
         starterCode: 'func main() {}',
@@ -74,6 +77,7 @@ describe('chapterService', () => {
     const modules: ModuleMeta[] = [
       {
         slug: 'mod-1',
+        trackSlug: 'go',
         title: 'Module 1',
         description: 'Desc 1',
         order: 1,
@@ -83,6 +87,7 @@ describe('chapterService', () => {
             title: 'Chapter 1',
             type: 'reading',
             moduleSlug: 'mod-1',
+            trackSlug: 'go',
             order: 1,
             content: '# Chapter 1',
           },
@@ -91,6 +96,7 @@ describe('chapterService', () => {
             title: 'Chapter 2',
             type: 'challenge',
             moduleSlug: 'mod-1',
+            trackSlug: 'go',
             order: 2,
             content: '# Chapter 2',
           },
@@ -98,6 +104,7 @@ describe('chapterService', () => {
       },
       {
         slug: 'mod-2',
+        trackSlug: 'go',
         title: 'Module 2',
         description: 'Desc 2',
         order: 2,
@@ -107,6 +114,7 @@ describe('chapterService', () => {
             title: 'Chapter 3',
             type: 'assessment',
             moduleSlug: 'mod-2',
+            trackSlug: 'go',
             order: 1,
             content: '# Chapter 3',
           },

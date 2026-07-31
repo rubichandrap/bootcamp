@@ -1,0 +1,56 @@
+---
+title: "Custom Interface & Error Implementation Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  package main
+
+  import "fmt"
+
+  // CustomError represents a domain error containing a code and message.
+  type CustomError struct {
+  	Code int
+  	Msg  string
+  }
+
+  // Error implements the built-in error interface for CustomError.
+  // Format: "Error <Code>: <Msg>"
+  func (e *CustomError) Error() string {
+  	// TODO: Implement Error() method
+  	return ""
+  }
+
+  // ValidateAge checks if age >= 18. If not, returns &CustomError{Code: 400, Msg: "underage"}.
+  func ValidateAge(age int) error {
+  	// TODO: Return nil if valid, or CustomError if invalid
+  	return nil
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestCustomError(t *testing.T) {
+  	err := ValidateAge(15)
+  	if err == nil {
+  		t.Fatal("expected error for age 15, got nil")
+  	}
+  	want := "Error 400: underage"
+  	if err.Error() != want {
+  		t.Errorf("expected %q, got %q", want, err.Error())
+  	}
+
+  	if errValid := ValidateAge(21); errValid != nil {
+  		t.Errorf("expected nil error for age 21, got %v", errValid)
+  	}
+  }
+---
+
+# Custom Interface & Error Implementation Challenge
+
+Practice implementing Go's `error` interface!
+
+## Tasks
+
+1. Implement `(e *CustomError) Error() string` formatted as `"Error <Code>: <Msg>"`.
+2. Implement `ValidateAge(age int) error`. Return `nil` if age >= 18; otherwise return `&CustomError{Code: 400, Msg: "underage"}`.

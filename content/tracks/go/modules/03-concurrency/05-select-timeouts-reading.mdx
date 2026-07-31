@@ -1,0 +1,35 @@
+---
+title: "Select Multiplexing & Timeouts"
+type: "reading"
+order: 5
+---
+
+# Select Multiplexing & Timeouts
+
+The `select` statement lets a goroutine wait on multiple communication channels simultaneously.
+
+## `select` Syntax
+
+```go
+select {
+case msg1 := <-ch1:
+    fmt.Println("Received from ch1:", msg1)
+case ch2 <- "ping":
+    fmt.Println("Sent to ch2")
+default:
+    fmt.Println("No channels ready (non-blocking)")
+}
+```
+
+## Timeouts with `time.After`
+
+Using `time.After` prevents deadlocks when waiting on remote operations:
+
+```go
+select {
+case res := <-ch:
+    fmt.Println("Result:", res)
+case <-time.After(1 * time.Second):
+    fmt.Println("Operation timed out!")
+}
+```

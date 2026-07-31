@@ -1,0 +1,48 @@
+---
+title: "Hello World & Function Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  package main
+
+  // HelloWorld returns the string "Hello, World!"
+  func HelloWorld() string {
+  	// TODO: Return exact string "Hello, World!"
+  	return ""
+  }
+
+  // Greet returns a greeting for the given name, formatted as "Hello, <name>!"
+  func Greet(name string) string {
+  	// TODO: Return "Hello, " + name + "!"
+  	return ""
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestHelloWorld(t *testing.T) {
+  	got := HelloWorld()
+  	want := "Hello, World!"
+  	if got != want {
+  		t.Errorf("expected %q, got %q", want, got)
+  	}
+  }
+
+  func TestGreet(t *testing.T) {
+  	got := Greet("Gopher")
+  	want := "Hello, Gopher!"
+  	if got != want {
+  		t.Errorf("expected %q, got %q", want, got)
+  	}
+  }
+---
+
+# Hello World & Function Challenge
+
+Now that you have read about Go package declarations and function syntax, apply what you learned!
+
+## Tasks
+
+1. Implement `HelloWorld()` so that it returns `"Hello, World!"`.
+2. Implement `Greet(name string)` so that it returns `"Hello, " + name + "!"`.
