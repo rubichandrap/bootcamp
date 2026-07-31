@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { formatTitlebarText, formatStreakBadge } from './TerminalHeader';
 
 describe('TerminalHeader Component Utilities', () => {
-  it('should format titlebar text with version and active module/track', () => {
-    const formatted = formatTitlebarText('Go Mastery Track', 'Fundamentals');
-    expect(formatted).toBe('go-mastery-cli v1.0.0 -- track: Go Mastery Track > Fundamentals');
+  it('should format titlebar text with Unix breadcrumb and active module/track', () => {
+    const formatted = formatTitlebarText('Go Mastery Track', 'Fundamentals', 'go');
+    expect(formatted).toBe('~ / tracks / go > Fundamentals');
   });
 
   it('should format streak badge in CLI style', () => {
@@ -13,8 +13,14 @@ describe('TerminalHeader Component Utilities', () => {
   });
 
   it('should format titlebar text fallback when no active module is selected', () => {
-    const formatted = formatTitlebarText('Go Mastery');
-    expect(formatted).toBe('go-mastery-cli v1.0.0 -- track: Go Mastery');
+    const formatted = formatTitlebarText('Go Mastery', undefined, 'go');
+    expect(formatted).toBe('~ / tracks / go');
+  });
+
+  it('should format catalog breadcrumb when track is catalog or not provided', () => {
+    const formatted = formatTitlebarText('Track Catalog');
+    expect(formatted).toBe('~ / catalog');
   });
 });
+
 
