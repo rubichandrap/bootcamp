@@ -75,7 +75,7 @@ export function useChallengeSession(initialStarterCode = '', initialTestCode = '
       if (chapterId) {
         setActiveChapterId(chapterId);
       }
-      let initialCode = starterCode ?? DEFAULT_STARTER_CODE;
+      let initialCode = starterCode ?? '';
       if (chapterId && codeByChapter[chapterId] !== undefined) {
         initialCode = codeByChapter[chapterId];
       } else if (savedSubmissionCode) {
@@ -85,7 +85,7 @@ export function useChallengeSession(initialStarterCode = '', initialTestCode = '
         }
       }
       setCode(initialCode);
-      setTestCode(testCodeInput ?? DEFAULT_TEST_CODE);
+      setTestCode(testCodeInput ?? '');
     },
     [codeByChapter]
   );

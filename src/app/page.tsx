@@ -81,22 +81,22 @@ export default function Home() {
     if (!currentChapter) return;
     const ch = currentChapter;
     let isSubscribed = true;
+
+    // Synchronously reset editor to current chapter's starter code immediately
+    challengeSession.resetForChapter(ch.starterCode, ch.testCode, undefined, ch.slug);
+
     async function initChapter() {
       progressTracker.loadFailedAttempts(ch.slug);
-      let savedCode: string | undefined;
       if (ch.type !== 'reading') {
         const latestSub = await progressTracker.getLatestSubmission(ch.slug);
-        if (latestSub?.code) {
-          savedCode = latestSub.code;
+        if (latestSub?.code && isSubscribed) {
+          challengeSession.resetForChapter(
+            ch.starterCode,
+            ch.testCode,
+            latestSub.code,
+            ch.slug
+          );
         }
-      }
-      if (isSubscribed) {
-        challengeSession.resetForChapter(
-          ch.starterCode,
-          ch.testCode,
-          savedCode,
-          ch.slug
-        );
       }
     }
     initChapter();

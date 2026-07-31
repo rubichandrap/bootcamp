@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
 
 interface CodeEditorProps {
   value: string;
@@ -20,6 +20,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   filename = 'main.go',
   path,
 }) => {
+  const handleMount: OnMount = (editor) => {
+    // Clear undo history stack so initial editor mounting doesn't pollute Ctrl+Z
+    setTimeout(() => {
+      const model = editor.getModel() as (Record<string, unknown> & { clearUndoRedoStack?: () => void }) | null;
+      model?.clearUndoRedoStack?.();
+    }, 50);
+  };
+
   return (
     <div className="h-full w-full border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e] flex flex-col font-mono">
       <div className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 text-[10px] font-mono border-b border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 uppercase flex items-center justify-between select-none shrink-0">
@@ -35,6 +43,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           theme={theme}
           value={value}
           onChange={onChange}
+          onMount={handleMount}
           options={{
             fontSize: 14,
             fontFamily: 'var(--font-geist-mono), JetBrains Mono, Fira Code, monospace',
