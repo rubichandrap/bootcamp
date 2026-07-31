@@ -1,7 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useResizableLayout } from './useResizableLayout';
+import {
+  useResizableLayout,
+  getEventPosition,
+  calculateSidebarWidth,
+  calculateWorkspaceSplit,
+  calculateConsoleHeight,
+} from './useResizableLayout';
 
-describe('useResizableLayout hook', () => {
+describe('useResizableLayout hook & helpers', () => {
   const storageMock: Record<string, string> = {};
 
   beforeEach(() => {
@@ -30,4 +36,39 @@ describe('useResizableLayout hook', () => {
     expect(localStorage.getItem('bootcamp_workspace_split')).toBe('60');
     expect(localStorage.getItem('bootcamp_console_height')).toBe('280');
   });
+
+  describe('Drag coordinate and dimension helpers', () => {
+    it('extracts client coordinates from MouseEvent and TouchEvent', () => {
+      const mouseEv = { clientX: 250, clientY: 400 } as MouseEvent;
+      expect(getEventPosition(mouseEv)).toEqual({ clientX: 250, clientY: 400 });
+
+      const touchEv = {
+        touches: [{ clientX: 300, clientY: 500 }],
+      } as unknown as TouchEvent;
+      expect(getEventPosition(touchEv)).toEqual({ clientX: 300, clientY: 500 });
+    });
+
+    it('clamps sidebar width within min/max bounds', () => {
+      expect(calculateSidebarWidth(100)).toBe(180);
+      expect(calculateSidebarWidth(300)).toBe(300);
+      expect(calculateSidebarWidth(600)).toBe(480);
+    });
+
+    it('calculates workspace split percentage accurately within bounds', () => {
+      // container left 0, width 1000 => offset 500 = 50%
+      expect(calculateWorkspaceSplit(500, 0, 1000)).toBe(50);
+      // offset 100 = 10% => clamped to min 20%
+      expect(calculateWorkspaceSplit(100, 0, 1000)).toBe(20);
+      // offset 900 = 90% => clamped to max 80%
+      expect(calculateWorkspaceSplit(900, 0, 1000)).toBe(80);
+    });
+
+    it('calculates console height from bottom boundary accurately', () => {
+      // bottom 600, clientY 400 => height = 200
+      expect(calculateConsoleHeight(400, 600, 500)).toBe(200);
+      // height too small => clamped to min 100
+      expect(calculateConsoleHeight(550, 600, 500)).toBe(100);
+    });
+  });
 });
+

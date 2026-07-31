@@ -46,6 +46,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             renderLineHighlight: 'all',
             tabSize: 4,
             insertSpaces: true,
+            wordWrap: 'on',
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
           }}
         />
       </div>

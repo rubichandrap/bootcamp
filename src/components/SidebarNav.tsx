@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { X } from 'lucide-react';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 
 export function getTreePrefix(isLast: boolean): string {
@@ -23,6 +24,7 @@ interface SidebarNavProps {
   completedChapterIds: string[];
   onSelectChapter: (modSlug: string, chSlug: string) => void;
   width?: number;
+  onClose?: () => void;
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -31,6 +33,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   completedChapterIds,
   onSelectChapter,
   width,
+  onClose,
 }) => {
   return (
     <aside
@@ -42,7 +45,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         <h2 className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
           ┌── TRACK DIRECTORY
         </h2>
-        <span className="text-[10px] text-zinc-500 font-normal">tree v1.0</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-zinc-500 font-normal">tree v1.0</span>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              title="Close Drawer"
+              aria-label="Close Drawer"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Module Tree List */}
@@ -72,7 +87,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                   return (
                     <button
                       key={ch.slug}
-                      onClick={() => onSelectChapter(mod.slug, ch.slug)}
+                      onClick={() => {
+                        onSelectChapter(mod.slug, ch.slug);
+                        if (onClose) onClose();
+                      }}
                       className={`w-full text-left px-2 py-1 rounded transition-colors flex items-center justify-between group cursor-pointer font-mono ${
                         isActive
                           ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-950 dark:text-white font-bold border border-zinc-400 dark:border-zinc-700'
