@@ -1,0 +1,59 @@
+---
+title: "Function Overloads Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  // Implement an overloaded `parse` function:
+  // - parse(value: string): number  — parses the string as a float, returns NaN if invalid
+  // - parse(value: number): string  — converts the number to a fixed-2-decimal string
+
+  export function parse(value: string): number;
+  export function parse(value: number): string;
+  export function parse(value: string | number): number | string {
+    // TODO: implement the overload body
+    return 0;
+  }
+
+  // Implement `pipe`: takes an initial value and up to 3 transformer functions,
+  // applying them left to right.
+  // pipe(value: A, f1: (a: A) => B): B
+  // pipe(value: A, f1: (a: A) => B, f2: (b: B) => C): C
+  export function pipe<A, B>(value: A, f1: (a: A) => B): B;
+  export function pipe<A, B, C>(value: A, f1: (a: A) => B, f2: (b: B) => C): C;
+  export function pipe(value: unknown, ...fns: Array<(x: unknown) => unknown>): unknown {
+    // TODO: reduce fns, applying each to the accumulator
+    return value;
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { parse, pipe } from './solution';
+
+  describe('parse (string → number)', () => {
+    it('parses valid float string', () => {
+      expect(parse('3.14')).toBeCloseTo(3.14);
+    });
+    it('returns NaN for invalid string', () => {
+      expect(parse('abc')).toBeNaN();
+    });
+  });
+
+  describe('parse (number → string)', () => {
+    it('formats number to 2 decimals', () => {
+      expect(parse(42)).toBe('42.00');
+      expect(parse(3.1)).toBe('3.10');
+    });
+  });
+
+  describe('pipe', () => {
+    it('applies one function', () => {
+      expect(pipe(5, (x: number) => x * 2)).toBe(10);
+    });
+    it('applies two functions in order', () => {
+      expect(pipe(5, (x: number) => x * 2, (x: number) => String(x))).toBe('10');
+    });
+  });
+---
+
+# Challenge: Function Overloads
+
+Implement `parse` with two overload signatures (string→number and number→string), and `pipe` with overloads that chain up to two transformers.

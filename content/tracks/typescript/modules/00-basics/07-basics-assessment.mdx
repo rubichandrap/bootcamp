@@ -1,0 +1,73 @@
+---
+title: "Module 00 Capstone: Shape Renderer"
+type: "assessment"
+order: 7
+starterCode: |
+  // A shape registry that maps string tags to typed shapes.
+  // Implement all functions below using proper type annotations,
+  // narrowing, and discriminated unions.
+
+  export type Circle = { kind: "circle"; radius: number };
+  export type Rect = { kind: "rect"; width: number; height: number };
+  export type Shape = Circle | Rect;
+
+  // perimeter returns the perimeter of the given shape.
+  export function perimeter(shape: Shape): number {
+    // TODO: implement
+    return 0;
+  }
+
+  // describe returns a human-readable description:
+  // Circle: "circle r=<radius>"
+  // Rect:   "rect <width>x<height>"
+  export function describe(shape: Shape): string {
+    // TODO: implement
+    return '';
+  }
+
+  // parseRadius receives an unknown value.
+  // Returns the number if it is a positive number, otherwise returns null.
+  export function parseRadius(value: unknown): number | null {
+    // TODO: implement using typeof narrowing
+    return null;
+  }
+testCode: |
+  import { describe as desc, it, expect } from 'vitest';
+  import { perimeter, describe, parseRadius } from './solution';
+
+  desc('perimeter', () => {
+    it('circle perimeter', () => {
+      expect(perimeter({ kind: 'circle', radius: 5 })).toBeCloseTo(2 * Math.PI * 5);
+    });
+    it('rect perimeter', () => {
+      expect(perimeter({ kind: 'rect', width: 4, height: 3 })).toBe(14);
+    });
+  });
+
+  desc('describe', () => {
+    it('describes circle', () => {
+      expect(describe({ kind: 'circle', radius: 3 })).toBe('circle r=3');
+    });
+    it('describes rect', () => {
+      expect(describe({ kind: 'rect', width: 8, height: 2 })).toBe('rect 8x2');
+    });
+  });
+
+  desc('parseRadius', () => {
+    it('returns number for positive number', () => {
+      expect(parseRadius(7)).toBe(7);
+    });
+    it('returns null for zero or negative', () => {
+      expect(parseRadius(0)).toBeNull();
+      expect(parseRadius(-1)).toBeNull();
+    });
+    it('returns null for non-numbers', () => {
+      expect(parseRadius('5')).toBeNull();
+      expect(parseRadius(null)).toBeNull();
+    });
+  });
+---
+
+# Assessment: Shape Renderer
+
+Integrate type annotations, discriminated unions, and `unknown` narrowing to implement a small shape rendering utility. All three concepts from this module must be applied correctly to pass.

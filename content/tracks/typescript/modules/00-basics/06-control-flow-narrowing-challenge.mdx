@@ -1,0 +1,50 @@
+---
+title: "Control Flow & Narrowing Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  type Circle = { kind: "circle"; radius: number };
+  type Rectangle = { kind: "rect"; width: number; height: number };
+  type Triangle = { kind: "triangle"; base: number; height: number };
+  export type Shape = Circle | Rectangle | Triangle;
+
+  // area returns the area of the given shape.
+  // Use a switch on shape.kind and exhaustive narrowing.
+  export function area(shape: Shape): number {
+    // TODO: implement
+    return 0;
+  }
+
+  // classify receives a value of unknown type.
+  // Returns "string", "number", "boolean", or "other".
+  export function classify(value: unknown): "string" | "number" | "boolean" | "other" {
+    // TODO: implement using typeof narrowing
+    return "other";
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { area, classify } from './solution';
+
+  describe('area', () => {
+    it('computes circle area', () => {
+      expect(area({ kind: 'circle', radius: 1 })).toBeCloseTo(Math.PI);
+    });
+    it('computes rectangle area', () => {
+      expect(area({ kind: 'rect', width: 4, height: 5 })).toBe(20);
+    });
+    it('computes triangle area', () => {
+      expect(area({ kind: 'triangle', base: 6, height: 4 })).toBe(12);
+    });
+  });
+
+  describe('classify', () => {
+    it('classifies string', () => expect(classify('hi')).toBe('string'));
+    it('classifies number', () => expect(classify(42)).toBe('number'));
+    it('classifies boolean', () => expect(classify(true)).toBe('boolean'));
+    it('classifies other', () => expect(classify(null)).toBe('other'));
+  });
+---
+
+# Challenge: Control Flow & Narrowing
+
+Implement `area` using a discriminated union switch over `shape.kind`, and `classify` using `typeof` narrowing. TypeScript should be able to verify that your switch is exhaustive.

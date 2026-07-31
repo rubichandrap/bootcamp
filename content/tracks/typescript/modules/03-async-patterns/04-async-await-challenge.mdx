@@ -1,0 +1,92 @@
+---
+title: "Async/Await & Error Handling Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  export type Ok<T> = { ok: true; value: T };
+  export type Err<E = Error> = { ok: false; error: E };
+  export type Result<T, E = Error> = Ok<T> | Err<E>;
+
+  // tryCatch wraps an async function and catches any thrown errors.
+  // Returns Ok with the resolved value, or Err with the caught error.
+  export async function tryCatch<T>(
+    fn: () => Promise<T>
+  ): Promise<Result<T>> {
+    // TODO: implement using try/catch, return Ok or Err
+    return { ok: false, error: new Error('not implemented') };
+  }
+
+  // retryOnce calls fn(). If it rejects, waits `delayMs` ms and tries once more.
+  // If the second attempt also rejects, the rejection propagates.
+  export async function retryOnce<T>(
+    fn: () => Promise<T>,
+    delayMs: number
+  ): Promise<T> {
+    // TODO: implement using try/catch, setTimeout inside a Promise for the delay
+    return fn();
+  }
+
+  // mapResult applies a synchronous mapper to the value inside an Ok result.
+  // If the result is Err, it passes through unchanged.
+  export function mapResult<T, U, E = Error>(
+    result: Result<T, E>,
+    mapper: (value: T) => U
+  ): Result<U, E> {
+    // TODO: narrow on result.ok, apply mapper if true
+    return result as unknown as Result<U, E>;
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { tryCatch, retryOnce, mapResult } from './solution';
+
+  describe('tryCatch', () => {
+    it('returns Ok on success', async () => {
+      const result = await tryCatch(async () => 42);
+      expect(result).toEqual({ ok: true, value: 42 });
+    });
+
+    it('returns Err on failure', async () => {
+      const result = await tryCatch(async () => {
+        throw new Error('boom');
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.message).toBe('boom');
+      }
+    });
+  });
+
+  describe('retryOnce', () => {
+    it('returns result on first success', async () => {
+      const result = await retryOnce(async () => 'done', 10);
+      expect(result).toBe('done');
+    });
+
+    it('retries and succeeds on second attempt', async () => {
+      let attempts = 0;
+      const result = await retryOnce(async () => {
+        attempts++;
+        if (attempts === 1) throw new Error('first fail');
+        return 'ok';
+      }, 10);
+      expect(result).toBe('ok');
+      expect(attempts).toBe(2);
+    });
+  });
+
+  describe('mapResult', () => {
+    it('maps Ok value', () => {
+      const r = mapResult({ ok: true, value: 5 }, (n) => n * 2);
+      expect(r).toEqual({ ok: true, value: 10 });
+    });
+    it('passes through Err unchanged', () => {
+      const err = { ok: false, error: new Error('x') } as const;
+      const r = mapResult(err, (n: number) => n * 2);
+      expect(r.ok).toBe(false);
+    });
+  });
+---
+
+# Challenge: Async/Await & Error Handling
+
+Implement `tryCatch` (Result wrapper), `retryOnce`, and `mapResult` using async/await, try/catch, and discriminated union narrowing.

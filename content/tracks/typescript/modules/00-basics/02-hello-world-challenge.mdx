@@ -1,11 +1,50 @@
 ---
-title: "Hello World Challenge"
+title: "Type Annotation Challenge"
 type: "challenge"
 order: 2
-starterCode: "export function greet(name: string): string {\n  // Implement greet\n  return '';\n}"
-testCode: "import { describe, it, expect } from 'vitest';\nimport { greet } from './solution';\n\ndescribe('greet', () => {\n  it('returns greeting', () => {\n    expect(greet('World')).toBe('Hello, World!');\n  });\n});"
+starterCode: |
+  // Add correct TypeScript type annotations to all parameters and return types.
+  // Do NOT change the logic.
+
+  export function add(a, b) {
+    return a + b;
+  }
+
+  export function repeat(str, times) {
+    return str.repeat(times);
+  }
+
+  export function isEven(n) {
+    return n % 2 === 0;
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { add, repeat, isEven } from './solution';
+
+  describe('add', () => {
+    it('adds two numbers', () => {
+      expect(add(2, 3)).toBe(5);
+    });
+  });
+
+  describe('repeat', () => {
+    it('repeats a string', () => {
+      expect(repeat("ab", 3)).toBe("ababab");
+    });
+  });
+
+  describe('isEven', () => {
+    it('returns boolean', () => {
+      expect(isEven(4)).toBe(true);
+      expect(isEven(7)).toBe(false);
+    });
+  });
 ---
 
-# Challenge: Hello World
+# Challenge: Type Annotations
 
-Implement the `greet` function so that it returns `"Hello, <name>!"`.
+Add TypeScript type annotations to all three function signatures. The logic is already correct — your only job is to annotate.
+
+- `add(a, b)` — adds two numbers, returns a number
+- `repeat(str, times)` — repeats a string N times, returns a string
+- `isEven(n)` — checks if a number is even, returns a boolean

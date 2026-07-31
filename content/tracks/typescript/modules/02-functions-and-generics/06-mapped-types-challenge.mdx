@@ -1,0 +1,61 @@
+---
+title: "Mapped Types Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  // Implement the following mapped type utilities as both a type and a runtime function.
+
+  // 1. Nullable<T>: makes all properties of T nullable (T[K] | null)
+  export type Nullable<T> = {
+    // TODO: mapped type
+    [K in keyof T]: T[K] | null;
+  };
+
+  // 2. DeepReadonly<T>: recursively makes all properties readonly.
+  //    If a property is an object, apply DeepReadonly recursively.
+  //    Otherwise, keep the type as-is.
+  export type DeepReadonly<T> = {
+    // TODO: conditional mapped type
+    readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+  };
+
+  // 3. toNullable: runtime function that takes an object and sets all values to null.
+  //    Return type must use the Nullable<T> mapped type.
+  export function toNullable<T extends object>(obj: T): Nullable<T> {
+    // TODO: create a new object with all values set to null
+    return {} as Nullable<T>;
+  }
+
+  // 4. fromEntries: given an array of [key, value] tuples, build a Record.
+  //    Keys must be string, values can be any type V.
+  export function fromEntries<V>(entries: [string, V][]): Record<string, V> {
+    // TODO: reduce entries into a record
+    return {};
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { toNullable, fromEntries } from './solution';
+  import type { Nullable, DeepReadonly } from './solution';
+
+  describe('toNullable', () => {
+    it('sets all values to null', () => {
+      const result = toNullable({ a: 1, b: 'hello', c: true });
+      expect(result).toEqual({ a: null, b: null, c: null });
+    });
+  });
+
+  describe('fromEntries', () => {
+    it('builds a record from entries', () => {
+      const result = fromEntries([['x', 10], ['y', 20]]);
+      expect(result).toEqual({ x: 10, y: 20 });
+    });
+    it('handles string values', () => {
+      const result = fromEntries([['name', 'Alice'], ['city', 'Jakarta']]);
+      expect(result).toEqual({ name: 'Alice', city: 'Jakarta' });
+    });
+  });
+---
+
+# Challenge: Mapped Types
+
+Implement the `Nullable<T>` and `DeepReadonly<T>` mapped types, and back them with runtime functions `toNullable` and `fromEntries`.

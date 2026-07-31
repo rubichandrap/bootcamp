@@ -1,0 +1,95 @@
+---
+title: "Generic Constraints & Mapped Types"
+type: "reading"
+order: 5
+---
+
+# Generic Constraints & Mapped Types
+
+## Conditional Types
+
+Conditional types express type-level if/else:
+
+```typescript
+type IsArray<T> = T extends unknown[] ? true : false;
+
+type A = IsArray<number[]>; // true
+type B = IsArray<string>;   // false
+```
+
+The `infer` keyword lets you extract a type from a conditional:
+
+```typescript
+type UnpackArray<T> = T extends (infer U)[] ? U : T;
+
+type C = UnpackArray<string[]>; // string
+type D = UnpackArray<number>;   // number (not an array, returns T)
+```
+
+This is how `ReturnType<T>` is implemented:
+
+```typescript
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+```
+
+## Mapped Types
+
+Mapped types iterate over the keys of an existing type and transform each one:
+
+```typescript
+type Optional<T> = {
+  [K in keyof T]?: T[K];
+};
+
+// Equivalent to Partial<T>
+```
+
+You can add or remove modifiers:
+
+```typescript
+type Mutable<T> = {
+  -readonly [K in keyof T]: T[K]; // removes readonly
+};
+
+type Required<T> = {
+  [K in keyof T]-?: T[K]; // removes optional (?)
+};
+```
+
+## Key Remapping (`as`)
+
+Remap keys while mapping:
+
+```typescript
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+interface User { name: string; age: number }
+type UserGetters = Getters<User>;
+// { getName: () => string; getAge: () => number }
+```
+
+## Template Literal Types
+
+Build string types from other types:
+
+```typescript
+type EventName<T extends string> = `on${Capitalize<T>}`;
+
+type ClickEvent = EventName<"click">; // "onClick"
+type HoverEvent = EventName<"hover">; // "onHover"
+```
+
+Combined with mapped types, this lets you auto-generate event handler maps from a list of event names.
+
+## Combining Constraints, Mapped Types, and Conditionals
+
+```typescript
+// DeepReadonly makes every nested property readonly
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+};
+```
+
+These three features — generics, mapped types, and conditional types — are the core of TypeScript's meta-programming layer. Master them and you can express almost any type transformation.

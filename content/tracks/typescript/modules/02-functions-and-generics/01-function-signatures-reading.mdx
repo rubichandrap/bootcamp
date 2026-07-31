@@ -1,0 +1,96 @@
+---
+title: "Function Signatures & Overloads"
+type: "reading"
+order: 1
+---
+
+# Function Signatures & Overloads
+
+## Optional & Default Parameters
+
+TypeScript supports optional parameters (`?`) and default values:
+
+```typescript
+function greet(name: string, greeting?: string): string {
+  return `${greeting ?? "Hello"}, ${name}!`;
+}
+
+function increment(value: number, step: number = 1): number {
+  return value + step;
+}
+```
+
+Optional parameters must come after required ones.
+
+## Rest Parameters
+
+Rest parameters collect remaining arguments into a typed array:
+
+```typescript
+function sum(...numbers: number[]): number {
+  return numbers.reduce((acc, n) => acc + n, 0);
+}
+
+sum(1, 2, 3, 4); // 10
+```
+
+## Function Types
+
+Functions are first-class values in TypeScript. You can type them:
+
+```typescript
+type Transformer<T, U> = (input: T) => U;
+
+const double: Transformer<number, number> = (x) => x * 2;
+const stringify: Transformer<number, string> = (x) => String(x);
+```
+
+## Overloads
+
+When a function behaves differently based on argument types, declare overload signatures:
+
+```typescript
+function format(value: string): string;
+function format(value: number, decimals: number): string;
+function format(value: string | number, decimals?: number): string {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return value.toFixed(decimals ?? 0);
+}
+```
+
+Rules:
+1. Write 2+ overload signatures (no body)
+2. Write one **implementation signature** (with body) that is compatible with all overloads
+3. The implementation signature is not callable directly — only the overloads are visible to callers
+
+## `this` Parameter
+
+You can type the `this` context explicitly:
+
+```typescript
+interface Counter {
+  count: number;
+  increment(this: Counter): void;
+}
+
+const counter: Counter = {
+  count: 0,
+  increment() {
+    this.count += 1; // this: Counter — TypeScript enforces it
+  },
+};
+```
+
+## `never` in Functions
+
+A function that never returns has return type `never`:
+
+```typescript
+function assertNever(x: never): never {
+  throw new Error("Unexpected value: " + x);
+}
+```
+
+Call `assertNever` in the `default` branch of an exhaustive switch to get a compile-time error if you've missed a union member.

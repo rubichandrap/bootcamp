@@ -1,0 +1,83 @@
+---
+title: "Variables, Primitives & Type Inference"
+type: "reading"
+order: 3
+---
+
+# Variables, Primitives & Type Inference
+
+## `let`, `const`, and Type Widening
+
+TypeScript narrows or widens types depending on how you declare a variable:
+
+```typescript
+const greeting = "hello"; // type: "hello" (string literal type — immutable)
+let message = "hello";    // type: string (widened — can be reassigned)
+```
+
+Use `const` by default. TypeScript gives `const` a narrower, more precise type.
+
+## Arrays
+
+Typed arrays use the `Type[]` or `Array<Type>` syntax:
+
+```typescript
+const scores: number[] = [10, 20, 30];
+const names: Array<string> = ["Alice", "Bob"];
+```
+
+## Tuples
+
+Tuples are fixed-length arrays with positional types:
+
+```typescript
+const point: [number, number] = [10, 20];
+const entry: [string, number] = ["score", 42];
+```
+
+Tuples enforce both length and the type at each position.
+
+## The `any` and `unknown` Types
+
+`any` disables type checking entirely — avoid it:
+
+```typescript
+let value: any = "hello";
+value = 42; // No error, but no safety either
+```
+
+`unknown` is the safe alternative — you must narrow it before use:
+
+```typescript
+function process(input: unknown): string {
+  if (typeof input === "string") {
+    return input.toUpperCase(); // safe: narrowed to string
+  }
+  return "";
+}
+```
+
+## `typeof` Type Guards
+
+`typeof` narrows a value's type at runtime:
+
+```typescript
+function double(value: string | number): string | number {
+  if (typeof value === "number") {
+    return value * 2;
+  }
+  return value.repeat(2);
+}
+```
+
+## `never` — The Bottom Type
+
+A function that never returns (throws or infinite loops) has return type `never`:
+
+```typescript
+function fail(message: string): never {
+  throw new Error(message);
+}
+```
+
+`never` is also what you get at the end of an exhaustive union check — TypeScript uses it to tell you every case has been handled.

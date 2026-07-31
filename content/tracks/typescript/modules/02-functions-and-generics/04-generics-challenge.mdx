@@ -1,0 +1,68 @@
+---
+title: "Generics Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  // Implement the following generic utility functions.
+
+  // zip pairs elements from two arrays by index.
+  // zip([1,2], ['a','b']) → [[1,'a'], [2,'b']]
+  // Stops at the shorter array's length.
+  export function zip<A, B>(as: A[], bs: B[]): [A, B][] {
+    // TODO: implement
+    return [];
+  }
+
+  // groupBy groups an array of objects by the value of a given key.
+  // The key must exist on T and its value must be a string.
+  export function groupBy<T, K extends keyof T>(
+    items: T[],
+    key: K
+  ): Record<string, T[]> {
+    // TODO: implement
+    return {};
+  }
+
+  // pluck extracts an array of values for a given key from an array of objects.
+  export function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {
+    // TODO: implement
+    return [];
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { zip, groupBy, pluck } from './solution';
+
+  describe('zip', () => {
+    it('pairs elements', () => {
+      expect(zip([1, 2, 3], ['a', 'b', 'c'])).toEqual([[1, 'a'], [2, 'b'], [3, 'c']]);
+    });
+    it('stops at shorter array', () => {
+      expect(zip([1, 2], ['a'])).toEqual([[1, 'a']]);
+    });
+  });
+
+  describe('groupBy', () => {
+    const items = [
+      { name: 'Alice', role: 'admin' },
+      { name: 'Bob', role: 'viewer' },
+      { name: 'Carol', role: 'admin' },
+    ];
+    it('groups by role', () => {
+      const result = groupBy(items, 'role');
+      expect(result['admin']).toHaveLength(2);
+      expect(result['viewer']).toHaveLength(1);
+    });
+  });
+
+  describe('pluck', () => {
+    it('extracts field values', () => {
+      const users = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }];
+      expect(pluck(users, 'name')).toEqual(['Alice', 'Bob']);
+      expect(pluck(users, 'id')).toEqual([1, 2]);
+    });
+  });
+---
+
+# Challenge: Generics
+
+Implement `zip`, `groupBy`, and `pluck` using generic type parameters and `keyof` constraints.

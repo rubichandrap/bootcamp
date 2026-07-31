@@ -1,0 +1,89 @@
+---
+title: "Async/Await & Error Handling"
+type: "reading"
+order: 3
+---
+
+# Async/Await & Error Handling
+
+## `async` / `await`
+
+`async`/`await` is syntactic sugar over Promises. An `async` function always returns a `Promise`:
+
+```typescript
+async function getUser(id: number): Promise<User> {
+  const user = await fetchUser(id); // unwraps the Promise<User>
+  return user;
+}
+```
+
+`await` suspends the function until the Promise settles — but it does **not** block the thread. Other microtasks can run while waiting.
+
+## Error Handling with `try/catch`
+
+Inside an `async` function, use `try/catch` to handle rejections:
+
+```typescript
+async function loadUser(id: number): Promise<User | null> {
+  try {
+    return await fetchUser(id);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
+    return null;
+  }
+}
+```
+
+**Always type `err` as `unknown`** — TypeScript 4+ catches are typed `unknown` by default (with `useUnknownInCatchVariables`). You must narrow before using.
+
+## The Result Pattern
+
+Instead of throwing, many TypeScript codebases use an explicit `Result<T, E>` type:
+
+```typescript
+type Ok<T> = { ok: true; value: T };
+type Err<E> = { ok: false; error: E };
+type Result<T, E = Error> = Ok<T> | Err<E>;
+
+async function safeFetch(url: string): Promise<Result<Response>> {
+  try {
+    const res = await fetch(url);
+    return { ok: true, value: res };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e : new Error(String(e)) };
+  }
+}
+```
+
+The caller handles both cases explicitly — no hidden control flow from unhandled rejections.
+
+## Avoiding the Unhandled Rejection Trap
+
+A Promise rejection that isn't caught becomes an **unhandled rejection** — a runtime warning (or crash in Node.js). Always either:
+1. `await` the Promise inside a `try/catch`
+2. Chain a `.catch()` handler
+3. Return the Promise so the caller handles it
+
+```typescript
+// ❌ Fire-and-forget — rejection silently lost
+doWork();
+
+// ✅ Awaited
+await doWork();
+
+// ✅ Returned
+return doWork();
+```
+
+## `async` in Arrow Functions
+
+```typescript
+const getScore = async (userId: number): Promise<number> => {
+  const user = await fetchUser(userId);
+  return user.score;
+};
+```
+
+The return type annotation on an `async` arrow function goes after the parameter list, before `=>`.

@@ -1,0 +1,86 @@
+---
+title: "Utility Types Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  export interface UserProfile {
+    id: number;
+    username: string;
+    email: string;
+    role: "admin" | "editor" | "viewer";
+    bio?: string;
+  }
+
+  // createPatch returns only the fields you want to update.
+  // The return type must use a built-in utility type (no manual optionals).
+  export function createPatch(updates: Partial<UserProfile>): Partial<UserProfile> {
+    // TODO: return updates as-is (type annotation is what matters here)
+    return updates;
+  }
+
+  // toPublicProfile returns only id and username — use Pick.
+  export function toPublicProfile(
+    user: UserProfile
+  ): Pick<UserProfile, "id" | "username"> {
+    // TODO: return an object with only id and username
+    return { id: 0, username: '' };
+  }
+
+  // buildRoleMap returns a Record mapping each role to the provided default value.
+  export function buildRoleMap(defaultValue: boolean): Record<UserProfile["role"], boolean> {
+    // TODO: return a Record with "admin", "editor", "viewer" keys all set to defaultValue
+    return { admin: false, editor: false, viewer: false };
+  }
+
+  // withoutEmail returns the user without the email property — use Omit.
+  export function withoutEmail(user: UserProfile): Omit<UserProfile, "email"> {
+    // TODO: destructure to exclude email, return the rest
+    return { id: 0, username: '', role: 'viewer' };
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { createPatch, toPublicProfile, buildRoleMap, withoutEmail } from './solution';
+
+  const user = {
+    id: 1,
+    username: 'alice',
+    email: 'alice@example.com',
+    role: 'admin' as const,
+    bio: 'Developer',
+  };
+
+  describe('createPatch', () => {
+    it('accepts partial updates', () => {
+      const patch = createPatch({ username: 'bob' });
+      expect(patch).toEqual({ username: 'bob' });
+    });
+  });
+
+  describe('toPublicProfile', () => {
+    it('returns only id and username', () => {
+      const pub = toPublicProfile(user);
+      expect(pub).toEqual({ id: 1, username: 'alice' });
+      expect('email' in pub).toBe(false);
+    });
+  });
+
+  describe('buildRoleMap', () => {
+    it('maps all roles to the default value', () => {
+      expect(buildRoleMap(true)).toEqual({ admin: true, editor: true, viewer: true });
+      expect(buildRoleMap(false)).toEqual({ admin: false, editor: false, viewer: false });
+    });
+  });
+
+  describe('withoutEmail', () => {
+    it('excludes email from result', () => {
+      const result = withoutEmail(user);
+      expect('email' in result).toBe(false);
+      expect(result.id).toBe(1);
+      expect(result.username).toBe('alice');
+    });
+  });
+---
+
+# Challenge: Utility Types
+
+Apply `Partial`, `Pick`, `Omit`, and `Record` to transform a `UserProfile` type in real use-case scenarios.

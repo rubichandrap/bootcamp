@@ -1,0 +1,109 @@
+---
+title: "Concurrent Async Patterns"
+type: "reading"
+order: 5
+---
+
+# Concurrent Async Patterns
+
+## `Promise.all` — Parallel with Total Failure
+
+`Promise.all` runs Promises in parallel and waits for **all** to fulfill:
+
+```typescript
+const [users, posts] = await Promise.all([
+  fetchUsers(),   // Promise<User[]>
+  fetchPosts(),   // Promise<Post[]>
+]);
+// users: User[], posts: Post[]
+```
+
+If **any** Promise rejects, `Promise.all` rejects immediately (short-circuits).
+
+TypeScript infers the return as a tuple matching the input array's types.
+
+## `Promise.allSettled` — Parallel Without Failure Propagation
+
+`Promise.allSettled` always fulfills — even if some Promises reject:
+
+```typescript
+const results = await Promise.allSettled([fetchA(), fetchB(), fetchC()]);
+
+for (const result of results) {
+  if (result.status === "fulfilled") {
+    console.log("Value:", result.value);
+  } else {
+    console.error("Reason:", result.reason);
+  }
+}
+```
+
+Each element is a `PromiseSettledResult<T>` — a discriminated union on `status`.
+
+## `Promise.race` — First to Settle Wins
+
+`Promise.race` returns the result of whichever Promise settles first (fulfilled or rejected):
+
+```typescript
+const timeout = new Promise<never>((_, reject) =>
+  setTimeout(() => reject(new Error("Timeout")), 5000)
+);
+
+const result = await Promise.race([fetchData(), timeout]);
+```
+
+Use this pattern for deadline enforcement.
+
+## `Promise.any` — First to Fulfill Wins
+
+`Promise.any` returns the first fulfilled value, ignoring rejections. It only rejects if **all** promises reject:
+
+```typescript
+const fastest = await Promise.any([
+  fetchFromRegion("us"),
+  fetchFromRegion("eu"),
+  fetchFromRegion("ap"),
+]);
+```
+
+## Async Iterators
+
+When data arrives in chunks (streams, pagination), use `async` generators:
+
+```typescript
+async function* paginate<T>(
+  fetcher: (page: number) => Promise<T[]>
+): AsyncGenerator<T> {
+  let page = 0;
+  while (true) {
+    const items = await fetcher(page++);
+    if (items.length === 0) break;
+    for (const item of items) yield item;
+  }
+}
+
+for await (const item of paginate(fetchPage)) {
+  process(item);
+}
+```
+
+`AsyncGenerator<T>` is the return type of an `async function*`. The `for await...of` loop consumes it.
+
+## Concurrency Control
+
+Running too many Promises at once can overwhelm APIs or exhaust resources. Batch them manually:
+
+```typescript
+async function batchProcess<T, U>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<U>
+): Promise<U[]> {
+  const results: U[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    results.push(...await Promise.all(batch.map(processor)));
+  }
+  return results;
+}
+```
