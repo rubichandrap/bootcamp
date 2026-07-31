@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 — refactor(rce): implement executeSubmission engine seam and workspace lifecycle
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `src/app/api/rce/execute/route.ts` is thinned to a simple HTTP adapter forwarding requests to `executeSubmission`.
-- [ ] Returns HTTP 200 with `SubmissionExecutionResult` JSON payload on successful execution.
-- [ ] Returns HTTP 400 when required fields (`code`, `testCode`) are missing.
-- [ ] Returns HTTP 500 when unhandled execution errors occur.
-- [ ] All existing API route tests and UI challenge execution flows pass without regressions.
+- [x] `src/app/api/rce/execute/route.ts` is thinned to a simple HTTP adapter forwarding requests to `executeSubmission`.
+- [x] Returns HTTP 200 with `SubmissionExecutionResult` JSON payload on successful execution.
+- [x] Returns HTTP 400 when required fields (`code`, `testCode`) are missing.
+- [x] Returns HTTP 500 when unhandled execution errors occur.
+- [x] All existing API route tests and UI challenge execution flows pass without regressions.

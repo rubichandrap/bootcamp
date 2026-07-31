@@ -4,8 +4,8 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `parseGoTestStream` is implemented and exported from `src/lib/rce/rceEngine.ts`.
-- [ ] Correctly parses multi-test passing streams, failing test streams, syntax/compile errors, benchmark metrics (`ns/op`, `B/op`, `allocs/op`), and `WARNING: DATA RACE` flags.
-- [ ] Comprehensive unit test suite in `src/lib/rce/rceEngine.test.ts` passes in Vitest without spawning child processes.
+- [x] `parseGoTestStream` is implemented and exported from `src/lib/rce/rceEngine.ts`.
+- [x] Correctly parses multi-test passing streams, failing test streams, syntax/compile errors, benchmark metrics (`ns/op`, `B/op`, `allocs/op`), and `WARNING: DATA RACE` flags.
+- [x] Comprehensive unit test suite in `src/lib/rce/rceEngine.test.ts` passes in Vitest without spawning child processes.

@@ -4,10 +4,10 @@
 
 **Blocked by:** 01 — refactor(rce): extract parseGoTestStream parser seam and unit test suite
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `executeSubmission(params: ExecuteSubmissionParams): Promise<SubmissionExecutionResult>` is implemented and exported from `src/lib/rce/rceEngine.ts`.
-- [ ] Automatically creates temporary directory and writes `go.mod`, `main.go`, and `main_test.go`.
-- [ ] Enforces 5000ms execution timeout (`RCE_TIMEOUT_MS`).
-- [ ] Guaranteed directory removal in `finally` block even when process fails or times out.
-- [ ] Integration tests in `src/lib/rce/rceEngine.test.ts` pass cleanly when running Go test execution against host Go toolchain.
+- [x] `executeSubmission(params: ExecuteSubmissionParams): Promise<SubmissionExecutionResult>` is implemented and exported from `src/lib/rce/rceEngine.ts`.
+- [x] Automatically creates temporary directory and writes `go.mod`, `main.go`, and `main_test.go`.
+- [x] Enforces 5000ms execution timeout (`RCE_TIMEOUT_MS`).
+- [x] Guaranteed directory removal in `finally` block even when process fails or times out.
+- [x] Integration tests in `src/lib/rce/rceEngine.test.ts` pass cleanly when running Go test execution against host Go toolchain.
