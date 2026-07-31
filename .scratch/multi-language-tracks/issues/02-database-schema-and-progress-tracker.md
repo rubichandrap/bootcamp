@@ -4,10 +4,10 @@
 
 **Blocked by:** 01 — Track-Aware Content Directory & Content Engine
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] SQLite database schema includes `track_id` column in `user_progress` and `submissions` tables.
-- [ ] `progressTracker` computes per-track completion metrics (`getTrackProgress(userId, trackId)`).
-- [ ] `progressTracker` computes overall platform completion metrics (`getOverallProgress(userId)`).
-- [ ] Submitting a passing challenge in any track maintains/increments the user's unified daily streak.
-- [ ] Unit tests for `submissionRepo` and `progressTracker` pass cleanly.
+- [x] SQLite database schema includes `track_id` column in `user_progress` and `submissions` tables.
+- [x] `progressTracker` computes per-track completion metrics (`getTrackProgress(userId, trackId)`).
+- [x] `progressTracker` computes overall platform completion metrics (`getOverallProgress(userId)`).
+- [x] Submitting a passing challenge in any track maintains/increments the user's unified daily streak.
+- [x] Unit tests for `submissionRepo` and `progressTracker` pass cleanly.
