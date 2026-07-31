@@ -4,9 +4,9 @@
 
 **Blocked by:** Ticket 01 (Extract Progress Tracker), Ticket 02 (Extract Chapter Lifecycle).
 
-**Status:** ready-for-agent
+**Status: done
 
-- [ ] `markAsRead` service function created with injected ports: `recordSubmission`, `onAdvance`
-- [ ] `useReadingSession` hook created — exposes `content`, `title`, `isPassed`, `markAsRead`
-- [ ] `markAsRead` tested with stub ports — verifies: posts READING_COMPLETION_MARKER submission with passed=true, then calls onAdvance
-- [ ] Hook derives `content` and `title` from current Chapter state
+- [x] `markAsRead` service function created with injected ports: `recordSubmission`, `onAdvance`
+- [x] `useReadingSession` hook created — exposes `content`, `title`, `isPassed`, `markAsRead`
+- [x] `markAsRead` tested with stub ports — verifies: posts READING_COMPLETION_MARKER submission with passed=true, then calls onAdvance
+- [x] Hook derives `content` and `title` from current Chapter state

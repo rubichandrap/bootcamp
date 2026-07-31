@@ -4,9 +4,9 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status: done
 
-- [ ] Service functions created: `fetchProgress`, `recordSubmission`, `fetchFailedAttemptsForChapter`, `incrementFailedAttempts`
-- [ ] `useProgressTracker` hook created with Progress state + methods delegating to service functions
-- [ ] Service functions tested with mocked `fetch` (node environment) — verifies correct API calls and state updates
-- [ ] `incrementFailedAttempts` is a local state mutation only (no API call)
+- [x] Service functions created: `fetchProgress`, `recordSubmission`, `fetchFailedAttemptsForChapter`, `incrementFailedAttempts`
+- [x] `useProgressTracker` hook created with Progress state + methods delegating to service functions
+- [x] Service functions tested with mocked `fetch` (node environment) — verifies correct API calls and state updates
+- [x] `incrementFailedAttempts` is a local state mutation only (no API call)

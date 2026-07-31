@@ -4,10 +4,10 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status: done
 
-- [ ] Service functions created: `fetchModules`, `fetchChapter`, `findNextChapter` (pure)
-- [ ] `useChapterLifecycle` hook created with Chapter state + methods
-- [ ] `findNextChapter` tested as pure function with edge cases (last chapter, empty modules, middle chapter)
-- [ ] `fetchModules` and `fetchChapter` tested with mocked `fetch`
-- [ ] `advanceToNextChapter` delegates to `findNextChapter` + `selectChapter`
+- [x] Service functions created: `fetchModules`, `fetchChapter`, `findNextChapter` (pure)
+- [x] `useChapterLifecycle` hook created with Chapter state + methods
+- [x] `findNextChapter` tested as pure function with edge cases (last chapter, empty modules, middle chapter)
+- [x] `fetchModules` and `fetchChapter` tested with mocked `fetch`
+- [x] `advanceToNextChapter` delegates to `findNextChapter` + `selectChapter`
