@@ -1,59 +1,64 @@
 import { useState, useCallback } from 'react';
 import {
-  fetchProgress,
-  recordSubmission as recordSubmissionService,
-  fetchFailedAttemptsForChapter,
-  incrementFailedAttempts as incrementFailedAttemptsHelper,
+  ProgressTrackerAdapter,
+  defaultHttpProgressAdapter,
   calculateProgressPercent,
-  RecordSubmissionParams,
-  RecordSubmissionResult,
+  RecordSubmissionInput,
   DEFAULT_USER_ID,
-} from '@/lib/progress/progressService';
+} from '@/lib/progress/progressTracker';
 
-export function useProgressTracker() {
+export function useProgressTracker(
+  adapter: ProgressTrackerAdapter = defaultHttpProgressAdapter
+) {
   const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
   const [streakDays, setStreakDays] = useState<number>(0);
   const [failedAttempts, setFailedAttempts] = useState<number>(0);
 
-  const loadProgress = useCallback(async (userId = DEFAULT_USER_ID) => {
-    try {
-      const data = await fetchProgress(userId);
-      setCompletedChapterIds(data.completedChapterIds);
-      setStreakDays(data.streakDays);
-    } catch (err) {
-      console.error('Failed to load progress', err);
-    }
-  }, []);
+  const loadProgress = useCallback(
+    async (userId = DEFAULT_USER_ID) => {
+      try {
+        const data = await adapter.getProgress(userId);
+        setCompletedChapterIds(data.completedChapterIds);
+        setStreakDays(data.streakDays);
+      } catch (err) {
+        console.error('Failed to load progress', err);
+      }
+    },
+    [adapter]
+  );
 
-  const loadFailedAttempts = useCallback(async (chapterId: string, userId = DEFAULT_USER_ID) => {
-    try {
-      const count = await fetchFailedAttemptsForChapter(chapterId, userId);
-      setFailedAttempts(count);
-    } catch (err) {
-      console.error('Failed to fetch failed attempts', err);
-      // Retain local failedAttempts count on network error to allow unlock during outages
-    }
-  }, []);
+  const loadFailedAttempts = useCallback(
+    async (chapterId: string, userId = DEFAULT_USER_ID) => {
+      try {
+        const count = await adapter.getFailedAttempts(userId, chapterId);
+        setFailedAttempts(count);
+      } catch (err) {
+        console.error('Failed to fetch failed attempts', err);
+        // Retain local failedAttempts count on network error to allow unlock during outages
+      }
+    },
+    [adapter]
+  );
 
   const recordSubmission = useCallback(
-    async (params: RecordSubmissionParams): Promise<RecordSubmissionResult> => {
-      const res = await recordSubmissionService(params);
-      if (res.completedChapterIds) {
-        setCompletedChapterIds(res.completedChapterIds);
+    async (params: RecordSubmissionInput) => {
+      const res = await adapter.recordSubmission(params);
+      if (res.userProgress?.completedChapterIds) {
+        setCompletedChapterIds(res.userProgress.completedChapterIds);
       }
-      if (typeof res.streakDays === 'number') {
-        setStreakDays(res.streakDays);
+      if (typeof res.userProgress?.streakDays === 'number') {
+        setStreakDays(res.userProgress.streakDays);
       }
       if (typeof res.chapterFailedAttempts === 'number') {
         setFailedAttempts(res.chapterFailedAttempts);
       }
       return res;
     },
-    []
+    [adapter]
   );
 
   const incrementFailedAttempts = useCallback(() => {
-    setFailedAttempts((prev) => incrementFailedAttemptsHelper(prev));
+    setFailedAttempts((prev) => prev + 1);
   }, []);
 
   return {

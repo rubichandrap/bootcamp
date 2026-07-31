@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordSubmission, getUserProgress, getFailedAttemptsCount } from '@/lib/db/submissionRepo';
+import { DrizzleProgressAdapter } from '@/lib/progress/progressTracker';
 import { getErrorMessage } from '@/lib/utils/errorUtils';
+
+const progressAdapter = new DrizzleProgressAdapter();
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, chapterId, code, passed, testCount, failedCount, compileError } = body;
+    const { userId, chapterId, code, passed } = body;
 
     if (!userId || !chapterId || code === undefined || passed === undefined) {
       return NextResponse.json(
@@ -14,27 +16,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = recordSubmission({
+    const result = await progressAdapter.recordSubmission({
       userId,
       chapterId,
       code,
       passed,
-      testCount: testCount || 0,
-      failedCount: failedCount || 0,
-      compileError,
+      testCount: body.testCount || 0,
+      failedCount: body.failedCount || 0,
+      compileError: body.compileError,
     });
 
-    const userProgress = getUserProgress(userId);
-    const chapterFailedAttempts = getFailedAttemptsCount(userId, chapterId);
-
-    return NextResponse.json(
-      {
-        ...result,
-        userProgress,
-        chapterFailedAttempts,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(result, { status: 201 });
   } catch (error: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(error) },
@@ -56,12 +48,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const progress = getUserProgress(userId);
-    const chapterFailedAttempts = chapterId ? getFailedAttemptsCount(userId, chapterId) : 0;
+    const userProgress = await progressAdapter.getProgress(userId);
+    const chapterFailedAttempts = chapterId
+      ? await progressAdapter.getFailedAttempts(userId, chapterId)
+      : 0;
 
     return NextResponse.json(
       {
-        ...progress,
+        ...userProgress,
+        userProgress,
         chapterFailedAttempts,
       },
       { status: 200 }

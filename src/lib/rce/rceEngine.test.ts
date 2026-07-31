@@ -80,10 +80,10 @@ describe('rceEngine', () => {
 
       const result = parseGoTestStream(stdout, '');
 
-      expect(result.bench.hasBench).toBe(true);
-      expect(result.bench.nsPerOp).toBe(1.25);
-      expect(result.bench.bytesPerOp).toBe(16);
-      expect(result.bench.allocsPerOp).toBe(1);
+      expect(result.bench!.hasBench).toBe(true);
+      expect(result.bench!.nsPerOp).toBe(1.25);
+      expect(result.bench!.bytesPerOp).toBe(16);
+      expect(result.bench!.allocsPerOp).toBe(1);
     });
   });
 

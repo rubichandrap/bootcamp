@@ -1,11 +1,12 @@
 # 01 — refactor(progress): define ProgressTracker domain interface and server Drizzle adapter
 
-**What to build:** Create `src/lib/progress/progressTracker.ts` defining the `ProgressTrackerAdapter` domain interface (`getProgress`, `recordSubmission`, `getFailedAttempts`, `calculateModuleProgress`) and implement `DrizzleProgressAdapter` for direct server-side database access using `submissionRepo.ts` and `streak.ts`.
+**What to build:** Establish the unified progress tracking domain seam and server-side database adapter. This allows server components and backend services to record learner submissions, query daily streaks, fetch completed chapters, and calculate progress percentages directly without network latency or HTTP fetch wrappers.
 
 **Blocked by:** None — can start immediately.
 
 **Status:** ready-for-agent
 
-- [ ] `ProgressTrackerAdapter` interface is exported from `src/lib/progress/progressTracker.ts`.
-- [ ] `DrizzleProgressAdapter` implements `ProgressTrackerAdapter` using Drizzle ORM transactions.
-- [ ] Unit tests in `src/lib/progress/progressTracker.test.ts` verify streak calculation and submission recording logic.
+- [ ] Domain models (`UserProgress`, `RecordSubmissionInput`, `RecordSubmissionResult`) and `ProgressTrackerAdapter` interface are defined and exported.
+- [ ] Pure synchronous `calculateProgressPercent` calculation function is exported and tested.
+- [ ] `DrizzleProgressAdapter` implements `ProgressTrackerAdapter` using atomic database transactions.
+- [ ] Domain unit test suite verifies streak calculation, completed chapter tracking, and submission recording.
