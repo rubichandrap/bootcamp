@@ -1,9 +1,9 @@
 import { READING_PROGRESS_MARKER } from '@/lib/content/contentConstants';
 import {
-  RecordSubmissionParams,
+  RecordSubmissionInput,
   RecordSubmissionResult,
   DEFAULT_USER_ID,
-} from '@/lib/progress/progressService';
+} from '@/lib/progress/progressTracker';
 
 export interface MarkAsReadParams {
   chapterId: string;
@@ -11,7 +11,7 @@ export interface MarkAsReadParams {
 }
 
 export interface MarkAsReadPorts {
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult | undefined>;
+  recordSubmission: (params: RecordSubmissionInput) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
 }
 

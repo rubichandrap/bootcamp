@@ -1,10 +1,10 @@
 import { SubmissionExecutionResult as RCEExecuteResponse } from '@/lib/rce/rceEngine';
 import {
-  RecordSubmissionParams,
+  RecordSubmissionInput,
   RecordSubmissionResult,
-  recordSubmission as recordSubmissionService,
+  defaultHttpProgressAdapter,
   DEFAULT_USER_ID,
-} from '@/lib/progress/progressService';
+} from '@/lib/progress/progressTracker';
 
 export interface ExecuteRceParams {
   code: string;
@@ -39,7 +39,7 @@ export interface RunChallengeParams {
 
 export interface RunChallengePorts {
   executeRce: (params: ExecuteRceParams) => Promise<RCEExecuteResponse>;
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult | undefined>;
+  recordSubmission: (params: RecordSubmissionInput) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
   incrementFailedAttempts?: () => void;
 }
@@ -55,7 +55,8 @@ export async function runChallenge(
   ports?: Partial<RunChallengePorts>
 ): Promise<RunChallengeResult> {
   const resolvedExecuteRce = ports?.executeRce || executeRce;
-  const resolvedRecordSubmission = ports?.recordSubmission || recordSubmissionService;
+  const resolvedRecordSubmission =
+    ports?.recordSubmission || ((p) => defaultHttpProgressAdapter.recordSubmission(p));
   const autoAdvanceDelay = params.autoAdvanceDelayMs ?? 1500;
 
   let data: RCEExecuteResponse;

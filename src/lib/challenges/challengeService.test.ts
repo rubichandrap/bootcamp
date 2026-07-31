@@ -168,7 +168,7 @@ describe('challengeService', () => {
       });
 
       expect(res.result).toEqual(mockRceResponse);
-      expect(res.progressResult?.completedChapterIds).toEqual(['ch-1']);
+      expect(res.progressResult?.userProgress.completedChapterIds).toEqual(['ch-1']);
     });
 
     it('does not auto-advance when test execution fails', async () => {

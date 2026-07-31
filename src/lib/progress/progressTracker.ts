@@ -82,29 +82,43 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
   }
 }
 
-function parseUserProgress(data: any, fallbackUserId: string): UserProgress {
+function isObjectRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === 'object' && val !== null;
+}
+
+function parseUserProgress(data: unknown, fallbackUserId: string): UserProgress {
+  if (!isObjectRecord(data)) {
+    return {
+      userId: fallbackUserId,
+      completedChapterIds: [],
+      completedCount: 0,
+      streakDays: 0,
+    };
+  }
+
   return {
-    userId: data?.userId || fallbackUserId,
-    completedChapterIds: Array.isArray(data?.completedChapterIds) ? data.completedChapterIds : [],
-    completedCount: typeof data?.completedCount === 'number' ? data.completedCount : 0,
-    streakDays: typeof data?.streakDays === 'number' ? data.streakDays : 0,
+    userId: typeof data.userId === 'string' ? data.userId : fallbackUserId,
+    completedChapterIds: Array.isArray(data.completedChapterIds)
+      ? data.completedChapterIds.filter((item): item is string => typeof item === 'string')
+      : [],
+    completedCount: typeof data.completedCount === 'number' ? data.completedCount : 0,
+    streakDays: typeof data.streakDays === 'number' ? data.streakDays : 0,
   };
 }
 
 export class HttpProgressAdapter implements ProgressTrackerAdapter {
-  async getProgress(userId = DEFAULT_USER_ID): Promise<UserProgress> {
+  async getProgress(userId: string): Promise<UserProgress> {
     const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) {
       throw new Error(`fetchProgress failed with status ${res.status}`);
     }
-    const data = await res.json();
+    const data: unknown = await res.json();
     return parseUserProgress(data, userId);
   }
 
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
-    const userId = input.userId || DEFAULT_USER_ID;
     const payload = {
-      userId,
+      userId: input.userId,
       chapterId: input.chapterId,
       code: input.code,
       passed: input.passed,
@@ -120,12 +134,14 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
     if (!res.ok) {
       throw new Error(`recordSubmission failed with status ${res.status}`);
     }
-    const data = await res.json();
+    const data: unknown = await res.json();
+    const dataObj = isObjectRecord(data) ? data : {};
+
     return {
-      userProgress: parseUserProgress(data.userProgress, userId),
+      userProgress: parseUserProgress(dataObj.userProgress, input.userId),
       chapterFailedAttempts:
-        typeof data.chapterFailedAttempts === 'number' ? data.chapterFailedAttempts : 0,
-      submissionId: data.submissionId || '',
+        typeof dataObj.chapterFailedAttempts === 'number' ? dataObj.chapterFailedAttempts : 0,
+      submissionId: typeof dataObj.submissionId === 'string' ? dataObj.submissionId : '',
     };
   }
 
@@ -136,8 +152,9 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
     if (!res.ok) {
       throw new Error(`fetchFailedAttemptsForChapter failed with status ${res.status}`);
     }
-    const data = await res.json();
-    return typeof data.chapterFailedAttempts === 'number' ? data.chapterFailedAttempts : 0;
+    const data: unknown = await res.json();
+    const dataObj = isObjectRecord(data) ? data : {};
+    return typeof dataObj.chapterFailedAttempts === 'number' ? dataObj.chapterFailedAttempts : 0;
   }
 }
 
