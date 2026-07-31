@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseGoTestStream, executeSubmission } from './rceEngine';
+import { parseGoTestStream, executeSubmission, getLanguageExecutor } from './rceEngine';
 
 describe('rceEngine', () => {
   describe('parseGoTestStream', () => {
@@ -88,10 +88,12 @@ describe('rceEngine', () => {
   });
 
   describe('executeSubmission', () => {
-    it('throws when code or testCode is missing', async () => {
-      await expect(executeSubmission({ code: '', testCode: 'func TestX(t *testing.T){}' })).rejects.toThrow(
-        'Missing code or testCode'
-      );
+    it('returns failure result when code or testCode is missing', async () => {
+      const result = await executeSubmission({ code: '', testCode: 'func TestX(t *testing.T){}' });
+      expect(result.success).toBe(false);
+      expect(result.compileError).toBe('Missing code or testCode');
+      expect(result.passed).toBe(0);
+      expect(result.failed).toBe(0);
     });
 
     it('compiles and executes valid Go code submission', async () => {
@@ -109,6 +111,11 @@ func TestAdd(t *testing.T) {
       expect(result.passed).toBe(1);
       expect(result.failed).toBe(0);
       expect(result.tests[0].name).toBe('TestAdd');
+    });
+
+    it('dispatches typescript trackId to TypeScriptExecutor correctly', () => {
+      const executor = getLanguageExecutor('typescript');
+      expect(executor.constructor.name).toBe('TypeScriptExecutor');
     });
   });
 });

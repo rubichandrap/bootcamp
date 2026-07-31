@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Terminal, Cpu, MemoryStick, AlertTriangle, Flame, CheckCircle2, XCircle } from 'lucide-react';
-import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
+import { SubmissionExecutionResult as RCEExecuteResponse } from '@/lib/rce/rceEngine';
 
 export type ConsoleTab = 'tests' | 'perf' | 'escape';
 

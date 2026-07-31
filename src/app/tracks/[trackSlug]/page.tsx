@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getTrackBySlug } from '@/lib/content/contentEngine';
+import { getTrackDashboard } from '@/lib/tracks/trackCatalog';
 import { BookOpen, CheckCircle, Code2, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface TrackDashboardProps {
@@ -10,7 +10,7 @@ interface TrackDashboardProps {
 
 export async function generateMetadata({ params }: TrackDashboardProps) {
   const { trackSlug } = await params;
-  const track = getTrackBySlug(trackSlug);
+  const track = getTrackDashboard(trackSlug);
   if (!track) return { title: 'Track Not Found' };
   return {
     title: `${track.title} | Developer Mastery Platform`,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: TrackDashboardProps) {
 
 export default async function TrackDashboardPage({ params }: TrackDashboardProps) {
   const { trackSlug } = await params;
-  const track = getTrackBySlug(trackSlug);
+  const track = getTrackDashboard(trackSlug);
 
   if (!track) {
     notFound();

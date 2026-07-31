@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { executeRce, runChallenge } from './challengeService';
-import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
+import { SubmissionExecutionResult as RCEExecuteResponse } from '@/lib/rce/rceEngine';
 
 describe('challengeService', () => {
   const originalFetch = globalThis.fetch;

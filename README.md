@@ -1,23 +1,23 @@
 # Bootcamp — Developer Mastery Platform
 
 ```text
-██████╗ ██████╗ ██████╗ ████████╗██╗  ██╗██████╗ ██████╗████████╗
-██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██║ ██╔╝██╔══██╗██╔═══╝╚══██╔══╝
-██████╔╝██║  ██║██║  ██║   ██║   █████╔╝ ██████╔╝██║       ██║   
-██╔══██╗██║  ██║██║  ██║   ██║   ██╔═██╗ ██╔══██╗██║       ██║   
-██████╔╝██████╔╝██████╔╝   ██║   ██║  ██╗██████╔╝╚██████╗  ██║   
-╚═════╝ ╚═════╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═╝   
+██████╗  ██████╗  ██████╗ ████████╗ ██████╗ █████╗ ███╗   ███╗██████╗ 
+██╔══██╗██╔═══██╗██╔═══██╗╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██╔══██╗
+██████╔╝██║   ██║██║   ██║   ██║   ██║     ███████║██╔████╔██║██████╔╝
+██╔══██╗██║   ██║██║   ██║   ██║   ██║     ██╔══██║██║╚██╔╝██║██╔═══╝ 
+██████╔╝╚██████╔╝╚██████╔╝   ██║   ╚██████╗██║  ██║██║ ╚═╝ ██║██║     
+╚═════╝  ╚═════╝  ╚═════╝    ╚═╝    ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝     
 ```
 
 An interactive, terminal-style learning platform designed for developers to master programming languages (**Go**, **TypeScript**, and more) through reading guides, Monaco editor challenges, and real-time test-driven Remote Code Execution (RCE).
 
 ## Features
 
-- 🎯 **Multi-Language Tracks**: Switch seamlessly between Go and TypeScript curriculums.
-- ⚡ **Interactive RCE Engine**: Execute submissions against test suites in real-time (`go test` for Go, `vitest`/`node:test` for TypeScript).
-- 🔥 **Unified Daily Streaks**: Keep your daily learning momentum alive across all tracks.
-- 📊 **Track-Level & Platform Progress**: Monitor completion metrics per language and overall.
-- 🎨 **Adaptive Terminal Workspace**: Responsive workspace with dark/light themes and customizable split panes.
+- 🎯 **Multi-Language Tracks**: Choose from curated curriculum tracks across multiple programming languages (Go, TypeScript, and more).
+- ⚡ **Interactive RCE Engine**: Execute learner code submissions securely against real-time test suites (`go test` for Go, `vitest`/`node:test` for TypeScript).
+- 🔥 **Unified Daily Streaks**: Keep your daily learning momentum alive across all language tracks.
+- 📊 **Track & Platform Metrics**: Monitor per-language completion progress and total platform standing.
+- 🎨 **Adaptive Terminal Workspace**: Responsive workspace layout featuring Monaco editor integration, dark/light themes, and customizable split panes.
 
 ## Getting Started
 

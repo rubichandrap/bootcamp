@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RCE_TIMEOUT_MS } from './route';
+import { RCE_TIMEOUT_MS } from '@/lib/rce/rceEngine';
 
 describe('RCE Engine Execution Timeout Configuration', () => {
   it('should strictly enforce a 5-second (5000ms) execution timeout per spec', () => {
