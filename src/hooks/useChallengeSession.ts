@@ -91,12 +91,13 @@ export function useChallengeSession(initialStarterCode = '', initialTestCode = '
   );
 
   const runChallengeSession = useCallback(
-    async (chapterId: string, ports?: Partial<RunChallengePorts>) => {
+    async (chapterId: string, ports?: Partial<RunChallengePorts>, trackId?: string) => {
       setIsLoading(true);
       try {
         const res = await runChallengeService(
           {
             chapterId,
+            trackId,
             code,
             testCode,
             enableRaceCheck,
