@@ -192,7 +192,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
           {activeTab === 'escape' && (
             <div className="space-y-2 font-mono text-xs">
               <div className="text-xs font-semibold text-slate-400 font-sans uppercase tracking-wider mb-2">
-                Compiler Escape Analysis &amp; Inlining (`-gcflags="-m"`)
+                Compiler Escape Analysis &amp; Inlining (&quot;-gcflags=-m&quot;)
               </div>
 
               {result.bench?.escapeLogs && result.bench.escapeLogs.length > 0 ? (

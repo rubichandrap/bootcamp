@@ -22,7 +22,6 @@ describe('useProgressTracker hook contract and seam', () => {
   });
 
   it('provides expected public actions and functions', () => {
-    const adapter = createMockAdapter();
     expect(typeof useProgressTracker).toBe('function');
   });
 

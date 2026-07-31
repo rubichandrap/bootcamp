@@ -9,6 +9,6 @@ describe('Chapter Icons UI Helper', () => {
   });
 
   it('should return default label for unknown chapter type', () => {
-    expect(getChapterTypeLabel('unknown' as any)).toBe('Chapter');
+    expect(getChapterTypeLabel('unknown' as unknown as 'reading')).toBe('Chapter');
   });
 });

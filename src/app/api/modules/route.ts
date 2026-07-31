@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
 
     const modules = getAllModules();
     return NextResponse.json(modules);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to load content' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to load content';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

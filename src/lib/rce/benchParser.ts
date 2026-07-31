@@ -13,7 +13,7 @@ export function parseBenchOutput(stdout: string, stderr: string): BenchMetrics {
   let allocsPerOp = 0;
 
   // Unescape JSON stdout lines if go test -json output is passed
-  let fullText = stdout + '\n' + stderr;
+  const fullText = stdout + '\n' + stderr;
   const lines = fullText.split('\n');
 
   let cleanText = '';
