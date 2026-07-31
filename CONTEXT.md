@@ -52,3 +52,7 @@ _Avoid_: Color scheme switcher, palette toggle
 **Workspace Layout**:
 The adaptive arrangement of Reading Guide, Code Editor, and RCE Engine console panes within a Chapter view, supporting side-by-side split view on desktop/tablet devices and segmented tabbed views on mobile devices.
 _Avoid_: Page grid, split screen wrapper
+
+**Workspace Session**:
+The stateful coordination of Chapter lifecycle, Challenge execution, and Progress tracking for a given Track within a Workspace Layout. Distinct from Workspace Layout, which describes the visual arrangement of panes — Workspace Session owns what happens when a learner selects a Chapter, submits code, or marks a Chapter as read.
+_Avoid_: Workspace controller, workspace manager, workspace state
