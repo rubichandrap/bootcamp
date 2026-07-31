@@ -33,7 +33,7 @@ export const SocraticHintModal: React.FC<SocraticHintModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 font-mono">
-      <div className="bg-zinc-950 dark:bg-[#09090b] border border-zinc-300 dark:border-zinc-800 rounded max-w-md w-full p-4 shadow-2xl space-y-3 text-xs text-zinc-800 dark:text-zinc-200">
+      <div className="bg-white dark:bg-[#09090b] border border-zinc-300 dark:border-zinc-800 rounded max-w-md w-full p-4 shadow-2xl space-y-3 text-xs text-zinc-800 dark:text-zinc-200">
         {/* Terminal Window Bar */}
         <div className="flex items-center justify-between border-b border-zinc-300 dark:border-zinc-800 pb-2 font-bold">
           <span>┌─ [HINT SYSTEM] Socratic Assistant ──────┐</span>

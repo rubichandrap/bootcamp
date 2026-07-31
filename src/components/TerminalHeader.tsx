@@ -33,7 +33,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
   onOpenSearch,
 }) => {
   return (
-    <header className="h-10 bg-zinc-900 dark:bg-[#09090b] border-b border-zinc-300 dark:border-zinc-800 flex items-center justify-between px-3 font-mono text-xs text-zinc-700 dark:text-zinc-300 select-none shrink-0">
+    <header className="h-10 bg-zinc-100 dark:bg-[#09090b] border-b border-zinc-300 dark:border-zinc-800 flex items-center justify-between px-3 font-mono text-xs text-zinc-700 dark:text-zinc-300 select-none shrink-0">
       {/* Left: Window Controls & Shell Title */}
       <div className="flex items-center gap-3 truncate">
         <div className="flex items-center gap-1.5 shrink-0">

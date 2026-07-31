@@ -21,8 +21,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   path,
 }) => {
   return (
-    <div className="h-full w-full border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-zinc-900 dark:bg-[#1e1e1e] flex flex-col font-mono">
-      <div className="bg-zinc-200 dark:bg-zinc-900 px-3 py-1 text-[10px] font-mono border-b border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 uppercase flex items-center justify-between select-none shrink-0">
+    <div className="h-full w-full border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e] flex flex-col font-mono">
+      <div className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 text-[10px] font-mono border-b border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 uppercase flex items-center justify-between select-none shrink-0">
         <span>┌─ [EDITOR] {filename} ──</span>
         <span>[GO 1.22]</span>
       </div>

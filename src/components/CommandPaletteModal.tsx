@@ -58,7 +58,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-start justify-center pt-20 p-4 font-mono">
-      <div className="bg-zinc-950 dark:bg-[#09090b] border border-zinc-300 dark:border-zinc-800 rounded max-w-xl w-full overflow-hidden shadow-2xl flex flex-col text-xs text-zinc-800 dark:text-zinc-200">
+      <div className="bg-white dark:bg-[#09090b] border border-zinc-300 dark:border-zinc-800 rounded max-w-xl w-full overflow-hidden shadow-2xl flex flex-col text-xs text-zinc-800 dark:text-zinc-200">
         {/* Terminal Header */}
         <div className="p-2.5 border-b border-zinc-300 dark:border-zinc-800 bg-zinc-200 dark:bg-zinc-900/80 flex items-center justify-between font-bold">
           <span>┌─ [CMD+K] COMMAND PALETTE &amp; TRACK SEARCH ─────────────┐</span>

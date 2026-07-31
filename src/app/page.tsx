@@ -71,22 +71,23 @@ export default function Home() {
   const currentChapter = chapterLifecycle.currentChapter;
   useEffect(() => {
     if (!currentChapter) return;
+    const ch = currentChapter;
     let isSubscribed = true;
     async function initChapter() {
-      progressTracker.loadFailedAttempts(currentChapter.slug);
+      progressTracker.loadFailedAttempts(ch.slug);
       let savedCode: string | undefined;
-      if (currentChapter.type !== 'reading') {
-        const latestSub = await progressTracker.getLatestSubmission(currentChapter.slug);
+      if (ch.type !== 'reading') {
+        const latestSub = await progressTracker.getLatestSubmission(ch.slug);
         if (latestSub?.code) {
           savedCode = latestSub.code;
         }
       }
       if (isSubscribed) {
         challengeSession.resetForChapter(
-          currentChapter.starterCode,
-          currentChapter.testCode,
+          ch.starterCode,
+          ch.testCode,
           savedCode,
-          currentChapter.slug
+          ch.slug
         );
       }
     }
@@ -149,7 +150,7 @@ export default function Home() {
     : undefined;
 
   return (
-    <div className="h-screen w-screen bg-zinc-950 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
+    <div className="h-screen w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
       {/* Top Terminal Emulator Titlebar Header */}
       <TerminalHeader
         trackTitle="Go Mastery"
@@ -275,15 +276,15 @@ export default function Home() {
               className="flex flex-col overflow-hidden shrink-0"
             >
               {/* Code Editor Panel */}
-              <div className="flex-1 flex flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-zinc-900 dark:bg-[#1e1e1e]">
+              <div className="flex-1 flex flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e]">
                 {/* Editor File Tab Bar */}
-                <div className="h-9 bg-zinc-200 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
+                <div className="h-9 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => challengeSession.selectTab('code')}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
                         challengeSession.activeTab === 'code'
-                          ? 'bg-zinc-950 dark:bg-[#1e1e1e] text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
+                          ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
@@ -293,7 +294,7 @@ export default function Home() {
                       onClick={() => challengeSession.selectTab('test')}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
                         challengeSession.activeTab === 'test'
-                          ? 'bg-zinc-950 dark:bg-[#1e1e1e] text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
+                          ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >

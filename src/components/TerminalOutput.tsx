@@ -27,7 +27,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
   const [activeTab, setActiveTab] = useState<ConsoleTab>('tests');
 
   return (
-    <div className="h-full w-full bg-zinc-950 dark:bg-[#09090b] text-zinc-200 border border-zinc-300 dark:border-zinc-800 rounded p-3 font-mono text-xs overflow-y-auto flex flex-col select-text">
+    <div className="h-full w-full bg-zinc-50 dark:bg-[#09090b] text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-800 rounded p-3 font-mono text-xs overflow-y-auto flex flex-col select-text">
       {/* Console Titlebar / Tabs */}
       <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-300 dark:border-zinc-800 shrink-0">
         <div className="flex items-center gap-3">

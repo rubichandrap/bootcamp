@@ -34,7 +34,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 }) => {
   return (
     <aside
-      className="h-full bg-zinc-900/90 dark:bg-[#09090b] border-r border-zinc-300 dark:border-zinc-800 flex flex-col shrink-0 font-mono text-xs text-zinc-800 dark:text-zinc-200 select-none"
+      className="h-full bg-zinc-50 dark:bg-[#09090b] border-r border-zinc-300 dark:border-zinc-800 flex flex-col shrink-0 font-mono text-xs text-zinc-800 dark:text-zinc-200 select-none"
       style={{ width: width ? `${width}px` : '18rem' }}
     >
       {/* Sidebar Header */}
