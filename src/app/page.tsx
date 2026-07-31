@@ -83,14 +83,21 @@ export default function Home() {
     });
   }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
 
-  // 4. Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search, Cmd+H for hint)
+  // 4. Keyboard shortcut listeners (Cmd+Enter / Enter to run or mark-as-read, Cmd+K for search, Cmd+H for hint)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (chapterLifecycle.currentChapter && chapterLifecycle.currentChapter.type !== 'reading') {
-          handleRun();
+        if (chapterLifecycle.currentChapter) {
+          if (chapterLifecycle.currentChapter.type === 'reading') {
+            handleMarkAsRead();
+          } else {
+            handleRun();
+          }
         }
+      } else if (e.key === 'Enter' && chapterLifecycle.currentChapter?.type === 'reading' && !isPaletteOpen && !isHintOpen) {
+        e.preventDefault();
+        handleMarkAsRead();
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
@@ -101,7 +108,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chapterLifecycle.currentChapter, handleRun]);
+  }, [chapterLifecycle.currentChapter, handleRun, handleMarkAsRead, isPaletteOpen, isHintOpen]);
 
   const activeHint = getSocraticHint(currentChapter?.slug || 'default');
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;

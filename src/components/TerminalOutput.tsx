@@ -77,7 +77,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
         <div className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-xs font-mono space-y-1">
           <div>$ go test -v ./...</div>
           <div className="text-[11px] text-zinc-600 dark:text-zinc-600">
-            [Press ⌘↵ or click RUN to execute code against RCE sandbox]
+            [Press ⌘↵ or click RUN to execute code against RCE Engine]
           </div>
         </div>
       ) : (

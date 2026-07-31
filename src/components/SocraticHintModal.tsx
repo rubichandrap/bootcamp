@@ -68,7 +68,7 @@ export const SocraticHintModal: React.FC<SocraticHintModalProps> = ({
             <span className="font-semibold text-zinc-900 dark:text-zinc-100">
               {isUnlocked
                 ? '[SOLUTION UNLOCKED]'
-                : `[SOLUTION LOCKED: ${failedAttempts}/3 ATTEMPTS]`}
+                : `[SOLUTION LOCKED: ${failedAttempts}/3 SUBMISSIONS]`}
             </span>
           </div>
         </div>

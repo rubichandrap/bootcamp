@@ -11,6 +11,6 @@ describe('SidebarNav ASCII Tree Helpers', () => {
     expect(getChapterBadgeText(true, 'reading')).toBe('[✓]');
     expect(getChapterBadgeText(false, 'reading')).toBe('[READ]');
     expect(getChapterBadgeText(false, 'challenge')).toBe('[CODE]');
-    expect(getChapterBadgeText(false, 'assessment')).toBe('[EVAL]');
+    expect(getChapterBadgeText(false, 'assessment')).toBe('[ASSESS]');
   });
 });

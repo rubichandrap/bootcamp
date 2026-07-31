@@ -12,7 +12,7 @@ export function getChapterBadgeText(
   type?: 'reading' | 'challenge' | 'assessment'
 ): string {
   if (isCompleted) return '[✓]';
-  if (type === 'assessment') return '[EVAL]';
+  if (type === 'assessment') return '[ASSESS]';
   if (type === 'challenge') return '[CODE]';
   return '[READ]';
 }
