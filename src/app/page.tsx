@@ -99,9 +99,11 @@ export default function Home() {
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
 
-  const totalChapters = chapterLifecycle.modules.flatMap((m) => m.chapters).length;
-  const progressPercent =
-    totalChapters > 0 ? Math.round((progressTracker.completedChapterIds.length / totalChapters) * 100) : 0;
+  const totalChapters = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters).length;
+  const progressPercent = progressTracker.calculateProgressPercent(
+    progressTracker.completedChapterIds,
+    totalChapters
+  );
 
   return (
     <div className="h-screen w-screen bg-[#090d16] text-slate-100 flex flex-col overflow-hidden font-sans">

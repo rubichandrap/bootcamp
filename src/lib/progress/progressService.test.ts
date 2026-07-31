@@ -4,6 +4,7 @@ import {
   recordSubmission,
   fetchFailedAttemptsForChapter,
   incrementFailedAttempts,
+  calculateProgressPercent,
 } from './progressService';
 
 describe('progressService', () => {
@@ -128,6 +129,18 @@ describe('progressService', () => {
     it('increments the failed attempts counter by 1', () => {
       expect(incrementFailedAttempts(0)).toBe(1);
       expect(incrementFailedAttempts(3)).toBe(4);
+    });
+  });
+
+  describe('calculateProgressPercent', () => {
+    it('returns 0 when total chapters count is 0', () => {
+      expect(calculateProgressPercent(['ch-1'], 0)).toBe(0);
+    });
+
+    it('returns rounded percentage of completed chapters', () => {
+      expect(calculateProgressPercent(['ch-1'], 3)).toBe(33);
+      expect(calculateProgressPercent(['ch-1', 'ch-2'], 4)).toBe(50);
+      expect(calculateProgressPercent(['ch-1', 'ch-2', 'ch-3'], 3)).toBe(100);
     });
   });
 });

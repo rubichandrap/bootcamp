@@ -4,6 +4,7 @@ import {
   recordSubmission as recordSubmissionService,
   fetchFailedAttemptsForChapter,
   incrementFailedAttempts as incrementFailedAttemptsHelper,
+  calculateProgressPercent,
   RecordSubmissionParams,
   RecordSubmissionResult,
   DEFAULT_USER_ID,
@@ -24,9 +25,9 @@ export function useProgressTracker() {
     }
   }, []);
 
-  const loadFailedAttempts = useCallback(async (chapterSlug: string, userId = DEFAULT_USER_ID) => {
+  const loadFailedAttempts = useCallback(async (chapterId: string, userId = DEFAULT_USER_ID) => {
     try {
-      const count = await fetchFailedAttemptsForChapter(chapterSlug, userId);
+      const count = await fetchFailedAttemptsForChapter(chapterId, userId);
       setFailedAttempts(count);
     } catch (err) {
       console.error('Failed to fetch failed attempts', err);
@@ -66,5 +67,6 @@ export function useProgressTracker() {
     loadFailedAttempts,
     recordSubmission,
     incrementFailedAttempts,
+    calculateProgressPercent,
   };
 }

@@ -81,3 +81,11 @@ export async function fetchFailedAttemptsForChapter(
 export function incrementFailedAttempts(currentFailedAttempts: number): number {
   return currentFailedAttempts + 1;
 }
+
+export function calculateProgressPercent(
+  completedChapterIds: string[],
+  totalChapters: number
+): number {
+  if (totalChapters <= 0) return 0;
+  return Math.round((completedChapterIds.length / totalChapters) * 100);
+}
