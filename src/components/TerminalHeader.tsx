@@ -6,9 +6,9 @@ import { Theme } from '@/hooks/useTheme';
 
 export function formatTitlebarText(trackTitle: string, activeModuleTitle?: string): string {
   if (activeModuleTitle) {
-    return `go-mastery-cli v1.0.0 -- track: ${trackTitle} > ${activeModuleTitle}`;
+    return `bootcamp v1.0.0 -- track: ${trackTitle} > ${activeModuleTitle}`;
   }
-  return `go-mastery-cli v1.0.0 -- track: ${trackTitle}`;
+  return `bootcamp v1.0.0 -- track: ${trackTitle}`;
 }
 
 export function formatStreakBadge(streakDays: number): string {
