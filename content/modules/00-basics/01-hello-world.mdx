@@ -1,0 +1,48 @@
+---
+title: "Hello World in Go"
+type: "challenge"
+order: 1
+starterCode: |
+  package main
+
+  // HelloWorld returns the string "Hello, World!"
+  func HelloWorld() string {
+  	// TODO: Return "Hello, World!"
+  	return ""
+  }
+testCode: |
+  package main
+
+  import "testing"
+
+  func TestHelloWorld(t *testing.T) {
+  	got := HelloWorld()
+  	want := "Hello, World!"
+  	if got != want {
+  		t.Errorf("expected %q, got %q", want, got)
+  	}
+  }
+---
+
+# Hello World in Go
+
+Welcome to Go! Go is a statically typed, compiled programming language designed at Google for simplicity, speed, and concurrency.
+
+## Go Package & Function Syntax
+
+In Go:
+- Every source file begins with a `package` declaration.
+- Code execution starts in `package main`.
+- Functions are declared using the `func` keyword with explicit return types.
+
+```go
+package main
+
+func HelloWorld() string {
+    return "Hello, World!"
+}
+```
+
+## Challenge
+
+Implement the `HelloWorld()` function so that it returns the exact string `"Hello, World!"`.

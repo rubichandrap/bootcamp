@@ -1,6 +1,6 @@
 # Go Mastery Platform
 
-An interactive platform for experienced engineers to master idiomatic Go via reading materials, code execution, and test-driven verification.
+An interactive platform for developers (from beginners to experienced engineers) to learn and master idiomatic Go via reading materials, code execution, and test-driven verification.
 
 ## Language
 

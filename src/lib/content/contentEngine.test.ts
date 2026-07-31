@@ -5,7 +5,7 @@ describe('Curriculum Content Engine', () => {
   it('should list all curriculum modules and ordered chapters', () => {
     const modules = getAllModules();
     expect(modules.length).toBeGreaterThan(0);
-    expect(modules[0].slug).toBe('01-fundamentals');
+    expect(modules[0].slug).toBe('00-basics');
     expect(modules[0].chapters.length).toBeGreaterThan(0);
   });
 
