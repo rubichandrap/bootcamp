@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { X } from 'lucide-react';
+import Link from 'next/link';
+import { X, Home } from 'lucide-react';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 
 export function getTreePrefix(isLast: boolean): string {
@@ -58,6 +59,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </button>
           )}
         </div>
+      </div>
+
+      {/* Catalog Return Link Bar */}
+      <div className="px-3 py-2 border-b border-zinc-300 dark:border-zinc-800 bg-zinc-200/40 dark:bg-zinc-900/30 flex items-center justify-between shrink-0">
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-xs text-cyan-700 dark:text-cyan-400 hover:underline font-bold transition-colors"
+          title="Return to Track Catalog Homepage"
+        >
+          <Home size={13} />
+          <span>[← CATALOG HOMEPAGE]</span>
+        </Link>
       </div>
 
       {/* Module Tree List */}

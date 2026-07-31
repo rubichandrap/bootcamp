@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Search, Terminal, Flame, Sun, Moon, Menu, Layers } from 'lucide-react';
 import { Theme } from '@/hooks/useTheme';
 
@@ -79,12 +80,16 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
           <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-600 inline-block"></span>
         </div>
 
-        <div className="flex items-center gap-2 truncate font-semibold text-zinc-800 dark:text-zinc-200">
+        <Link
+          href="/"
+          className="flex items-center gap-2 truncate font-semibold text-zinc-800 dark:text-zinc-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
+          title="Go to Homepage / Track Catalog"
+        >
           <Terminal size={14} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
           <span className="truncate max-w-[140px] xs:max-w-[200px] sm:max-w-none">
             {formatTitlebarText(trackTitle, activeModuleTitle, activeTrackSlug)}
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Right: Track Selector, Badges & Controls */}

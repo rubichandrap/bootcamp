@@ -55,7 +55,7 @@ export default function Homepage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-mono select-none overflow-x-hidden">
+    <div className="min-h-[100dvh] w-full max-w-full bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-mono select-none overflow-x-hidden">
       {/* Top Terminal Header */}
       <TerminalHeader
         trackTitle="Track Catalog"

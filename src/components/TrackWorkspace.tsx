@@ -166,7 +166,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
   const trackTitle = initialTrackSlug === 'typescript' ? 'TypeScript Mastery' : 'Go Mastery';
 
   return (
-    <div className="h-[100dvh] min-h-[100dvh] w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
+    <div className="h-[100dvh] min-h-[100dvh] w-full max-w-full bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
       {/* Top Terminal Emulator Titlebar Header */}
       <TerminalHeader
         trackTitle={trackTitle}
