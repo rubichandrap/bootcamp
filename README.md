@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bootcamp — Developer Mastery Platform
+
+```text
+██████╗ ██████╗ ██████╗ ████████╗██╗  ██╗██████╗ ██████╗████████╗
+██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██║ ██╔╝██╔══██╗██╔═══╝╚══██╔══╝
+██████╔╝██║  ██║██║  ██║   ██║   █████╔╝ ██████╔╝██║       ██║   
+██╔══██╗██║  ██║██║  ██║   ██║   ██╔═██╗ ██╔══██╗██║       ██║   
+██████╔╝██████╔╝██████╔╝   ██║   ██║  ██╗██████╔╝╚██████╗  ██║   
+╚═════╝ ╚═════╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═╝   
+```
+
+An interactive, terminal-style learning platform designed for developers to master programming languages (**Go**, **TypeScript**, and more) through reading guides, Monaco editor challenges, and real-time test-driven Remote Code Execution (RCE).
+
+## Features
+
+- 🎯 **Multi-Language Tracks**: Switch seamlessly between Go and TypeScript curriculums.
+- ⚡ **Interactive RCE Engine**: Execute submissions against test suites in real-time (`go test` for Go, `vitest`/`node:test` for TypeScript).
+- 🔥 **Unified Daily Streaks**: Keep your daily learning momentum alive across all tracks.
+- 📊 **Track-Level & Platform Progress**: Monitor completion metrics per language and overall.
+- 🎨 **Adaptive Terminal Workspace**: Responsive workspace with dark/light themes and customizable split panes.
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies and start the local development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the track catalog and start learning.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the Vitest test suite and TypeScript typechecker:
 
-## Learn More
+```bash
+npx vitest run
+npx tsc --noEmit
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture & Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [CONTEXT.md](CONTEXT.md) — Ubiquitous domain language and terminology.
+- [docs/adr/](docs/adr/) — Architectural Decision Records (ADRs).
+- [docs/specs/](docs/specs/) — Feature specifications and specs.
