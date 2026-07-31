@@ -9,7 +9,7 @@ interface CommandPaletteModalProps {
   isOpen: boolean;
   onClose: () => void;
   modules: ModuleMeta[];
-  onSelectChapter: (modSlug: string, chSlug: string) => void;
+  onSelectChapter: (modSlug: string, chSlug: string, trackSlug?: string) => void;
 }
 
 export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
@@ -46,7 +46,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       } else if (e.key === 'Enter' && results[selectedIndex]) {
         e.preventDefault();
         const sel = results[selectedIndex];
-        onSelectChapter(sel.moduleSlug, sel.slug);
+        onSelectChapter(sel.moduleSlug, sel.slug, sel.trackSlug);
         onClose();
       }
     };
@@ -64,7 +64,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <span>┌─ [CMD+K] COMMAND PALETTE &amp; TRACK SEARCH ─────────────┐</span>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 p-0.5"
+            className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 p-0.5 cursor-pointer"
             title="Close [ESC]"
           >
             <X size={14} />
@@ -79,7 +79,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search chapters or Go topics... (e.g. Slices, Channels)"
+            placeholder="Search chapters across all tracks... (e.g. Go, TypeScript, Slices, Generics)"
             className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 text-xs font-mono focus:outline-none"
             autoFocus
           />
@@ -96,9 +96,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               const isSelected = idx === selectedIndex;
               return (
                 <button
-                  key={`${ch.moduleSlug}-${ch.slug}`}
+                  key={`${ch.trackSlug || 'go'}-${ch.moduleSlug}-${ch.slug}`}
                   onClick={() => {
-                    onSelectChapter(ch.moduleSlug, ch.slug);
+                    onSelectChapter(ch.moduleSlug, ch.slug, ch.trackSlug);
                     onClose();
                   }}
                   className={`w-full text-left p-2.5 rounded transition-colors flex items-center justify-between group cursor-pointer border font-mono ${
@@ -119,6 +119,11 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 text-[10px] shrink-0 text-zinc-500 font-normal">
+                    {ch.trackSlug && (
+                      <span className="uppercase text-cyan-700 dark:text-cyan-400 font-bold">
+                        [{ch.trackSlug}]
+                      </span>
+                    )}
                     <span className="uppercase">[{ch.type}]</span>
                     <span>[ENTER]</span>
                   </div>

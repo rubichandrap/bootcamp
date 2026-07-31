@@ -94,22 +94,24 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
 
       {/* Right: Track Selector, Badges & Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Track Switcher */}
-        <div className="relative flex items-center gap-1 px-2 py-0.5 rounded border border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
-          <Layers size={13} className="shrink-0" />
-          <select
-            value={activeTrackSlug}
-            onChange={(e) => onSelectTrack && onSelectTrack(e.target.value)}
-            className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer pr-1"
-            aria-label="Select Language Track"
-          >
-            {tracks.map((t) => (
-              <option key={t.slug} value={t.slug} className="bg-zinc-900 text-white">
-                [{t.slug.toUpperCase()}] {t.title}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Track Switcher (hidden on catalog homepage) */}
+        {activeTrackSlug !== 'catalog' && (
+          <div className="relative flex items-center gap-1 px-2 py-0.5 rounded border border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+            <Layers size={13} className="shrink-0" />
+            <select
+              value={activeTrackSlug}
+              onChange={(e) => onSelectTrack && onSelectTrack(e.target.value)}
+              className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+              aria-label="Select Language Track"
+            >
+              {tracks.map((t) => (
+                <option key={t.slug} value={t.slug} className="bg-zinc-900 text-white">
+                  [{t.slug.toUpperCase()}] {t.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Search trigger */}
         <button

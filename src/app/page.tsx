@@ -8,6 +8,7 @@ import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { useTheme } from '@/hooks/useTheme';
 import { useProgressTracker } from '@/hooks/useProgressTracker';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
+import type { ModuleMeta } from '@/lib/content/contentEngine';
 import type { TrackOverview } from '@/lib/tracks/trackCatalog';
 import { Layers, ArrowRight, Code2, CheckCircle2, Terminal as TerminalIcon, Sparkles, Flame } from 'lucide-react';
 
@@ -15,20 +16,26 @@ export default function Homepage() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const progressTracker = useProgressTracker();
-  const chapterLifecycle = useChapterLifecycle();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [tracks, setTracks] = useState<TrackOverview[]>([]);
+  const [allModules, setAllModules] = useState<ModuleMeta[]>([]);
 
   useEffect(() => {
     async function loadData() {
       await progressTracker.loadProgress();
-      await chapterLifecycle.loadModules();
       try {
-        const res = await fetch('/api/tracks');
-        if (res.ok) {
-          const data = await res.json();
-          setTracks(data);
+        const [tracksRes, modulesRes] = await Promise.all([
+          fetch('/api/tracks'),
+          fetch('/api/modules?track=all'),
+        ]);
+        if (tracksRes.ok) {
+          const tracksData = await tracksRes.json();
+          setTracks(tracksData);
+        }
+        if (modulesRes.ok) {
+          const modulesData = await modulesRes.json();
+          setAllModules(modulesData);
         }
       } catch (err) {
         console.error('Failed to fetch track overview', err);
@@ -49,9 +56,9 @@ export default function Homepage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSelectChapter = (modSlug: string, chSlug: string) => {
+  const handleSelectChapter = (modSlug: string, chSlug: string, trackSlug?: string) => {
     setIsPaletteOpen(false);
-    router.push(`/tracks/go`);
+    router.push(`/tracks/${trackSlug || 'go'}`);
   };
 
   return (
@@ -182,7 +189,7 @@ export default function Homepage() {
       <CommandPaletteModal
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
-        modules={chapterLifecycle.modules}
+        modules={allModules}
         onSelectChapter={handleSelectChapter}
       />
     </div>
