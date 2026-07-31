@@ -2,6 +2,7 @@ export const DEFAULT_USER_ID = 'default-user';
 
 export interface UserProgress {
   userId: string;
+  trackId?: string;
   completedChapterIds: string[];
   completedCount: number;
   streakDays: number;
@@ -9,6 +10,7 @@ export interface UserProgress {
 
 export interface RecordSubmissionInput {
   userId: string;
+  trackId?: string;
   chapterId: string;
   code: string;
   passed: boolean;
@@ -24,10 +26,11 @@ export interface RecordSubmissionResult {
 }
 
 export interface ProgressTrackerAdapter {
-  getProgress(userId: string): Promise<UserProgress>;
+  getProgress(userId: string, trackId?: string): Promise<UserProgress>;
   recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult>;
-  getFailedAttempts(userId: string, chapterId: string): Promise<number>;
-  getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null>;
+  getFailedSubmissions(userId: string, chapterId: string, trackId?: string): Promise<number>;
+  getFailedAttempts(userId: string, chapterId: string, trackId?: string): Promise<number>;
+  getLatestSubmission(userId: string, chapterId: string, trackId?: string): Promise<{ code: string; passed: boolean } | null>;
 }
 
 export function calculateProgressPercent(
@@ -56,6 +59,7 @@ function parseUserProgress(data: unknown, fallbackUserId: string): UserProgress 
 
   return {
     userId: typeof data.userId === 'string' ? data.userId : fallbackUserId,
+    trackId: typeof data.trackId === 'string' ? data.trackId : undefined,
     completedChapterIds: Array.isArray(data.completedChapterIds)
       ? data.completedChapterIds.filter((item): item is string => typeof item === 'string')
       : [],
@@ -65,8 +69,9 @@ function parseUserProgress(data: unknown, fallbackUserId: string): UserProgress 
 }
 
 export class HttpProgressAdapter implements ProgressTrackerAdapter {
-  async getProgress(userId: string): Promise<UserProgress> {
-    const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}`);
+  async getProgress(userId: string, trackId?: string): Promise<UserProgress> {
+    const trackQuery = trackId ? `&trackId=${encodeURIComponent(trackId)}` : '';
+    const res = await fetch(`/api/submissions?userId=${encodeURIComponent(userId)}${trackQuery}`);
     if (!res.ok) {
       throw new Error(`fetchProgress failed with status ${res.status}`);
     }
@@ -77,6 +82,7 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
     const payload = {
       userId: input.userId,
+      trackId: input.trackId,
       chapterId: input.chapterId,
       code: input.code,
       passed: input.passed,
@@ -103,21 +109,27 @@ export class HttpProgressAdapter implements ProgressTrackerAdapter {
     };
   }
 
-  async getFailedAttempts(userId: string, chapterId: string): Promise<number> {
+  async getFailedSubmissions(userId: string, chapterId: string, trackId?: string): Promise<number> {
+    const trackQuery = trackId ? `&trackId=${encodeURIComponent(trackId)}` : '';
     const res = await fetch(
-      `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}`
+      `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}${trackQuery}`
     );
     if (!res.ok) {
-      throw new Error(`fetchFailedAttemptsForChapter failed with status ${res.status}`);
+      throw new Error(`fetchFailedSubmissions failed with status ${res.status}`);
     }
     const data: unknown = await res.json();
     const dataObj = isObjectRecord(data) ? data : {};
     return typeof dataObj.chapterFailedAttempts === 'number' ? dataObj.chapterFailedAttempts : 0;
   }
 
-  async getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null> {
+  async getFailedAttempts(userId: string, chapterId: string, trackId?: string): Promise<number> {
+    return this.getFailedSubmissions(userId, chapterId, trackId);
+  }
+
+  async getLatestSubmission(userId: string, chapterId: string, trackId?: string): Promise<{ code: string; passed: boolean } | null> {
+    const trackQuery = trackId ? `&trackId=${encodeURIComponent(trackId)}` : '';
     const res = await fetch(
-      `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}`
+      `/api/submissions?userId=${encodeURIComponent(userId)}&chapterId=${encodeURIComponent(chapterId)}${trackQuery}`
     );
     if (!res.ok) {
       throw new Error(`getLatestSubmission failed with status ${res.status}`);

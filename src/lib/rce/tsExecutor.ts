@@ -1,8 +1,4 @@
-import { exec } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import os from 'os';
-import { promisify } from 'util';
+import { runInSandboxTmpDir } from '@/lib/rce/executorUtils';
 import {
   ExecuteSubmissionParams,
   LanguageExecutor,
@@ -10,8 +6,6 @@ import {
   SubmissionExecutionResult,
   TestResultItem,
 } from '@/lib/rce/types';
-
-const execAsync = promisify(exec);
 
 export function parseVitestJsonOutput(stdout: string, stderr: string): SubmissionExecutionResult {
   const rawOutput = (stdout + '\n' + stderr).trim();
@@ -86,36 +80,19 @@ export class TypeScriptExecutor implements LanguageExecutor {
       throw new Error('Missing code or testCode');
     }
 
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ts-rce-'));
+    const formattedTestCode = testCode.replace(/from\s+['"]\.\/solution['"]/g, `from './solution'`);
 
-    try {
-      await fs.writeFile(path.join(tmpDir, 'solution.ts'), code, 'utf-8');
-      
-      const formattedTestCode = testCode.replace(/from\s+['"]\.\/solution['"]/g, `from './solution'`);
-      await fs.writeFile(path.join(tmpDir, 'solution.test.ts'), formattedTestCode, 'utf-8');
+    const { stdout, stderr } = await runInSandboxTmpDir({
+      prefix: 'ts-rce',
+      files: {
+        'solution.ts': code,
+        'solution.test.ts': formattedTestCode,
+      },
+      cmd: 'npx vitest run --reporter=json solution.test.ts',
+      timeoutMs,
+      env: { ...process.env, NODE_ENV: 'test' },
+    });
 
-      let stdout = '';
-      let stderr = '';
-
-      const vitestCmd = `npx vitest run --reporter=json solution.test.ts`;
-
-      try {
-        const result = await execAsync(vitestCmd, {
-          cwd: tmpDir,
-          timeout: timeoutMs,
-          env: { ...process.env, NODE_ENV: 'test' },
-        });
-        stdout = result.stdout;
-        stderr = result.stderr;
-      } catch (err: unknown) {
-        const execErr = err as { stdout?: string; stderr?: string; message?: string };
-        stdout = execErr.stdout || '';
-        stderr = execErr.stderr || execErr.message || '';
-      }
-
-      return parseVitestJsonOutput(stdout, stderr);
-    } finally {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    }
+    return parseVitestJsonOutput(stdout, stderr);
   }
 }

@@ -1,9 +1,5 @@
-import { exec } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import os from 'os';
-import { promisify } from 'util';
 import { parseBenchOutput } from '@/lib/rce/benchParser';
+import { runInSandboxTmpDir } from '@/lib/rce/executorUtils';
 import {
   ExecuteSubmissionParams,
   LanguageExecutor,
@@ -11,8 +7,8 @@ import {
   SubmissionExecutionResult,
   TestResultItem,
 } from '@/lib/rce/types';
-
-const execAsync = promisify(exec);
+import os from 'os';
+import path from 'path';
 
 export function parseGoTestStream(
   stdout: string,
@@ -121,39 +117,23 @@ export class GoExecutor implements LanguageExecutor {
       throw new Error('Missing code or testCode');
     }
 
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'go-rce-'));
+    const raceFlag = enableRaceCheck ? '-race' : '';
+    const hasBenchFunctions = testCode.includes('Benchmark');
+    const benchFlags = hasBenchFunctions ? '-bench=. -benchmem -gcflags="-m"' : '';
+    const cmd = `go test -v ${raceFlag} ${benchFlags} -json ./...`;
 
-    try {
-      const goModContent = `module challenge\n\ngo 1.20\n`;
-      await fs.writeFile(path.join(tmpDir, 'go.mod'), goModContent, 'utf-8');
-      await fs.writeFile(path.join(tmpDir, 'main.go'), code, 'utf-8');
-      await fs.writeFile(path.join(tmpDir, 'main_test.go'), testCode, 'utf-8');
+    const { stdout, stderr } = await runInSandboxTmpDir({
+      prefix: 'go-rce',
+      files: {
+        'go.mod': 'module challenge\n\ngo 1.20\n',
+        'main.go': code,
+        'main_test.go': testCode,
+      },
+      cmd,
+      timeoutMs,
+      env: getGoEnv(),
+    });
 
-      let stdout = '';
-      let stderr = '';
-
-      const raceFlag = enableRaceCheck ? '-race' : '';
-      const hasBenchFunctions = testCode.includes('Benchmark');
-      const benchFlags = hasBenchFunctions ? '-bench=. -benchmem -gcflags="-m"' : '';
-      const cmd = `go test -v ${raceFlag} ${benchFlags} -json ./...`;
-
-      try {
-        const result = await execAsync(cmd, {
-          cwd: tmpDir,
-          timeout: timeoutMs,
-          env: getGoEnv(),
-        });
-        stdout = result.stdout;
-        stderr = result.stderr;
-      } catch (err: unknown) {
-        const execErr = err as { stdout?: string; stderr?: string; message?: string };
-        stdout = execErr.stdout || '';
-        stderr = execErr.stderr || execErr.message || '';
-      }
-
-      return parseGoTestStream(stdout, stderr, enableRaceCheck);
-    } finally {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    }
+    return parseGoTestStream(stdout, stderr, enableRaceCheck);
   }
 }

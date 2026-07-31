@@ -1,6 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { getAllTracks } from '@/lib/content/contentEngine';
+import { getTrackProgress } from '@/lib/db/submissionRepo';
+import { DEFAULT_USER_ID } from '@/lib/progress/progressTracker';
 import { Layers, ArrowRight, Code2, CheckCircle2 } from 'lucide-react';
 
 export const metadata = {
@@ -18,7 +20,7 @@ export default function TracksCatalogPage() {
         <div className="border-b border-zinc-800 pb-6 space-y-2">
           <div className="flex items-center gap-2 text-blue-400 font-mono text-sm font-semibold">
             <Layers size={16} />
-            <span>LEARNING PATHWAYS</span>
+            <span>LANGUAGE TRACKS</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
             Choose Your Track
@@ -33,6 +35,7 @@ export default function TracksCatalogPage() {
           {tracks.map((track) => {
             const totalModules = track.modules.length;
             const totalChapters = track.modules.reduce((acc, m) => acc + m.chapters.length, 0);
+            const trackProgress = getTrackProgress(DEFAULT_USER_ID, track.slug);
 
             return (
               <div
@@ -59,6 +62,20 @@ export default function TracksCatalogPage() {
                     <p className="text-zinc-400 text-sm leading-relaxed">
                       {track.description}
                     </p>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5 pt-2">
+                    <div className="flex justify-between text-xs font-mono text-zinc-400">
+                      <span>Progress</span>
+                      <span className="font-semibold text-blue-400">{trackProgress.percentage}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                        style={{ width: `${trackProgress.percentage}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
 

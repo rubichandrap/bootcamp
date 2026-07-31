@@ -1,7 +1,7 @@
 import {
   recordSubmission as recordSubmissionRepo,
   getUserProgress as getUserProgressRepo,
-  getFailedAttemptsCount,
+  getFailedSubmissionsCount,
   getLatestSubmission as getLatestSubmissionRepo,
 } from '@/lib/db/submissionRepo';
 import {
@@ -13,12 +13,14 @@ import {
 
 function toUserProgress(raw: {
   userId: string;
+  trackId?: string;
   completedChapterIds: string[];
   completedCount: number;
   streakDays: number;
 }): UserProgress {
   return {
     userId: raw.userId,
+    trackId: raw.trackId,
     completedChapterIds: raw.completedChapterIds,
     completedCount: raw.completedCount,
     streakDays: raw.streakDays,
@@ -26,13 +28,14 @@ function toUserProgress(raw: {
 }
 
 export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
-  async getProgress(userId: string): Promise<UserProgress> {
-    return toUserProgress(getUserProgressRepo(userId));
+  async getProgress(userId: string, trackId?: string): Promise<UserProgress> {
+    return toUserProgress(getUserProgressRepo(userId, { trackId }));
   }
 
   async recordSubmission(input: RecordSubmissionInput): Promise<RecordSubmissionResult> {
     const res = recordSubmissionRepo({
       userId: input.userId,
+      trackId: input.trackId,
       chapterId: input.chapterId,
       code: input.code,
       passed: input.passed,
@@ -41,8 +44,8 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
       compileError: input.compileError,
     });
 
-    const userProgress = await this.getProgress(input.userId);
-    const chapterFailedAttempts = await this.getFailedAttempts(input.userId, input.chapterId);
+    const userProgress = await this.getProgress(input.userId, input.trackId);
+    const chapterFailedAttempts = await this.getFailedSubmissions(input.userId, input.chapterId, input.trackId);
 
     return {
       userProgress,
@@ -51,12 +54,16 @@ export class DrizzleProgressAdapter implements ProgressTrackerAdapter {
     };
   }
 
-  async getFailedAttempts(userId: string, chapterId: string): Promise<number> {
-    return getFailedAttemptsCount(userId, chapterId);
+  async getFailedSubmissions(userId: string, chapterId: string, trackId?: string): Promise<number> {
+    return getFailedSubmissionsCount(userId, chapterId, trackId || 'go');
   }
 
-  async getLatestSubmission(userId: string, chapterId: string): Promise<{ code: string; passed: boolean } | null> {
-    const sub = getLatestSubmissionRepo(userId, chapterId);
+  async getFailedAttempts(userId: string, chapterId: string, trackId?: string): Promise<number> {
+    return this.getFailedSubmissions(userId, chapterId, trackId);
+  }
+
+  async getLatestSubmission(userId: string, chapterId: string, trackId?: string): Promise<{ code: string; passed: boolean } | null> {
+    const sub = getLatestSubmissionRepo(userId, chapterId, trackId || 'go');
     if (!sub) return null;
     return {
       code: sub.code,
