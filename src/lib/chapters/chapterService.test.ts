@@ -46,6 +46,19 @@ describe('chapterService', () => {
       expect(mockFetch).toHaveBeenCalledWith('/api/modules');
       expect(result).toEqual(mockModules);
     });
+    it('fetches modules with trackSlug parameter when provided', async () => {
+      const mockModules: ModuleMeta[] = [];
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockModules,
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const result = await fetchModules('typescript');
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/modules?track=typescript');
+      expect(result).toEqual(mockModules);
+    });
   });
 
   describe('fetchChapter', () => {
@@ -69,6 +82,31 @@ describe('chapterService', () => {
       const result = await fetchChapter('mod-1', 'ch-1');
 
       expect(mockFetch).toHaveBeenCalledWith('/api/modules?module=mod-1&chapter=ch-1');
+      expect(result).toEqual(mockChapter);
+    });
+
+    it('fetches single chapter with trackSlug parameter when provided', async () => {
+      const mockChapter: ChapterMeta = {
+        slug: 'ch-1',
+        title: 'Chapter 1',
+        type: 'challenge',
+        moduleSlug: 'mod-1',
+        trackSlug: 'typescript',
+        order: 1,
+        content: '# Content 1',
+        starterCode: 'const x = 1;',
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockChapter,
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const result = await fetchChapter('mod-1', 'ch-1', 'typescript');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/modules?module=mod-1&chapter=ch-1&track=typescript'
+      );
       expect(result).toEqual(mockChapter);
     });
   });

@@ -11,11 +11,13 @@ import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
 import { useProgressTracker } from '@/hooks/useProgressTracker';
+import { DEFAULT_USER_ID } from '@/lib/progress/progressTracker';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
 import { useChallengeSession } from '@/hooks/useChallengeSession';
 import { useReadingSession } from '@/hooks/useReadingSession';
 import { useTheme } from '@/hooks/useTheme';
 import { useResizableLayout } from '@/hooks/useResizableLayout';
+import { setStoredTrack } from '@/hooks/useTrack';
 import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight, BookOpen, Terminal as TerminalIcon } from 'lucide-react';
 
 interface TrackWorkspaceProps {
@@ -55,32 +57,42 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
   // Chapter selection handler
   const handleSelectChapter = useCallback(
     async (modSlug: string, chSlug: string) => {
-      await chapterLifecycle.selectChapter(modSlug, chSlug);
+      await chapterLifecycle.selectChapter(modSlug, chSlug, initialTrackSlug);
       setIsSidebarOpen(false);
       setActiveMobileTab('guide');
     },
-    [chapterLifecycle]
+    [chapterLifecycle, initialTrackSlug]
   );
 
-  // 1. Initial data loading effect
+  // 1. Initial & track change data loading effect
   useEffect(() => {
     async function loadInitialData() {
-      await progressTracker.loadProgress();
-      await chapterLifecycle.loadModules();
+      setStoredTrack(initialTrackSlug);
+      await progressTracker.loadProgress(DEFAULT_USER_ID, initialTrackSlug);
+      await chapterLifecycle.loadModules(initialTrackSlug);
     }
     loadInitialData();
-  }, []);
+  }, [initialTrackSlug]);
 
-  // 2. Auto-select first Chapter when modules load
+  // 2. Auto-select first Chapter when modules load or track changes
   useEffect(() => {
-    if (!chapterLifecycle.currentChapter && chapterLifecycle.modules.length > 0) {
-      const firstMod = chapterLifecycle.modules[0];
-      if (firstMod.chapters.length > 0) {
-        const firstCh = firstMod.chapters[0];
-        handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
+    if (chapterLifecycle.modules.length > 0) {
+      const isCurrentInModules =
+        chapterLifecycle.currentChapter &&
+        chapterLifecycle.currentChapter.trackSlug === initialTrackSlug &&
+        chapterLifecycle.modules.some((m) =>
+          m.chapters.some((c) => c.slug === chapterLifecycle.currentChapter?.slug)
+        );
+
+      if (!isCurrentInModules) {
+        const firstMod = chapterLifecycle.modules[0];
+        if (firstMod.chapters.length > 0) {
+          const firstCh = firstMod.chapters[0];
+          handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
+        }
       }
     }
-  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, handleSelectChapter]);
+  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, initialTrackSlug, handleSelectChapter]);
 
   // 3. Synchronously & asynchronously reset editor when currentChapter changes
   const currentChapter = chapterLifecycle.currentChapter;
@@ -92,9 +104,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
     challengeSession.resetForChapter(ch.starterCode, ch.testCode, undefined, ch.slug);
 
     async function initChapter() {
-      progressTracker.loadFailedAttempts(ch.slug);
+      progressTracker.loadFailedAttempts(ch.slug, DEFAULT_USER_ID, initialTrackSlug);
       if (ch.type !== 'reading') {
-        const latestSub = await progressTracker.getLatestSubmission(ch.slug);
+        const latestSub = await progressTracker.getLatestSubmission(ch.slug, DEFAULT_USER_ID, initialTrackSlug);
         if (latestSub?.code && isSubscribed) {
           challengeSession.resetForChapter(
             ch.starterCode,
@@ -109,24 +121,34 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
     return () => {
       isSubscribed = false;
     };
-  }, [currentChapter?.slug]);
+  }, [currentChapter?.slug, initialTrackSlug]);
 
   const handleRun = useCallback(() => {
     if (!chapterLifecycle.currentChapter) return;
-    challengeSession.runChallengeSession(chapterLifecycle.currentChapter.slug, {
-      recordSubmission: progressTracker.recordSubmission,
-      onAdvance: chapterLifecycle.advanceToNextChapter,
-      incrementFailedAttempts: progressTracker.incrementFailedAttempts,
-    });
-  }, [chapterLifecycle.currentChapter, challengeSession, progressTracker]);
+    challengeSession.runChallengeSession(
+      chapterLifecycle.currentChapter.slug,
+      {
+        recordSubmission: (params) =>
+          progressTracker.recordSubmission({ ...params, trackId: initialTrackSlug }),
+        onAdvance: chapterLifecycle.advanceToNextChapter,
+        incrementFailedAttempts: progressTracker.incrementFailedAttempts,
+      },
+      initialTrackSlug
+    );
+  }, [chapterLifecycle.currentChapter, challengeSession, progressTracker, initialTrackSlug]);
 
   const handleMarkAsRead = useCallback(() => {
     if (!chapterLifecycle.currentChapter) return;
-    readingSession.markAsRead(chapterLifecycle.currentChapter.slug, {
-      recordSubmission: progressTracker.recordSubmission,
-      onAdvance: chapterLifecycle.advanceToNextChapter,
-    });
-  }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
+    readingSession.markAsRead(
+      chapterLifecycle.currentChapter.slug,
+      {
+        recordSubmission: (params) =>
+          progressTracker.recordSubmission({ ...params, trackId: initialTrackSlug }),
+        onAdvance: chapterLifecycle.advanceToNextChapter,
+      },
+      initialTrackSlug
+    );
+  }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle, initialTrackSlug]);
 
   // 4. Keyboard shortcut listeners
   useEffect(() => {
@@ -177,7 +199,10 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsPaletteOpen(true)}
         onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-        onSelectTrack={(slug) => router.push(`/tracks/${slug}`)}
+        onSelectTrack={(slug) => {
+          setStoredTrack(slug);
+          router.push(`/tracks/${slug}`);
+        }}
       />
 
       {/* Main Terminal Workspace Layout */}
