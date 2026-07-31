@@ -51,10 +51,23 @@ export function useResizableLayout() {
   const [sidebarWidth, setSidebarWidth] = useState<number>(256);
   const [workspaceSplit, setWorkspaceSplit] = useState<number>(50); // percentage for left pane
   const [consoleHeight, setConsoleHeight] = useState<number>(220);
+  const [isDesktop, setIsDesktop] = useState<boolean>(true);
 
   const isDraggingSidebar = useRef(false);
   const isDraggingWorkspace = useRef(false);
   const isDraggingConsole = useRef(false);
+
+  // Responsive breakpoint tracking
+  useEffect(() => {
+    const checkDesktop = () => {
+      if (typeof window !== 'undefined') {
+        setIsDesktop(window.innerWidth >= 768);
+      }
+    };
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   // Load saved sizes from localStorage
   useEffect(() => {
@@ -150,6 +163,7 @@ export function useResizableLayout() {
     sidebarWidth,
     workspaceSplit,
     consoleHeight,
+    isDesktop,
     handleSidebarMouseDown: handleSidebarStart,
     handleSidebarTouchStart: handleSidebarStart,
     handleWorkspaceMouseDown: handleWorkspaceStart,

@@ -30,6 +30,7 @@ export default function Home() {
     sidebarWidth,
     workspaceSplit,
     consoleHeight,
+    isDesktop,
     handleSidebarMouseDown,
     handleSidebarTouchStart,
     handleWorkspaceMouseDown,
@@ -254,7 +255,7 @@ export default function Home() {
 
           {/* Left / Guide Pane */}
           <div
-            style={{ width: currentChapter?.type !== 'reading' ? `${workspaceSplit}%` : '100%' }}
+            style={{ width: isDesktop && currentChapter?.type !== 'reading' ? `${workspaceSplit}%` : '100%' }}
             className={`border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-[#0c0c0e] p-3 sm:p-5 overflow-y-auto flex-col justify-between select-text shrink-0 ${
               currentChapter?.type === 'reading' || activeMobileTab === 'guide'
                 ? 'flex w-full md:w-auto flex-1 md:flex-initial'
@@ -347,7 +348,7 @@ export default function Home() {
           {currentChapter?.type !== 'reading' && (
             <div
               id="right-pane-container"
-              style={{ width: `${100 - workspaceSplit}%` }}
+              style={{ width: isDesktop ? `${100 - workspaceSplit}%` : '100%' }}
               className={`flex-col overflow-hidden shrink-0 ${
                 activeMobileTab === 'code' || activeMobileTab === 'terminal'
                   ? 'flex w-full md:w-auto flex-1 md:flex-initial'
@@ -440,7 +441,7 @@ export default function Home() {
 
               {/* RCE Console Output */}
               <div
-                style={{ height: activeMobileTab === 'terminal' ? '100%' : `${consoleHeight}px` }}
+                style={{ height: !isDesktop || activeMobileTab === 'terminal' ? '100%' : `${consoleHeight}px` }}
                 className={`shrink-0 ${
                   activeMobileTab === 'terminal'
                     ? 'flex flex-1 h-full'
