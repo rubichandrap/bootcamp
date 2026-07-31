@@ -402,6 +402,7 @@ export default function Home() {
                 <div className="flex-1">
                   {challengeSession.activeTab === 'code' ? (
                     <CodeEditor
+                      key={`${currentChapter?.slug || 'default'}-code`}
                       filename="main.go"
                       path={`${currentChapter?.slug || 'default'}/main.go`}
                       theme={monacoTheme}
@@ -410,6 +411,7 @@ export default function Home() {
                     />
                   ) : challengeSession.activeTab === 'test' ? (
                     <CodeEditor
+                      key={`${currentChapter?.slug || 'default'}-test`}
                       filename="main_test.go"
                       path={`${currentChapter?.slug || 'default'}/main_test.go`}
                       theme={monacoTheme}
@@ -418,6 +420,7 @@ export default function Home() {
                     />
                   ) : (
                     <CodeEditor
+                      key={`${currentChapter?.slug || 'default'}-solution`}
                       filename="solution.go"
                       path={`${currentChapter?.slug || 'default'}/solution.go`}
                       theme={monacoTheme}

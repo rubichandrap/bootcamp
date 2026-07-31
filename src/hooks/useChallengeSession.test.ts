@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { useChallengeSession, DEFAULT_STARTER_CODE, DEFAULT_TEST_CODE } from './useChallengeSession';
 
 describe('useChallengeSession module & defaults', () => {
-  it('defines default starter and test code', () => {
+  it('defines default starter and test code constants', () => {
     expect(DEFAULT_STARTER_CODE).toContain('package main');
     expect(DEFAULT_TEST_CODE).toContain('package main');
   });
@@ -11,3 +11,5 @@ describe('useChallengeSession module & defaults', () => {
     expect(typeof useChallengeSession).toBe('function');
   });
 });
+
+
