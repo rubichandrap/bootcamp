@@ -4,6 +4,7 @@ import {
   defaultHttpProgressAdapter,
   calculateProgressPercent,
   RecordSubmissionInput,
+  RecordSubmissionResult,
   DEFAULT_USER_ID,
 } from '@/lib/progress/progressTracker';
 
@@ -41,18 +42,24 @@ export function useProgressTracker(
   );
 
   const recordSubmission = useCallback(
-    async (params: RecordSubmissionInput) => {
-      const res = await adapter.recordSubmission(params);
-      if (res.userProgress?.completedChapterIds) {
-        setCompletedChapterIds(res.userProgress.completedChapterIds);
+    async (params: RecordSubmissionInput): Promise<RecordSubmissionResult | undefined> => {
+      try {
+        const res = await adapter.recordSubmission(params);
+        if (res.userProgress?.completedChapterIds) {
+          setCompletedChapterIds(res.userProgress.completedChapterIds);
+        }
+        if (typeof res.userProgress?.streakDays === 'number') {
+          setStreakDays(res.userProgress.streakDays);
+        }
+        if (typeof res.chapterFailedAttempts === 'number') {
+          setFailedAttempts(res.chapterFailedAttempts);
+        }
+        return res;
+      } catch (err) {
+        console.error('Failed to record submission', err);
+        // Retain local state on network error
+        return undefined;
       }
-      if (typeof res.userProgress?.streakDays === 'number') {
-        setStreakDays(res.userProgress.streakDays);
-      }
-      if (typeof res.chapterFailedAttempts === 'number') {
-        setFailedAttempts(res.chapterFailedAttempts);
-      }
-      return res;
     },
     [adapter]
   );

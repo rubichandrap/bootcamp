@@ -3,7 +3,7 @@ import { markAsRead as markAsReadService } from '@/lib/reading/readingService';
 import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
 
 export interface MarkAsReadPorts {
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
+  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
 }
 

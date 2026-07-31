@@ -57,9 +57,5 @@ export function calculateProgressPercent(
   completedChapterIds: string[],
   totalChapters: number | string[]
 ): number {
-  if (typeof totalChapters === 'number') {
-    if (totalChapters <= 0) return 0;
-    return Math.round((completedChapterIds.length / totalChapters) * 100);
-  }
   return calculatePercentDomain(completedChapterIds, totalChapters);
 }

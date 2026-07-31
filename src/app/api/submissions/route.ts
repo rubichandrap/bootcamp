@@ -56,7 +56,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ...userProgress,
-        userProgress,
         chapterFailedAttempts,
       },
       { status: 200 }

@@ -11,14 +11,14 @@ export interface MarkAsReadParams {
 }
 
 export interface MarkAsReadPorts {
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
+  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
 }
 
 export async function markAsRead(
   params: MarkAsReadParams,
   ports: MarkAsReadPorts
-): Promise<RecordSubmissionResult> {
+): Promise<RecordSubmissionResult | undefined> {
   const result = await ports.recordSubmission({
     userId: params.userId || DEFAULT_USER_ID,
     chapterId: params.chapterId,
@@ -27,6 +27,10 @@ export async function markAsRead(
     testCount: 0,
     failedCount: 0,
   });
-  ports.onAdvance();
+
+  if (ports.onAdvance) {
+    ports.onAdvance();
+  }
+
   return result;
 }

@@ -39,7 +39,7 @@ export interface RunChallengeParams {
 
 export interface RunChallengePorts {
   executeRce: (params: ExecuteRceParams) => Promise<RCEExecuteResponse>;
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
+  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult | undefined>;
   onAdvance: () => void;
   incrementFailedAttempts?: () => void;
 }
