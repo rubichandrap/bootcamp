@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
+import { SubmissionExecutionResult as RCEExecuteResponse } from '@/lib/rce/rceEngine';
 import { CONSOLE_TABS, ConsoleTab } from './TerminalOutput';
 
 describe('TerminalOutput Component & Interface', () => {

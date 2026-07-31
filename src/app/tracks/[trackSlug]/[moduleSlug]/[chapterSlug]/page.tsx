@@ -1,5 +1,5 @@
 import React from 'react';
-import { getChapterBySlug } from '@/lib/content/contentEngine';
+import { getChapterDetails } from '@/lib/tracks/trackCatalog';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Code2, CheckCircle2 } from 'lucide-react';
@@ -15,7 +15,7 @@ interface ChapterPageProps {
 
 export async function generateMetadata({ params }: ChapterPageProps) {
   const { trackSlug, moduleSlug, chapterSlug } = await params;
-  const chapter = getChapterBySlug(trackSlug, moduleSlug, chapterSlug);
+  const chapter = getChapterDetails(trackSlug, moduleSlug, chapterSlug);
   if (!chapter) return { title: 'Chapter Not Found' };
   return {
     title: `${chapter.title} | ${trackSlug.toUpperCase()} Track`,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: ChapterPageProps) {
 
 export default async function ChapterWorkspacePage({ params }: ChapterPageProps) {
   const { trackSlug, moduleSlug, chapterSlug } = await params;
-  const chapter = getChapterBySlug(trackSlug, moduleSlug, chapterSlug);
+  const chapter = getChapterDetails(trackSlug, moduleSlug, chapterSlug);
 
   if (!chapter) {
     notFound();

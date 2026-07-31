@@ -8,6 +8,10 @@ An interactive platform for developers (from beginners to experienced engineers)
 The top-level structured curriculum dedicated to a specific programming language (e.g., Go, TypeScript), containing ordered Modules from beginner to expert.
 _Avoid_: Course, pathway, syllabus
 
+**Track Catalog**:
+The service responsible for consolidating Track curriculum structures (Modules, Chapters) with learner Progress standing to expose a unified navigation and catalog overview.
+_Avoid_: Track manager, course index, syllabus engine
+
 **Module**:
 A group of related Chapters focused on a cohesive language theme (e.g., "Fundamentals", "Concurrency & Channels", "Interfaces & Polymorphism").
 _Avoid_: Category, section, topic group

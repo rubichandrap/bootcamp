@@ -31,6 +31,27 @@ export function getLanguageExecutor(trackId: string = 'go'): LanguageExecutor {
 export async function executeSubmission(
   params: ExecuteSubmissionParams
 ): Promise<SubmissionExecutionResult> {
-  const executor = getLanguageExecutor(params.trackId);
-  return executor.execute(params);
+  if (!params.code || !params.testCode) {
+    return {
+      success: false,
+      passed: 0,
+      failed: 0,
+      tests: [],
+      compileError: 'Missing code or testCode',
+    };
+  }
+
+  try {
+    const executor = getLanguageExecutor(params.trackId);
+    return await executor.execute(params);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Execution failed';
+    return {
+      success: false,
+      passed: 0,
+      failed: 0,
+      tests: [],
+      compileError: errorMessage,
+    };
+  }
 }
