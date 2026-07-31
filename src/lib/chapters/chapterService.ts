@@ -25,8 +25,8 @@ export function findNextChapter(
   modules: ModuleMeta[],
   currentChapterSlug: string
 ): ChapterMeta | null {
-  const allChapters = modules.flatMap((m) => m.chapters);
-  const currentIndex = allChapters.findIndex((c) => c.slug === currentChapterSlug);
+  const allChapters = modules.flatMap((moduleItem) => moduleItem.chapters);
+  const currentIndex = allChapters.findIndex((chapter) => chapter.slug === currentChapterSlug);
   if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
     return allChapters[currentIndex + 1];
   }

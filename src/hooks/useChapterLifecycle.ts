@@ -22,9 +22,9 @@ export function useChapterLifecycle() {
   }, []);
 
   const selectChapter = useCallback(
-    async (modSlug: string, chSlug: string): Promise<ChapterMeta | null> => {
+    async (moduleSlug: string, chapterSlug: string): Promise<ChapterMeta | null> => {
       try {
-        const ch = await fetchChapterService(modSlug, chSlug);
+        const ch = await fetchChapterService(moduleSlug, chapterSlug);
         setCurrentChapter(ch);
         return ch;
       } catch (err) {

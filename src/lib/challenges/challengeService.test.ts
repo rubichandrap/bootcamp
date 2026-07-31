@@ -170,5 +170,35 @@ describe('challengeService', () => {
       expect(mockRecordSubmission).not.toHaveBeenCalled();
       expect(mockOnAdvance).not.toHaveBeenCalled();
     });
+
+    it('returns valid RCE execution result even if recordSubmission throws', async () => {
+      const mockRceResponse: RCEExecuteResponse = {
+        success: true,
+        passed: 1,
+        failed: 0,
+        tests: [],
+      };
+      const mockExecuteRce = vi.fn().mockResolvedValue(mockRceResponse);
+      const mockRecordSubmission = vi.fn().mockRejectedValue(new Error('Submission recording error'));
+      const mockOnAdvance = vi.fn();
+      const mockIncrementFailedAttempts = vi.fn();
+
+      const res = await runChallenge(
+        {
+          chapterId: 'ch-1',
+          code: 'package main',
+          testCode: 'package main_test',
+        },
+        {
+          executeRce: mockExecuteRce,
+          recordSubmission: mockRecordSubmission,
+          onAdvance: mockOnAdvance,
+          incrementFailedAttempts: mockIncrementFailedAttempts,
+        }
+      );
+
+      expect(res.result).toEqual(mockRceResponse);
+      expect(mockIncrementFailedAttempts).not.toHaveBeenCalled();
+    });
   });
 });
