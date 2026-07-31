@@ -2,6 +2,7 @@ import { eq, and, inArray, gte, sql, desc } from 'drizzle-orm';
 import { db } from '@/lib/db/connection';
 import { userProgress, submissions } from '@/lib/db/schema';
 import { calculateStreak } from '@/lib/metrics/streak';
+import { getAllModules } from '@/lib/content/contentEngine';
 
 export { userProgress, submissions };
 
@@ -68,7 +69,7 @@ export function recordSubmission(input: RecordSubmissionInput) {
   return { submissionId, success: true };
 }
 
-export function getFailedAttemptsCount(userId: string, chapterId: string, trackId: string = 'go'): number {
+export function getFailedSubmissionsCount(userId: string, chapterId: string, trackId: string = 'go'): number {
   const result = db
     .select({ count: sql<number>`count(*)` })
     .from(submissions)
@@ -84,6 +85,9 @@ export function getFailedAttemptsCount(userId: string, chapterId: string, trackI
 
   return result?.count ?? 0;
 }
+
+// Vocabulary alias for backwards compatibility
+export const getFailedAttemptsCount = getFailedSubmissionsCount;
 
 export function getUserProgress(userId: string, options?: { trackId?: string; dateWindowDays?: number }) {
   const trackId = options?.trackId;
@@ -109,7 +113,7 @@ export function getUserProgress(userId: string, options?: { trackId?: string; da
 
   // Streak is computed across ALL submissions regardless of trackId
   const submissionRecords = db
-    .select()
+    .select({ createdAt: submissions.createdAt })
     .from(submissions)
     .where(
       and(
@@ -133,15 +137,43 @@ export function getUserProgress(userId: string, options?: { trackId?: string; da
 }
 
 export function getTrackProgress(userId: string, trackId: string) {
-  return getUserProgress(userId, { trackId });
+  const userProg = getUserProgress(userId, { trackId });
+  const modules = getAllModules(trackId);
+  const totalCount = modules.reduce((acc, m) => acc + m.chapters.length, 0);
+  const percentage = totalCount > 0 ? Math.round((userProg.completedCount / totalCount) * 100) : 0;
+
+  return {
+    userId,
+    trackId,
+    completedChapterIds: userProg.completedChapterIds,
+    completedCount: userProg.completedCount,
+    totalCount,
+    percentage,
+    streakDays: userProg.streakDays,
+  };
 }
 
 export function getOverallProgress(userId: string) {
   return getUserProgress(userId);
 }
 
-export function getStreak(userId: string): number {
-  return getUserProgress(userId).streakDays;
+export function getStreak(userId: string, dateWindowDays: number = 30): number {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - dateWindowDays);
+  const dateThreshold = cutoffDate.toISOString();
+
+  const records = db
+    .select({ createdAt: submissions.createdAt })
+    .from(submissions)
+    .where(
+      and(
+        eq(submissions.userId, userId),
+        gte(submissions.createdAt, dateThreshold)
+      )
+    )
+    .all();
+
+  return calculateStreak(records.map((r) => r.createdAt));
 }
 
 export function calculateModuleProgress(

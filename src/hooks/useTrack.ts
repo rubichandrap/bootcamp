@@ -23,7 +23,7 @@ export function setStoredTrack(trackSlug: string): void {
       localStorage.setItem(TRACK_STORAGE_KEY, trackSlug);
     }
     if (typeof document !== 'undefined') {
-      document.cookie = `${TRACK_STORAGE_KEY}=${encodeURIComponent(trackSlug)}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `${TRACK_STORAGE_KEY}=${encodeURIComponent(trackSlug)}; path=/; SameSite=Lax`;
     }
   }
 }

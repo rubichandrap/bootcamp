@@ -34,6 +34,17 @@ export interface TrackMeta {
   modules: ModuleMeta[];
 }
 
+function readJsonFile<T>(filePath: string, fallback: T): T {
+  if (fs.existsSync(filePath)) {
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch {
+      // Fallback on invalid JSON
+    }
+  }
+  return fallback;
+}
+
 export function getAllTracks(): TrackMeta[] {
   if (!fs.existsSync(TRACKS_DIR)) {
     return [];
@@ -50,20 +61,12 @@ export function getAllTracks(): TrackMeta[] {
     const trackPath = path.join(TRACKS_DIR, trackSlug);
     const metaPath = path.join(trackPath, 'track.json');
 
-    let trackInfo = {
+    const trackInfo = readJsonFile(metaPath, {
       title: trackSlug.toUpperCase(),
       description: '',
       language: trackSlug,
       order: 99,
-    };
-
-    if (fs.existsSync(metaPath)) {
-      try {
-        trackInfo = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-      } catch {
-        // Fallback
-      }
-    }
+    });
 
     const modules = getAllModules(trackSlug);
 
@@ -81,9 +84,16 @@ export function getAllTracks(): TrackMeta[] {
   return tracks;
 }
 
-export function getTrackBySlug(trackSlug: string): TrackMeta | null {
+export function getTrack(trackSlug: string): TrackMeta | null {
   const tracks = getAllTracks();
   return tracks.find((t) => t.slug === trackSlug) || null;
+}
+
+export const getTrackBySlug = getTrack;
+
+export function getModule(trackSlug: string, moduleSlug: string): ModuleMeta | null {
+  const modules = getAllModules(trackSlug);
+  return modules.find((m) => m.slug === moduleSlug) || null;
 }
 
 export function getAllModules(trackSlug: string = 'go'): ModuleMeta[] {
@@ -103,14 +113,11 @@ export function getAllModules(trackSlug: string = 'go'): ModuleMeta[] {
     const modPath = path.join(modulesDir, modSlug);
     const metaPath = path.join(modPath, 'module.json');
 
-    let modInfo = { title: modSlug, description: '', order: 99 };
-    if (fs.existsSync(metaPath)) {
-      try {
-        modInfo = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-      } catch {
-        // Fallback
-      }
-    }
+    const modInfo = readJsonFile(metaPath, {
+      title: modSlug,
+      description: '',
+      order: 99,
+    });
 
     const files = fs.readdirSync(modPath).filter((f) => f.endsWith('.mdx'));
     const chapters: ChapterMeta[] = [];
@@ -151,24 +158,11 @@ export function getAllModules(trackSlug: string = 'go'): ModuleMeta[] {
   return modules;
 }
 
-export function getChapterBySlug(
-  trackOrModuleSlug: string,
-  moduleOrChapterSlug: string,
-  maybeChapterSlug?: string
+export function getChapter(
+  trackSlug: string,
+  moduleSlug: string,
+  chapterSlug: string
 ): ChapterMeta | null {
-  let trackSlug = 'go';
-  let moduleSlug = '';
-  let chapterSlug = '';
-
-  if (maybeChapterSlug !== undefined) {
-    trackSlug = trackOrModuleSlug;
-    moduleSlug = moduleOrChapterSlug;
-    chapterSlug = maybeChapterSlug;
-  } else {
-    moduleSlug = trackOrModuleSlug;
-    chapterSlug = moduleOrChapterSlug;
-  }
-
   const filePath = path.join(TRACKS_DIR, trackSlug, 'modules', moduleSlug, `${chapterSlug}.mdx`);
   if (!fs.existsSync(filePath)) {
     return null;
@@ -188,4 +182,15 @@ export function getChapterBySlug(
     starterCode: data.starterCode,
     testCode: data.testCode,
   };
+}
+
+export function getChapterBySlug(
+  trackOrModuleSlug: string,
+  moduleOrChapterSlug: string,
+  maybeChapterSlug?: string
+): ChapterMeta | null {
+  if (maybeChapterSlug !== undefined) {
+    return getChapter(trackOrModuleSlug, moduleOrChapterSlug, maybeChapterSlug);
+  }
+  return getChapter('go', trackOrModuleSlug, moduleOrChapterSlug);
 }

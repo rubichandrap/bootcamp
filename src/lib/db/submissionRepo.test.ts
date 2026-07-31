@@ -5,6 +5,7 @@ import {
   getTrackProgress,
   getOverallProgress,
   getStreak,
+  getFailedSubmissionsCount,
   getFailedAttemptsCount,
   calculateModuleProgress,
   getLatestSubmission,
@@ -363,22 +364,27 @@ describe('SQLite Progress Tracking & Submissions', () => {
   it('provides explicit getTrackProgress, getOverallProgress, and getStreak helpers', () => {
     recordSubmission({
       userId: testUserId,
-      trackId: 'go',
-      chapterId: 'go-ch-100',
-      code: 'package main',
+      trackId: 'typescript',
+      chapterId: '01-hello-world-reading',
+      code: 'const x = 1;',
       passed: true,
       testCount: 1,
       failedCount: 0,
     });
 
-    const trackProg = getTrackProgress(testUserId, 'go');
-    expect(trackProg.trackId).toBe('go');
-    expect(trackProg.completedChapterIds).toContain('go-ch-100');
+    const trackProg = getTrackProgress(testUserId, 'typescript');
+    expect(trackProg.trackId).toBe('typescript');
+    expect(trackProg.completedChapterIds).toContain('01-hello-world-reading');
+    expect(trackProg.totalCount).toBeGreaterThan(0);
+    expect(typeof trackProg.percentage).toBe('number');
 
     const overallProg = getOverallProgress(testUserId);
     expect(overallProg.completedCount).toBeGreaterThanOrEqual(1);
 
     const streak = getStreak(testUserId);
     expect(streak).toBeGreaterThanOrEqual(1);
+
+    const failedCount = getFailedSubmissionsCount(testUserId, '01-hello-world-reading', 'typescript');
+    expect(failedCount).toBe(0);
   });
 });

@@ -5,12 +5,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/modules/:moduleSlug/:chapterSlug',
-        destination: '/tracks/go/:moduleSlug/:chapterSlug',
+        destination: '/tracks/go/modules/:moduleSlug/:chapterSlug',
         permanent: true,
       },
       {
         source: '/modules/:moduleSlug',
-        destination: '/tracks/go',
+        destination: '/tracks/go/modules/:moduleSlug',
         permanent: true,
       },
     ];
