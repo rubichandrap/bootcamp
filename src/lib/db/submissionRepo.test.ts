@@ -2,6 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   recordSubmission,
   getUserProgress,
+  getTrackProgress,
+  getOverallProgress,
+  getStreak,
   getFailedAttemptsCount,
   calculateModuleProgress,
   getLatestSubmission,
@@ -355,5 +358,27 @@ describe('SQLite Progress Tracking & Submissions', () => {
     const overallProgress = getUserProgress(testUserId);
     expect(overallProgress.completedChapterIds).toHaveLength(2);
     expect(overallProgress.streakDays).toBeGreaterThanOrEqual(1);
+  });
+
+  it('provides explicit getTrackProgress, getOverallProgress, and getStreak helpers', () => {
+    recordSubmission({
+      userId: testUserId,
+      trackId: 'go',
+      chapterId: 'go-ch-100',
+      code: 'package main',
+      passed: true,
+      testCount: 1,
+      failedCount: 0,
+    });
+
+    const trackProg = getTrackProgress(testUserId, 'go');
+    expect(trackProg.trackId).toBe('go');
+    expect(trackProg.completedChapterIds).toContain('go-ch-100');
+
+    const overallProg = getOverallProgress(testUserId);
+    expect(overallProg.completedCount).toBeGreaterThanOrEqual(1);
+
+    const streak = getStreak(testUserId);
+    expect(streak).toBeGreaterThanOrEqual(1);
   });
 });

@@ -1,31 +1,36 @@
-import { GoRunner } from '@/lib/rce/goRunner';
-import { TypeScriptRunner } from '@/lib/rce/tsRunner';
+import { GoExecutor } from '@/lib/rce/goExecutor';
+import { TypeScriptExecutor } from '@/lib/rce/tsExecutor';
 import {
   ExecuteSubmissionParams,
-  LanguageRunner,
+  LanguageExecutor,
   RCE_TIMEOUT_MS,
   SubmissionExecutionResult,
   TestResultItem,
 } from '@/lib/rce/types';
 
 export { RCE_TIMEOUT_MS };
-export type { TestResultItem, SubmissionExecutionResult, ExecuteSubmissionParams, LanguageRunner };
-export { parseGoTestStream, getGoEnv } from '@/lib/rce/goRunner';
-export { parseVitestJsonOutput } from '@/lib/rce/tsRunner';
+export type { TestResultItem, SubmissionExecutionResult, ExecuteSubmissionParams, LanguageExecutor };
+export { parseGoTestStream, getGoEnv } from '@/lib/rce/goExecutor';
+export { parseVitestJsonOutput } from '@/lib/rce/tsExecutor';
 
-const goRunner = new GoRunner();
-const tsRunner = new TypeScriptRunner();
+const goExecutor = new GoExecutor();
+const tsExecutor = new TypeScriptExecutor();
 
-export function getLanguageRunner(trackId: string = 'go'): LanguageRunner {
-  if (trackId === 'typescript' || trackId === 'ts') {
-    return tsRunner;
-  }
-  return goRunner;
+export const EXECUTOR_REGISTRY: Record<string, LanguageExecutor> = {
+  go: goExecutor,
+  golang: goExecutor,
+  typescript: tsExecutor,
+  ts: tsExecutor,
+};
+
+export function getLanguageExecutor(trackId: string = 'go'): LanguageExecutor {
+  const normalizedTrack = trackId.toLowerCase();
+  return EXECUTOR_REGISTRY[normalizedTrack] || goExecutor;
 }
 
 export async function executeSubmission(
   params: ExecuteSubmissionParams
 ): Promise<SubmissionExecutionResult> {
-  const runner = getLanguageRunner(params.trackId);
-  return runner.execute(params);
+  const executor = getLanguageExecutor(params.trackId);
+  return executor.execute(params);
 }

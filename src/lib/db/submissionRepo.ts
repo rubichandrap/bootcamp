@@ -132,6 +132,18 @@ export function getUserProgress(userId: string, options?: { trackId?: string; da
   };
 }
 
+export function getTrackProgress(userId: string, trackId: string) {
+  return getUserProgress(userId, { trackId });
+}
+
+export function getOverallProgress(userId: string) {
+  return getUserProgress(userId);
+}
+
+export function getStreak(userId: string): number {
+  return getUserProgress(userId).streakDays;
+}
+
 export function calculateModuleProgress(
   userId: string,
   totalModuleChapterIds: string[],

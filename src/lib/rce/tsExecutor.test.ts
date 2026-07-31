@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { parseVitestJsonOutput, TypeScriptRunner } from './tsRunner';
-import { getLanguageRunner } from './rceEngine';
+import { parseVitestJsonOutput, TypeScriptExecutor } from './tsExecutor';
+import { getLanguageExecutor } from './rceEngine';
 
-describe('TypeScriptRunner & vitest json parser', () => {
-  it('selects TypeScriptRunner for trackId typescript or ts', () => {
-    const runner = getLanguageRunner('typescript');
-    expect(runner).toBeInstanceOf(TypeScriptRunner);
+describe('TypeScriptExecutor & vitest json parser', () => {
+  it('selects TypeScriptExecutor from registry for trackId typescript or ts', () => {
+    const executor = getLanguageExecutor('typescript');
+    expect(executor).toBeInstanceOf(TypeScriptExecutor);
 
-    const tsShortRunner = getLanguageRunner('ts');
-    expect(tsShortRunner).toBeInstanceOf(TypeScriptRunner);
+    const tsShortExecutor = getLanguageExecutor('ts');
+    expect(tsShortExecutor).toBeInstanceOf(TypeScriptExecutor);
   });
 
   it('parses successful vitest json output', () => {

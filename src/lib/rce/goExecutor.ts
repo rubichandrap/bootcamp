@@ -6,7 +6,7 @@ import { promisify } from 'util';
 import { parseBenchOutput } from '@/lib/rce/benchParser';
 import {
   ExecuteSubmissionParams,
-  LanguageRunner,
+  LanguageExecutor,
   RCE_TIMEOUT_MS,
   SubmissionExecutionResult,
   TestResultItem,
@@ -113,7 +113,7 @@ export function getGoEnv() {
   };
 }
 
-export class GoRunner implements LanguageRunner {
+export class GoExecutor implements LanguageExecutor {
   async execute(params: ExecuteSubmissionParams): Promise<SubmissionExecutionResult> {
     const { code, testCode, enableRaceCheck, timeoutMs = RCE_TIMEOUT_MS } = params;
 

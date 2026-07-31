@@ -5,7 +5,7 @@ import os from 'os';
 import { promisify } from 'util';
 import {
   ExecuteSubmissionParams,
-  LanguageRunner,
+  LanguageExecutor,
   RCE_TIMEOUT_MS,
   SubmissionExecutionResult,
   TestResultItem,
@@ -78,7 +78,7 @@ export function parseVitestJsonOutput(stdout: string, stderr: string): Submissio
   };
 }
 
-export class TypeScriptRunner implements LanguageRunner {
+export class TypeScriptExecutor implements LanguageExecutor {
   async execute(params: ExecuteSubmissionParams): Promise<SubmissionExecutionResult> {
     const { code, testCode, timeoutMs = RCE_TIMEOUT_MS } = params;
 
@@ -91,7 +91,6 @@ export class TypeScriptRunner implements LanguageRunner {
     try {
       await fs.writeFile(path.join(tmpDir, 'solution.ts'), code, 'utf-8');
       
-      // Fix imports in test code if referencing ./solution
       const formattedTestCode = testCode.replace(/from\s+['"]\.\/solution['"]/g, `from './solution'`);
       await fs.writeFile(path.join(tmpDir, 'solution.test.ts'), formattedTestCode, 'utf-8');
 

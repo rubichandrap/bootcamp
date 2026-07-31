@@ -152,21 +152,21 @@ export function getAllModules(trackSlug: string = 'go'): ModuleMeta[] {
 }
 
 export function getChapterBySlug(
-  arg1: string,
-  arg2: string,
-  arg3?: string
+  trackOrModuleSlug: string,
+  moduleOrChapterSlug: string,
+  maybeChapterSlug?: string
 ): ChapterMeta | null {
   let trackSlug = 'go';
   let moduleSlug = '';
   let chapterSlug = '';
 
-  if (arg3 !== undefined) {
-    trackSlug = arg1;
-    moduleSlug = arg2;
-    chapterSlug = arg3;
+  if (maybeChapterSlug !== undefined) {
+    trackSlug = trackOrModuleSlug;
+    moduleSlug = moduleOrChapterSlug;
+    chapterSlug = maybeChapterSlug;
   } else {
-    moduleSlug = arg1;
-    chapterSlug = arg2;
+    moduleSlug = trackOrModuleSlug;
+    chapterSlug = moduleOrChapterSlug;
   }
 
   const filePath = path.join(TRACKS_DIR, trackSlug, 'modules', moduleSlug, `${chapterSlug}.mdx`);

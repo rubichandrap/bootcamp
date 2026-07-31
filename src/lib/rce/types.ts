@@ -28,6 +28,6 @@ export interface ExecuteSubmissionParams {
   timeoutMs?: number;
 }
 
-export interface LanguageRunner {
+export interface LanguageExecutor {
   execute(params: ExecuteSubmissionParams): Promise<SubmissionExecutionResult>;
 }
