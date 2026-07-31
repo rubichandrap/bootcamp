@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   calculateProgressPercent,
-  DrizzleProgressAdapter,
   HttpProgressAdapter,
 } from './progressTracker';
+import { DrizzleProgressAdapter } from './drizzleProgressAdapter';
 import { db } from '@/lib/db/connection';
 import { userProgress, submissions } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DrizzleProgressAdapter } from '@/lib/progress/progressTracker';
+import { DrizzleProgressAdapter } from '@/lib/progress/drizzleProgressAdapter';
 import { getErrorMessage } from '@/lib/utils/errorUtils';
 
 const progressAdapter = new DrizzleProgressAdapter();
