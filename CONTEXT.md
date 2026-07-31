@@ -29,6 +29,14 @@ The final Chapter of a Module containing a comprehensive test and submission to 
 A learner's submitted Go code for a Challenge or Assessment Chapter sent to the RCE Engine.
 _Avoid_: Answer, attempt, code run
 
+**Progress**:
+The learner's standing in the Track, derived from Submission records: which Chapters are completed, the daily streak, and per-Chapter failed-attempt counts.
+_Avoid_: Completion, achievement, stats
+
+**Streak**:
+The number of consecutive days a learner has made at least one Submission.
+_Avoid_: Run, chain, streak count
+
 **RCE Engine**:
 The Remote Code Execution service responsible for securely building and executing learner submissions against challenge test suites using `go test`.
 _Avoid_: Runner, compiler, playground

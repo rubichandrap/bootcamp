@@ -1,218 +1,81 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { TerminalOutput } from '@/components/TerminalOutput';
 import { SidebarNav } from '@/components/SidebarNav';
 import { MdxRenderer } from '@/components/MdxRenderer';
 import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
-import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
-import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
-import { READING_COMPLETION_MARKER } from '@/lib/content/contentConstants';
+import { useProgressTracker } from '@/hooks/useProgressTracker';
+import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
+import { useChallengeSession } from '@/hooks/useChallengeSession';
+import { useReadingSession } from '@/hooks/useReadingSession';
 import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search, Flame } from 'lucide-react';
 
-const DEFAULT_STARTER_CODE = `package main
-
-// Add returns the sum of two integers.
-func Add(a, b int) int {
-	return a + b
-}
-
-// Factorial computes the factorial of n using recursion.
-func Factorial(n int) int {
-	if n <= 1 {
-		return 1
-	}
-	return n * Factorial(n-1)
-}
-`;
-
-const DEFAULT_TEST_CODE = `package main
-
-import "testing"
-
-func TestAdd(t *testing.T) {
-	if Add(2, 3) != 5 {
-		t.Errorf("Add(2, 3) = %d; want 5", Add(2, 3))
-	}
-}
-
-func TestFactorial(t *testing.T) {
-	if Factorial(5) != 120 {
-		t.Errorf("Factorial(5) = %d; want 120", Factorial(5))
-	}
-}
-`;
-
 export default function Home() {
-  const [modules, setModules] = useState<ModuleMeta[]>([]);
-  const [currentChapter, setCurrentChapter] = useState<ChapterMeta | null>(null);
-  const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
-  const [streakDays, setStreakDays] = useState<number>(0);
-  
-  const [code, setCode] = useState(DEFAULT_STARTER_CODE);
-  const [testCode, setTestCode] = useState(DEFAULT_TEST_CODE);
-  const [activeTab, setActiveTab] = useState<'code' | 'test' | 'solution'>('code');
-  const [result, setResult] = useState<RCEExecuteResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
+  // Four deep sub-module hooks
+  const progressTracker = useProgressTracker();
+  const chapterLifecycle = useChapterLifecycle();
+  const challengeSession = useChallengeSession();
+  const readingSession = useReadingSession();
+
+  // Page shell UI state
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [enableRaceCheck, setEnableRaceCheck] = useState(false);
+
+  // Chapter selection handler that coordinates across hooks
+  const handleSelectChapter = useCallback(
+    async (modSlug: string, chSlug: string) => {
+      const ch = await chapterLifecycle.selectChapter(modSlug, chSlug);
+      if (ch) {
+        challengeSession.resetForChapter(ch.starterCode, ch.testCode);
+        await progressTracker.loadFailedAttempts(chSlug);
+      }
+    },
+    [chapterLifecycle, challengeSession, progressTracker]
+  );
 
   // Fetch modules and user progress on mount
   useEffect(() => {
     async function loadInitialData() {
-      try {
-        const modRes = await fetch('/api/modules');
-        const mods: ModuleMeta[] = await modRes.json();
-        setModules(mods);
+      await progressTracker.loadProgress();
+      const mods = await chapterLifecycle.loadModules();
 
-        if (mods.length > 0 && mods[0].chapters.length > 0) {
-          const firstCh = mods[0].chapters[0];
-          handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
-        }
-
-        const progRes = await fetch('/api/submissions?userId=default-user');
-        const progData = await progRes.json();
-        if (progData.completedChapterIds) {
-          setCompletedChapterIds(progData.completedChapterIds);
-        }
-        if (typeof progData.streakDays === 'number') {
-          setStreakDays(progData.streakDays);
-        }
-      } catch (err) {
-        console.error('Failed to load initial modules', err);
+      if (mods.length > 0 && mods[0].chapters.length > 0) {
+        const firstCh = mods[0].chapters[0];
+        await handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
       }
     }
     loadInitialData();
   }, []);
 
-  const handleSelectChapter = async (modSlug: string, chSlug: string) => {
-    try {
-      const res = await fetch(`/api/modules?module=${modSlug}&chapter=${chSlug}`);
-      const ch: ChapterMeta = await res.json();
-      setCurrentChapter(ch);
-      setResult(null);
-      setActiveTab('code');
+  const handleRun = useCallback(() => {
+    if (!chapterLifecycle.currentChapter) return;
+    challengeSession.runChallengeSession(chapterLifecycle.currentChapter.slug, {
+      recordSubmission: progressTracker.recordSubmission,
+      onAdvance: chapterLifecycle.advanceToNextChapter,
+      incrementFailedAttempts: progressTracker.incrementFailedAttempts,
+    });
+  }, [chapterLifecycle.currentChapter, challengeSession, progressTracker]);
 
-      if (ch.starterCode) setCode(ch.starterCode);
-      if (ch.testCode) setTestCode(ch.testCode);
-
-      // Fetch persistent failed attempts for this chapter from SQLite
-      const progRes = await fetch(`/api/submissions?userId=default-user&chapterId=${chSlug}`);
-      const progData = await progRes.json();
-      if (typeof progData.chapterFailedAttempts === 'number') {
-        setFailedAttempts(progData.chapterFailedAttempts);
-      } else {
-        setFailedAttempts(0);
-      }
-    } catch (err) {
-      console.error('Failed to select chapter', err);
-    }
-  };
-
-  const advanceToNextChapter = () => {
-    if (!currentChapter) return;
-    const allChapters = modules.flatMap((m) => m.chapters);
-    const currentIndex = allChapters.findIndex((c) => c.slug === currentChapter.slug);
-    if (currentIndex !== -1 && currentIndex + 1 < allChapters.length) {
-      const next = allChapters[currentIndex + 1];
-      handleSelectChapter(next.moduleSlug, next.slug);
-    }
-  };
-
-  const handleMarkAsRead = async () => {
-    if (!currentChapter) return;
-    try {
-      const res = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 'default-user',
-          chapterId: currentChapter.slug,
-          code: READING_COMPLETION_MARKER,
-          passed: true,
-          testCount: 0,
-          failedCount: 0,
-        }),
-      });
-      const data = await res.json();
-      if (data.userProgress?.completedChapterIds) {
-        setCompletedChapterIds(data.userProgress.completedChapterIds);
-      }
-      if (typeof data.userProgress?.streakDays === 'number') {
-        setStreakDays(data.userProgress.streakDays);
-      }
-      advanceToNextChapter();
-    } catch (err) {
-      console.error('Failed to mark chapter read', err);
-    }
-  };
-
-  const handleRun = async () => {
-    if (!currentChapter) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/rce/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, testCode, enableRaceCheck }),
-      });
-      const data: RCEExecuteResponse = await res.json();
-      setResult(data);
-
-      const subRes = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: 'default-user',
-          chapterId: currentChapter.slug,
-          code,
-          passed: data.success,
-          testCount: data.passed + data.failed,
-          failedCount: data.failed,
-          compileError: data.compileError,
-        }),
-      });
-      const subData = await subRes.json();
-      if (subData.userProgress?.completedChapterIds) {
-        setCompletedChapterIds(subData.userProgress.completedChapterIds);
-      }
-      if (typeof subData.userProgress?.streakDays === 'number') {
-        setStreakDays(subData.userProgress.streakDays);
-      }
-      if (typeof subData.chapterFailedAttempts === 'number') {
-        setFailedAttempts(subData.chapterFailedAttempts);
-      }
-
-      // Auto-advance if submission passed
-      if (data.success) {
-        setTimeout(() => advanceToNextChapter(), 1500);
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Execution failed';
-      setFailedAttempts((prev) => prev + 1);
-      setResult({
-        success: false,
-        passed: 0,
-        failed: 1,
-        tests: [],
-        compileError: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleMarkAsRead = useCallback(() => {
+    if (!chapterLifecycle.currentChapter) return;
+    readingSession.markAsRead(chapterLifecycle.currentChapter.slug, {
+      recordSubmission: progressTracker.recordSubmission,
+      onAdvance: chapterLifecycle.advanceToNextChapter,
+    });
+  }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
 
   // Keyboard shortcut listeners (Cmd+Enter to run, Cmd+K for search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
-        handleRun();
+        if (chapterLifecycle.currentChapter && chapterLifecycle.currentChapter.type !== 'reading') {
+          handleRun();
+        }
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
@@ -220,14 +83,16 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [code, testCode, currentChapter, enableRaceCheck]);
+  }, [chapterLifecycle.currentChapter, handleRun]);
 
+  const currentChapter = chapterLifecycle.currentChapter;
   const activeHint = getSocraticHint(currentChapter?.slug || 'default');
-  const isPassed = currentChapter ? completedChapterIds.includes(currentChapter.slug) : false;
-  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts });
+  const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
+  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
 
-  const totalChapters = modules.flatMap((m) => m.chapters).length;
-  const progressPercent = totalChapters > 0 ? Math.round((completedChapterIds.length / totalChapters) * 100) : 0;
+  const totalChapters = chapterLifecycle.modules.flatMap((m) => m.chapters).length;
+  const progressPercent =
+    totalChapters > 0 ? Math.round((progressTracker.completedChapterIds.length / totalChapters) * 100) : 0;
 
   return (
     <div className="h-screen w-screen bg-[#090d16] text-slate-100 flex flex-col overflow-hidden font-sans">
@@ -253,15 +118,15 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {/* Race Check UI Toggle */}
           <button
-            onClick={() => setEnableRaceCheck((prev) => !prev)}
+            onClick={() => challengeSession.setEnableRaceCheck((prev) => !prev)}
             className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
-              enableRaceCheck
+              challengeSession.enableRaceCheck
                 ? 'bg-rose-950/40 border-rose-600 text-rose-300 font-semibold'
                 : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
             }`}
             title="Enable Go Data Race Detector (-race)"
           >
-            <Flame size={13} className={enableRaceCheck ? 'text-rose-400' : 'text-slate-500'} />
+            <Flame size={13} className={challengeSession.enableRaceCheck ? 'text-rose-400' : 'text-slate-500'} />
             <span>-race</span>
           </button>
 
@@ -290,17 +155,19 @@ export default function Home() {
 
           <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-md">
             <Award size={14} className="text-amber-400" />
-            <span>Streak: <strong className="text-white">{streakDays} Days</strong></span>
+            <span>
+              Streak: <strong className="text-white">{progressTracker.streakDays} Days</strong>
+            </span>
           </div>
 
           {currentChapter?.type !== 'reading' && (
             <button
               onClick={handleRun}
-              disabled={isLoading}
+              disabled={challengeSession.isLoading}
               className="flex items-center gap-2 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-violet-500/25 transition-all disabled:opacity-50 cursor-pointer"
             >
               <Play size={14} fill="currentColor" />
-              {isLoading ? 'Executing...' : 'Run & Verify (Cmd+Enter)'}
+              {challengeSession.isLoading ? 'Executing...' : 'Run & Verify (Cmd+Enter)'}
             </button>
           )}
         </div>
@@ -310,9 +177,9 @@ export default function Home() {
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Nav */}
         <SidebarNav
-          modules={modules}
+          modules={chapterLifecycle.modules}
           currentChapter={currentChapter}
-          completedChapterIds={completedChapterIds}
+          completedChapterIds={progressTracker.completedChapterIds}
           onSelectChapter={handleSelectChapter}
         />
 
@@ -365,9 +232,9 @@ export default function Home() {
                 <div className="h-10 bg-[#161b22] border-b border-slate-800 px-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setActiveTab('code')}
+                      onClick={() => challengeSession.setActiveTab('code')}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                        activeTab === 'code'
+                        challengeSession.activeTab === 'code'
                           ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
@@ -375,9 +242,9 @@ export default function Home() {
                       <Code2 size={13} /> main.go
                     </button>
                     <button
-                      onClick={() => setActiveTab('test')}
+                      onClick={() => challengeSession.setActiveTab('test')}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                        activeTab === 'test'
+                        challengeSession.activeTab === 'test'
                           ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
@@ -385,10 +252,10 @@ export default function Home() {
                       <Code2 size={13} /> main_test.go
                     </button>
                     <button
-                      onClick={() => isUnlocked && setActiveTab('solution')}
+                      onClick={() => isUnlocked && challengeSession.setActiveTab('solution')}
                       disabled={!isUnlocked}
                       className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                        activeTab === 'solution'
+                        challengeSession.activeTab === 'solution'
                           ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
                           : isUnlocked
                           ? 'text-emerald-400 hover:text-emerald-300'
@@ -400,15 +267,25 @@ export default function Home() {
                   </div>
 
                   <span className="text-[11px] text-slate-500 font-mono">
-                    {activeTab === 'code' ? 'Solution Code' : activeTab === 'test' ? 'Unit Tests' : 'Reference Solution'}
+                    {challengeSession.activeTab === 'code'
+                      ? 'Solution Code'
+                      : challengeSession.activeTab === 'test'
+                      ? 'Unit Tests'
+                      : 'Reference Solution'}
                   </span>
                 </div>
 
                 <div className="flex-1">
-                  {activeTab === 'code' ? (
-                    <CodeEditor value={code} onChange={(v) => setCode(v || '')} />
-                  ) : activeTab === 'test' ? (
-                    <CodeEditor value={testCode} onChange={(v) => setTestCode(v || '')} />
+                  {challengeSession.activeTab === 'code' ? (
+                    <CodeEditor
+                      value={challengeSession.code}
+                      onChange={(v) => challengeSession.setCode(v || '')}
+                    />
+                  ) : challengeSession.activeTab === 'test' ? (
+                    <CodeEditor
+                      value={challengeSession.testCode}
+                      onChange={(v) => challengeSession.setTestCode(v || '')}
+                    />
                   ) : (
                     <CodeEditor value={activeHint.solutionCode || '// Solution Unlocked'} onChange={() => {}} />
                   )}
@@ -416,7 +293,7 @@ export default function Home() {
               </div>
 
               <div className="h-48">
-                <TerminalOutput result={result} isLoading={isLoading} />
+                <TerminalOutput result={challengeSession.result} isLoading={challengeSession.isLoading} />
               </div>
             </div>
           )}
@@ -429,14 +306,14 @@ export default function Home() {
         onClose={() => setIsHintOpen(false)}
         hint={activeHint}
         isUnlocked={isUnlocked}
-        failedAttempts={failedAttempts}
+        failedAttempts={progressTracker.failedAttempts}
       />
 
       {/* Command Palette Modal (Cmd+K) */}
       <CommandPaletteModal
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
-        modules={modules}
+        modules={chapterLifecycle.modules}
         onSelectChapter={handleSelectChapter}
       />
     </div>
