@@ -38,9 +38,9 @@ func TestFactorial(t *testing.T) {
 }
 `;
 
-export function useChallengeSession() {
-  const [code, setCode] = useState(DEFAULT_STARTER_CODE);
-  const [testCode, setTestCode] = useState(DEFAULT_TEST_CODE);
+export function useChallengeSession(initialStarterCode = '', initialTestCode = '') {
+  const [code, setCode] = useState(initialStarterCode);
+  const [testCode, setTestCode] = useState(initialTestCode);
   const [activeTab, setActiveTab] = useState<'code' | 'test' | 'solution'>('code');
   const [result, setResult] = useState<RCEExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +75,7 @@ export function useChallengeSession() {
       if (chapterId) {
         setActiveChapterId(chapterId);
       }
-      let initialCode = starterCode ?? DEFAULT_STARTER_CODE;
+      let initialCode = starterCode ?? '';
       if (chapterId && codeByChapter[chapterId] !== undefined) {
         initialCode = codeByChapter[chapterId];
       } else if (savedSubmissionCode) {
@@ -85,7 +85,7 @@ export function useChallengeSession() {
         }
       }
       setCode(initialCode);
-      setTestCode(testCodeInput ?? DEFAULT_TEST_CODE);
+      setTestCode(testCodeInput ?? '');
     },
     [codeByChapter]
   );

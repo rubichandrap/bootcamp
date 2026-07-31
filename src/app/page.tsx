@@ -1,473 +1,195 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { CodeEditor } from '@/components/CodeEditor';
-import { TerminalOutput } from '@/components/TerminalOutput';
-import { SidebarNav } from '@/components/SidebarNav';
-import { MdxRenderer } from '@/components/MdxRenderer';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { TerminalHeader } from '@/components/TerminalHeader';
-import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
-import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
+import { useTheme } from '@/hooks/useTheme';
 import { useProgressTracker } from '@/hooks/useProgressTracker';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
-import { useChallengeSession } from '@/hooks/useChallengeSession';
-import { useReadingSession } from '@/hooks/useReadingSession';
-import { useTheme } from '@/hooks/useTheme';
-import { useResizableLayout } from '@/hooks/useResizableLayout';
-import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight, BookOpen, Terminal as TerminalIcon } from 'lucide-react';
+import type { ModuleMeta } from '@/lib/content/contentEngine';
+import type { TrackOverview } from '@/lib/tracks/trackCatalog';
+import { Layers, ArrowRight, Code2, CheckCircle2, Terminal as TerminalIcon, Sparkles, Flame } from 'lucide-react';
 
-export default function Home() {
-  // Theme hook
-  const { theme, toggleTheme, monacoTheme } = useTheme();
-
-  // Sub-module hooks
+export default function Homepage() {
+  const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const progressTracker = useProgressTracker();
-  const chapterLifecycle = useChapterLifecycle();
-  const challengeSession = useChallengeSession();
-  const readingSession = useReadingSession();
-  const {
-    sidebarWidth,
-    workspaceSplit,
-    consoleHeight,
-    isDesktop,
-    handleSidebarMouseDown,
-    handleSidebarTouchStart,
-    handleWorkspaceMouseDown,
-    handleWorkspaceTouchStart,
-    handleConsoleMouseDown,
-    handleConsoleTouchStart,
-  } = useResizableLayout();
 
-  // Page shell UI state
-  const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeMobileTab, setActiveMobileTab] = useState<'guide' | 'code' | 'terminal'>('guide');
+  const [tracks, setTracks] = useState<TrackOverview[]>([]);
+  const [allModules, setAllModules] = useState<ModuleMeta[]>([]);
 
-  // Chapter selection handler
-  const handleSelectChapter = useCallback(
-    async (modSlug: string, chSlug: string) => {
-      await chapterLifecycle.selectChapter(modSlug, chSlug);
-      setIsSidebarOpen(false);
-      setActiveMobileTab('guide');
-    },
-    [chapterLifecycle]
-  );
-
-  // 1. Initial data loading effect
   useEffect(() => {
-    async function loadInitialData() {
+    async function loadData() {
       await progressTracker.loadProgress();
-      await chapterLifecycle.loadModules();
+      try {
+        const [tracksRes, modulesRes] = await Promise.all([
+          fetch('/api/tracks'),
+          fetch('/api/modules?track=all'),
+        ]);
+        if (tracksRes.ok) {
+          const tracksData = await tracksRes.json();
+          setTracks(tracksData);
+        }
+        if (modulesRes.ok) {
+          const modulesData = await modulesRes.json();
+          setAllModules(modulesData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch track overview', err);
+      }
     }
-    loadInitialData();
+    loadData();
   }, []);
 
-  // 2. Auto-select first Chapter when modules load
-  useEffect(() => {
-    if (!chapterLifecycle.currentChapter && chapterLifecycle.modules.length > 0) {
-      const firstMod = chapterLifecycle.modules[0];
-      if (firstMod.chapters.length > 0) {
-        const firstCh = firstMod.chapters[0];
-        handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
-      }
-    }
-  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, handleSelectChapter]);
-
-  // 3. Reset editor when currentChapter changes, fetching saved answer from DB if present
-  const currentChapter = chapterLifecycle.currentChapter;
-  useEffect(() => {
-    if (!currentChapter) return;
-    const ch = currentChapter;
-    let isSubscribed = true;
-    async function initChapter() {
-      progressTracker.loadFailedAttempts(ch.slug);
-      let savedCode: string | undefined;
-      if (ch.type !== 'reading') {
-        const latestSub = await progressTracker.getLatestSubmission(ch.slug);
-        if (latestSub?.code) {
-          savedCode = latestSub.code;
-        }
-      }
-      if (isSubscribed) {
-        challengeSession.resetForChapter(
-          ch.starterCode,
-          ch.testCode,
-          savedCode,
-          ch.slug
-        );
-      }
-    }
-    initChapter();
-    return () => {
-      isSubscribed = false;
-    };
-  }, [currentChapter?.slug]);
-
-  const handleRun = useCallback(() => {
-    if (!chapterLifecycle.currentChapter) return;
-    challengeSession.runChallengeSession(chapterLifecycle.currentChapter.slug, {
-      recordSubmission: progressTracker.recordSubmission,
-      onAdvance: chapterLifecycle.advanceToNextChapter,
-      incrementFailedAttempts: progressTracker.incrementFailedAttempts,
-    });
-  }, [chapterLifecycle.currentChapter, challengeSession, progressTracker]);
-
-  const handleMarkAsRead = useCallback(() => {
-    if (!chapterLifecycle.currentChapter) return;
-    readingSession.markAsRead(chapterLifecycle.currentChapter.slug, {
-      recordSubmission: progressTracker.recordSubmission,
-      onAdvance: chapterLifecycle.advanceToNextChapter,
-    });
-  }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
-
-  // 4. Keyboard shortcut listeners
+  // Keyboard shortcut Cmd+K for Search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        if (chapterLifecycle.currentChapter) {
-          if (chapterLifecycle.currentChapter.type === 'reading') {
-            handleMarkAsRead();
-          } else {
-            handleRun();
-          }
-        }
-      } else if (e.key === 'Enter' && chapterLifecycle.currentChapter?.type === 'reading' && !isPaletteOpen && !isHintOpen) {
-        e.preventDefault();
-        handleMarkAsRead();
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'h') {
-        e.preventDefault();
-        setIsHintOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chapterLifecycle.currentChapter, handleRun, handleMarkAsRead, isPaletteOpen, isHintOpen]);
+  }, []);
 
-  const activeHint = getSocraticHint(currentChapter?.slug || 'default');
-  const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
-  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
-
-  const activeModuleTitle = currentChapter
-    ? chapterLifecycle.modules.find((m) => m.slug === currentChapter.moduleSlug)?.title
-    : undefined;
+  const handleSelectChapter = (modSlug: string, chSlug: string, trackSlug?: string) => {
+    setIsPaletteOpen(false);
+    router.push(`/tracks/${trackSlug || 'go'}`);
+  };
 
   return (
-    <div className="h-[100dvh] min-h-[100dvh] w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
-      {/* Top Terminal Emulator Titlebar Header */}
+    <div className="min-h-[100dvh] w-full max-w-full bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-mono select-none overflow-x-hidden">
+      {/* Top Terminal Header */}
       <TerminalHeader
-        trackTitle="Go Mastery"
-        activeModuleTitle={activeModuleTitle}
+        trackTitle="Track Catalog"
+        activeTrackSlug="catalog"
         streakDays={progressTracker.streakDays}
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsPaletteOpen(true)}
-        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        onSelectTrack={(slug) => router.push(`/tracks/${slug}`)}
       />
 
-      {/* Main Terminal Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Desktop Sidebar Nav */}
-        <div className="hidden lg:flex h-full">
-          <SidebarNav
-            width={sidebarWidth}
-            modules={chapterLifecycle.modules}
-            currentChapter={currentChapter}
-            completedChapterIds={progressTracker.completedChapterIds}
-            onSelectChapter={handleSelectChapter}
-          />
-          {/* Desktop Sidebar Drag Resizer with 24px Touch Target */}
-          <div
-            onMouseDown={handleSidebarMouseDown}
-            onTouchStart={handleSidebarTouchStart}
-            className="w-6 -mx-2 px-2 hover:bg-cyan-500/20 transition-all cursor-col-resize shrink-0 z-10 select-none flex items-center justify-center group"
-            title="Drag to resize sidebar"
-          >
-            <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
-          </div>
-        </div>
-
-        {/* Mobile/Tablet Slide-over Sidebar Drawer */}
-        {isSidebarOpen && (
-          <>
-            <div
-              onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity"
-            />
-            <div className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-zinc-50 dark:bg-[#09090b] shadow-2xl lg:hidden flex flex-col">
-              <SidebarNav
-                modules={chapterLifecycle.modules}
-                currentChapter={currentChapter}
-                completedChapterIds={progressTracker.completedChapterIds}
-                onSelectChapter={handleSelectChapter}
-                onClose={() => setIsSidebarOpen(false)}
-              />
-            </div>
-          </>
-        )}
-
-        {/* Content & Workspace Container */}
-        <div id="workspace-container" className="flex-1 flex flex-col md:flex-row overflow-hidden p-2 sm:p-3 gap-0">
-          {/* Mobile Segmented View Control Bar */}
-          {currentChapter?.type !== 'reading' && (
-            <div className="flex md:hidden items-center justify-around bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded p-1 mb-2 text-xs font-mono shrink-0">
-              <button
-                onClick={() => setActiveMobileTab('guide')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
-                  activeMobileTab === 'guide'
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
-                    : 'text-zinc-600 dark:text-zinc-400'
-                }`}
-              >
-                <BookOpen size={13} />
-                <span>Guide</span>
-              </button>
-              <button
-                onClick={() => setActiveMobileTab('code')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
-                  activeMobileTab === 'code'
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
-                    : 'text-zinc-600 dark:text-zinc-400'
-                }`}
-              >
-                <Code2 size={13} />
-                <span>Code</span>
-              </button>
-              <button
-                onClick={() => setActiveMobileTab('terminal')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
-                  activeMobileTab === 'terminal'
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
-                    : 'text-zinc-600 dark:text-zinc-400'
-                }`}
-              >
-                <TerminalIcon size={13} />
-                <span>Terminal</span>
-              </button>
-            </div>
-          )}
-
-          {/* Left / Guide Pane */}
-          <div
-            style={{ width: isDesktop && currentChapter?.type !== 'reading' ? `${workspaceSplit}%` : '100%' }}
-            className={`border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-[#0c0c0e] p-3 sm:p-5 overflow-y-auto flex-col justify-between select-text shrink-0 ${
-              currentChapter?.type === 'reading' || activeMobileTab === 'guide'
-                ? 'flex w-full md:w-auto flex-1 md:flex-initial'
-                : 'hidden md:flex'
-            }`}
-          >
-            <div>
-              {/* Header Box Bar */}
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-300 dark:border-zinc-800">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-200 truncate">
-                  <span>┌─ [CHAPTER]</span>
-                  <span className="truncate">{currentChapter?.title || 'Loading...'}</span>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Race Detector Toggle */}
-                  {currentChapter?.type !== 'reading' && (
-                    <button
-                      onClick={() => challengeSession.toggleRaceCheck()}
-                      className={`px-2 py-0.5 rounded border text-[11px] font-mono transition-colors cursor-pointer ${
-                        challengeSession.enableRaceCheck
-                          ? 'border-red-500 bg-red-500/10 text-red-500 font-bold'
-                          : 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                      }`}
-                    >
-                      <Flame size={12} className="inline mr-1" />
-                      <span>-race</span>
-                    </button>
-                  )}
-
-                  {isPassed && (
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
-                      [✓ COMPLETED]
-                    </span>
-                  )}
-                </div>
+      {/* Main Terminal Shell Content Container */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-8 flex flex-col justify-between space-y-8">
+        <div className="space-y-8">
+          {/* Terminal Banner & Prompt Header */}
+          <div className="border border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-[#0c0c0e] p-6 sm:p-8 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-3 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-2 font-bold text-zinc-800 dark:text-zinc-200">
+                <TerminalIcon size={16} className="text-cyan-600 dark:text-cyan-400" />
+                <span>┌─ [BOOTCAMP TRACK CATALOG]</span>
               </div>
-
-              {currentChapter?.content ? (
-                <MdxRenderer content={currentChapter.content} />
-              ) : (
-                <p className="text-xs text-zinc-500 italic">$ loading manual page content...</p>
-              )}
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <Flame size={13} className="text-amber-500" />
+                <span>STREAK: {progressTracker.streakDays} DAYS</span>
+              </div>
             </div>
 
-            {/* Bottom Actions Bar */}
-            <div className="pt-4 mt-6 border-t border-zinc-300 dark:border-zinc-800 flex items-center justify-between gap-2">
-              <button
-                onClick={() => setIsHintOpen(true)}
-                className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline font-bold cursor-pointer"
-              >
-                <Sparkles size={14} />
-                <span>[SOCRATIC HINT]</span>
-              </button>
-
-              {currentChapter?.type === 'reading' ? (
-                <button
-                  onClick={handleMarkAsRead}
-                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded shadow transition-colors cursor-pointer"
-                >
-                  <span>[MARK AS READ &amp; CONTINUE]</span>
-                  <ChevronRight size={14} />
-                </button>
-              ) : (
-                <button
-                  onClick={handleRun}
-                  disabled={challengeSession.isLoading}
-                  className="flex items-center gap-1.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-100 dark:text-zinc-900 font-bold text-xs px-4 py-1.5 rounded transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  <Play size={13} fill="currentColor" />
-                  <span>{challengeSession.isLoading ? '[EXECUTING...]' : '[RUN TESTS]'}</span>
-                </button>
-              )}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+                <span>$</span>
+                <span>bootcamp tracks list --interactive</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-zinc-950 dark:text-white tracking-tight">
+                Select Your Learning Track
+              </h1>
+              <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm max-w-3xl leading-relaxed">
+                Master modern engineering through structured tracks. Read theory, solve embedded Monaco challenges, and verify your code against automated test suites in real-time.
+              </p>
             </div>
           </div>
 
-          {/* Reading vs Editor Pane Vertical Drag Resizer (Desktop/Tablet 24px Touch Target) */}
-          {currentChapter?.type !== 'reading' && (
-            <div
-              onMouseDown={handleWorkspaceMouseDown}
-              onTouchStart={handleWorkspaceTouchStart}
-              className="hidden md:flex w-6 -mx-2 px-2 items-center justify-center cursor-col-resize shrink-0 z-10 select-none group"
-              title="Drag to resize panels"
-            >
-              <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
+          {/* Available Tracks Grid */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 border-b border-zinc-300 dark:border-zinc-800 pb-2">
+              <span>┌─ [AVAILABLE TRACKS]</span>
+              <span>{tracks.length} TRACKS LOADED</span>
             </div>
-          )}
 
-          {/* Right: Code Editor & RCE Output Pane (for Challenge & Assessment Chapters) */}
-          {currentChapter?.type !== 'reading' && (
-            <div
-              id="right-pane-container"
-              style={{ width: isDesktop ? `${100 - workspaceSplit}%` : '100%' }}
-              className={`flex-col overflow-hidden shrink-0 ${
-                activeMobileTab === 'code' || activeMobileTab === 'terminal'
-                  ? 'flex w-full md:w-auto flex-1 md:flex-initial'
-                  : 'hidden md:flex'
-              }`}
-            >
-              {/* Code Editor Panel */}
-              <div
-                className={`flex-1 flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e] ${
-                  activeMobileTab === 'code' ? 'flex' : 'hidden md:flex'
-                }`}
-              >
-                {/* Editor File Tab Bar */}
-                <div className="h-9 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
-                  <div className="flex items-center gap-1 overflow-x-auto">
-                    <button
-                      onClick={() => challengeSession.selectTab('code')}
-                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
-                        challengeSession.activeTab === 'code'
-                          ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
-                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-                      }`}
-                    >
-                      <Code2 size={12} /> main.go
-                    </button>
-                    <button
-                      onClick={() => challengeSession.selectTab('test')}
-                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
-                        challengeSession.activeTab === 'test'
-                          ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
-                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-                      }`}
-                    >
-                      <Code2 size={12} /> main_test.go
-                    </button>
-                    <button
-                      onClick={() => isUnlocked && challengeSession.selectTab('solution')}
-                      disabled={!isUnlocked}
-                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors ${
-                        challengeSession.activeTab === 'solution'
-                          ? 'bg-emerald-950 text-emerald-300 font-bold border border-emerald-700'
-                          : isUnlocked
-                          ? 'text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer'
-                          : 'text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50'
-                      }`}
-                    >
-                      {isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
-                    </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {tracks.map((track) => {
+                const isStarted = track.percentage > 0;
+                return (
+                  <div
+                    key={track.slug}
+                    className="group flex flex-col justify-between rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0c0c0e] p-6 hover:border-cyan-500/50 dark:hover:border-cyan-500/50 transition-all shadow-sm duration-200"
+                  >
+                    <div className="space-y-5">
+                      {/* Language Badge & Module Info */}
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase">
+                          <Code2 size={13} />
+                          [{track.language.toUpperCase()}]
+                        </span>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {track.totalModules} MODULES • {track.totalChapters} CHAPTERS
+                        </span>
+                      </div>
+
+                      {/* Title & Description */}
+                      <div className="space-y-2">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                          {track.title}
+                        </h2>
+                        <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                          {track.description}
+                        </p>
+                      </div>
+
+                      {/* Progress Metrics */}
+                      <div className="space-y-1.5 pt-2">
+                        <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400 font-bold">
+                          <span>PROGRESS</span>
+                          <span className="text-cyan-600 dark:text-cyan-400">{track.percentage}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-800 rounded overflow-hidden">
+                          <div
+                            className="h-full bg-cyan-600 dark:bg-cyan-500 rounded transition-all duration-300"
+                            style={{ width: `${track.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Actions Footer */}
+                    <div className="mt-8 pt-4 border-t border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        <CheckCircle2 size={14} />
+                        <span>[✓ RCE RUNNER]</span>
+                      </div>
+
+                      <Link
+                        href={`/tracks/${track.slug}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-100 dark:text-zinc-900 font-bold text-xs transition-colors cursor-pointer"
+                      >
+                        <span>{isStarted ? '[CONTINUE TRACK]' : '[START TRACK]'}</span>
+                        <ArrowRight size={14} />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex-1">
-                  {challengeSession.activeTab === 'code' ? (
-                    <CodeEditor
-                      filename="main.go"
-                      path={`${currentChapter?.slug || 'default'}/main.go`}
-                      theme={monacoTheme}
-                      value={challengeSession.code}
-                      onChange={(v) => challengeSession.updateCode(v || '', currentChapter?.slug)}
-                    />
-                  ) : challengeSession.activeTab === 'test' ? (
-                    <CodeEditor
-                      filename="main_test.go"
-                      path={`${currentChapter?.slug || 'default'}/main_test.go`}
-                      theme={monacoTheme}
-                      value={challengeSession.testCode}
-                      onChange={(v) => challengeSession.updateTestCode(v || '')}
-                    />
-                  ) : (
-                    <CodeEditor
-                      filename="solution.go"
-                      path={`${currentChapter?.slug || 'default'}/solution.go`}
-                      theme={monacoTheme}
-                      value={activeHint.solutionCode || '// Solution Unlocked'}
-                      onChange={() => {}}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Horizontal Drag Resizer between Editor and Console (Desktop/Tablet 24px Touch Target) */}
-              <div
-                onMouseDown={handleConsoleMouseDown}
-                onTouchStart={handleConsoleTouchStart}
-                className="hidden md:flex h-6 -my-2 py-2 items-center justify-center cursor-row-resize shrink-0 z-10 select-none group"
-                title="Drag to resize console"
-              >
-                <div className="h-1 w-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
-              </div>
-
-              {/* RCE Console Output */}
-              <div
-                style={{ height: !isDesktop || activeMobileTab === 'terminal' ? '100%' : `${consoleHeight}px` }}
-                className={`shrink-0 ${
-                  activeMobileTab === 'terminal'
-                    ? 'flex flex-1 h-full'
-                    : 'hidden md:block'
-                }`}
-              >
-                <TerminalOutput result={challengeSession.result} isLoading={challengeSession.isLoading} />
-              </div>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Socratic Hint Modal */}
-      <SocraticHintModal
-        isOpen={isHintOpen}
-        onClose={() => setIsHintOpen(false)}
-        hint={activeHint}
-        isUnlocked={isUnlocked}
-        failedAttempts={progressTracker.failedAttempts}
-      />
+        {/* Footer Status Bar */}
+        <footer className="pt-6 border-t border-zinc-300 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+          <div>$ status: system operational</div>
+          <div>[PRESS CMD+K TO SEARCH]</div>
+        </footer>
+      </main>
 
-      {/* Command Palette Modal (Cmd+K) */}
+      {/* Command Palette Modal */}
       <CommandPaletteModal
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
-        modules={chapterLifecycle.modules}
+        modules={allModules}
         onSelectChapter={handleSelectChapter}
       />
     </div>
