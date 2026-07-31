@@ -46,5 +46,5 @@ The system responsible for managing and persisting visual workspace themes (Dark
 _Avoid_: Color scheme switcher, palette toggle
 
 **Workspace Layout**:
-The adaptive arrangement of Reading Guide, Code Editor, and RCE Engine console panes within a Chapter view, supporting side-by-side split view on desktop/tablet devices and segmented tabbed views on mobile devices.
+The adaptive arrangement of Reading Guide, Code Editor, and RCE Engine console panes within a Chapter view, topped by the `bootcamp v1.0.0` header titlebar.
 _Avoid_: Page grid, split screen wrapper
