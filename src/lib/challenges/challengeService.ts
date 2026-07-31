@@ -30,6 +30,7 @@ export async function executeRce(params: ExecuteRceParams): Promise<RCEExecuteRe
 
 export interface RunChallengeParams {
   chapterId: string;
+  trackId?: string;
   code: string;
   testCode: string;
   enableRaceCheck?: boolean;
@@ -85,6 +86,7 @@ export async function runChallenge(
   try {
     progressResult = await resolvedRecordSubmission({
       userId: params.userId || DEFAULT_USER_ID,
+      trackId: params.trackId,
       chapterId: params.chapterId,
       code: params.code,
       passed: data.success,

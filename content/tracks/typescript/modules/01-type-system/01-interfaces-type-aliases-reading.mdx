@@ -1,0 +1,100 @@
+---
+title: "Interfaces & Type Aliases"
+type: "reading"
+order: 1
+---
+
+# Interfaces & Type Aliases
+
+TypeScript gives you two ways to name an object shape: `interface` and `type`. Knowing which to use — and when they differ — is foundational.
+
+## `interface`
+
+An interface describes the shape of an object:
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email?: string; // optional property
+}
+```
+
+The `?` marks a property as optional. TypeScript will not complain if it's missing.
+
+## `type` Alias
+
+A `type` alias can name any type — not just objects:
+
+```typescript
+type UserId = number;
+type Status = "active" | "inactive" | "banned";
+
+type User = {
+  id: UserId;
+  name: string;
+  status: Status;
+};
+```
+
+## Key Differences
+
+| Feature | `interface` | `type` |
+|---|---|---|
+| Object shapes | ✅ | ✅ |
+| Primitives, unions, tuples | ❌ | ✅ |
+| Declaration merging | ✅ | ❌ |
+| `extends` keyword | ✅ | Use `&` instead |
+
+**Declaration merging** means you can `interface` the same name twice and they merge:
+
+```typescript
+interface Window {
+  myProp: string;
+}
+// Window now also has myProp — useful for augmenting global types
+```
+
+Use `interface` for objects you expect others to extend. Use `type` for everything else.
+
+## Extending Interfaces
+
+```typescript
+interface Animal {
+  name: string;
+}
+
+interface Dog extends Animal {
+  breed: string;
+}
+
+const d: Dog = { name: "Rex", breed: "Husky" };
+```
+
+## Readonly & Index Signatures
+
+```typescript
+interface Config {
+  readonly host: string;   // cannot be reassigned after creation
+  readonly port: number;
+  [key: string]: unknown;  // index signature — allows any additional string keys
+}
+```
+
+## Structural Typing
+
+TypeScript uses **structural typing**: a value satisfies an interface if it has at least the required properties — the name doesn't matter.
+
+```typescript
+interface Point {
+  x: number;
+  y: number;
+}
+
+function distance(p: Point): number {
+  return Math.sqrt(p.x ** 2 + p.y ** 2);
+}
+
+const vec = { x: 3, y: 4, label: "origin" };
+distance(vec); // ✅ — vec has x and y, extra property is fine
+```

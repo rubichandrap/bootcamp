@@ -1,0 +1,77 @@
+---
+title: "Promises & the Event Loop"
+type: "reading"
+order: 1
+---
+
+# Promises & the Event Loop
+
+## What Is a Promise?
+
+A `Promise<T>` represents a value that will be available asynchronously. TypeScript types the resolved value with the generic parameter:
+
+```typescript
+const p: Promise<number> = new Promise((resolve, reject) => {
+  setTimeout(() => resolve(42), 1000);
+});
+```
+
+A Promise is in one of three states:
+- **Pending** — the async work is still in progress
+- **Fulfilled** — the work completed successfully with a value
+- **Rejected** — the work failed with a reason (usually an `Error`)
+
+## Chaining `.then` and `.catch`
+
+```typescript
+fetchUser(1)
+  .then((user) => user.name)        // (user: User) => string
+  .then((name) => name.toUpperCase()) // (name: string) => string
+  .catch((err: unknown) => {
+    console.error("Failed:", err);
+    return "unknown";
+  });
+```
+
+Each `.then` returns a new Promise — the chain passes values along.
+
+## `.finally`
+
+`.finally` runs regardless of success or failure — useful for cleanup:
+
+```typescript
+fetchUser(1)
+  .then((user) => display(user))
+  .catch((err) => logError(err))
+  .finally(() => setLoading(false));
+```
+
+## Creating Resolved/Rejected Promises
+
+```typescript
+Promise.resolve(42);        // Promise<number> — immediately fulfilled
+Promise.reject(new Error("oops")); // Promise<never> — immediately rejected
+```
+
+## The Event Loop (Mental Model)
+
+JavaScript is single-threaded. The event loop processes one task at a time from the **task queue**. Promises use the **microtask queue**, which drains completely between each task:
+
+```
+synchronous code → microtasks (Promises) → macrotasks (setTimeout, I/O)
+```
+
+This means `.then` callbacks always run *after* the current synchronous code completes — but *before* any `setTimeout` callback.
+
+## Typing Async Functions
+
+Functions that return a Promise should annotate the return type explicitly:
+
+```typescript
+async function fetchUser(id: number): Promise<User> {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json() as Promise<User>;
+}
+```
+
+TypeScript infers the return type of `async` functions as `Promise<T>` — but explicit annotations prevent accidental type drift.

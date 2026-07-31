@@ -1,7 +1,8 @@
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 
-export async function fetchModules(): Promise<ModuleMeta[]> {
-  const res = await fetch('/api/modules');
+export async function fetchModules(trackSlug?: string): Promise<ModuleMeta[]> {
+  const url = trackSlug ? `/api/modules?track=${encodeURIComponent(trackSlug)}` : '/api/modules';
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`fetchModules failed with status ${res.status}`);
   }
@@ -10,10 +11,12 @@ export async function fetchModules(): Promise<ModuleMeta[]> {
 
 export async function fetchChapter(
   moduleSlug: string,
-  chapterSlug: string
+  chapterSlug: string,
+  trackSlug?: string
 ): Promise<ChapterMeta> {
+  const trackParam = trackSlug ? `&track=${encodeURIComponent(trackSlug)}` : '';
   const res = await fetch(
-    `/api/modules?module=${encodeURIComponent(moduleSlug)}&chapter=${encodeURIComponent(chapterSlug)}`
+    `/api/modules?module=${encodeURIComponent(moduleSlug)}&chapter=${encodeURIComponent(chapterSlug)}${trackParam}`
   );
   if (!res.ok) {
     throw new Error(`fetchChapter failed with status ${res.status}`);

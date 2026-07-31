@@ -1,0 +1,100 @@
+---
+title: "Module 03 Capstone: Async Task Scheduler"
+type: "assessment"
+order: 7
+starterCode: |
+  // A type-safe async task scheduler with retry, timeout, and result tracking.
+
+  export type TaskResult<T> =
+    | { status: "fulfilled"; value: T; durationMs: number }
+    | { status: "rejected"; reason: unknown; durationMs: number };
+
+  // runTimed executes an async task and records how long it took (in ms).
+  // Returns a TaskResult with either the resolved value or the rejection reason.
+  export async function runTimed<T>(task: () => Promise<T>): Promise<TaskResult<T>> {
+    // TODO: record start time, run task in try/catch, record end time, return TaskResult
+    return { status: "rejected", reason: new Error("not implemented"), durationMs: 0 };
+  }
+
+  // runAll executes all tasks concurrently using Promise.allSettled,
+  // wrapping each in runTimed.
+  export async function runAll<T>(
+    tasks: Array<() => Promise<T>>
+  ): Promise<TaskResult<T>[]> {
+    // TODO: use Promise.all + runTimed for each task
+    return [];
+  }
+
+  // summarize takes an array of TaskResults and returns a summary object:
+  // { total, fulfilled, rejected, avgDurationMs }
+  // avgDurationMs should be the average duration across ALL tasks (fulfilled and rejected).
+  export function summarize<T>(results: TaskResult<T>[]): {
+    total: number;
+    fulfilled: number;
+    rejected: number;
+    avgDurationMs: number;
+  } {
+    // TODO: compute summary using discriminated union narrowing on result.status
+    return { total: 0, fulfilled: 0, rejected: 0, avgDurationMs: 0 };
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { runTimed, runAll, summarize } from './solution';
+
+  describe('runTimed', () => {
+    it('returns fulfilled with value and duration', async () => {
+      const result = await runTimed(async () => 42);
+      expect(result.status).toBe('fulfilled');
+      if (result.status === 'fulfilled') {
+        expect(result.value).toBe(42);
+        expect(result.durationMs).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('returns rejected with reason and duration', async () => {
+      const result = await runTimed(async () => {
+        throw new Error('task failed');
+      });
+      expect(result.status).toBe('rejected');
+      if (result.status === 'rejected') {
+        expect((result.reason as Error).message).toBe('task failed');
+        expect(result.durationMs).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
+  describe('runAll', () => {
+    it('runs all tasks and returns results', async () => {
+      const tasks = [
+        () => Promise.resolve(1),
+        () => Promise.resolve(2),
+        () => Promise.reject(new Error('fail')),
+      ];
+      const results = await runAll(tasks);
+      expect(results).toHaveLength(3);
+      expect(results[0].status).toBe('fulfilled');
+      expect(results[1].status).toBe('fulfilled');
+      expect(results[2].status).toBe('rejected');
+    });
+  });
+
+  describe('summarize', () => {
+    it('produces correct summary', async () => {
+      const tasks = [
+        () => Promise.resolve('a'),
+        () => Promise.resolve('b'),
+        () => Promise.reject(new Error('x')),
+      ];
+      const results = await runAll(tasks);
+      const summary = summarize(results);
+      expect(summary.total).toBe(3);
+      expect(summary.fulfilled).toBe(2);
+      expect(summary.rejected).toBe(1);
+      expect(summary.avgDurationMs).toBeGreaterThanOrEqual(0);
+    });
+  });
+---
+
+# Assessment: Async Task Scheduler
+
+Integrate Promises, async/await, error handling, and concurrent patterns to build a timed task scheduler with result summarization. All three concepts from this module must work together correctly.

@@ -1,0 +1,95 @@
+---
+title: "Generics & Type Parameters"
+type: "reading"
+order: 3
+---
+
+# Generics & Type Parameters
+
+Generics let you write code that works over many types while preserving type information — without sacrificing safety.
+
+## Basic Generic Functions
+
+```typescript
+function identity<T>(value: T): T {
+  return value;
+}
+
+identity(42);       // T inferred as number → returns number
+identity("hello");  // T inferred as string → returns string
+```
+
+The type parameter `T` is a placeholder that TypeScript fills in at the call site.
+
+## Generic Arrays and Containers
+
+```typescript
+function first<T>(arr: T[]): T | undefined {
+  return arr[0];
+}
+
+function last<T>(arr: T[]): T | undefined {
+  return arr[arr.length - 1];
+}
+```
+
+## Generic Interfaces
+
+```typescript
+interface Box<T> {
+  value: T;
+  transform<U>(fn: (val: T) => U): Box<U>;
+}
+```
+
+## Multiple Type Parameters
+
+```typescript
+function zip<A, B>(as: A[], bs: B[]): [A, B][] {
+  return as.map((a, i) => [a, bs[i]]);
+}
+
+zip([1, 2], ["a", "b"]); // [[1, "a"], [2, "b"]]
+```
+
+## Generic Constraints
+
+Constraints limit what type a generic can be:
+
+```typescript
+function getLength<T extends { length: number }>(value: T): number {
+  return value.length;
+}
+
+getLength("hello");   // ✅ string has .length
+getLength([1, 2, 3]); // ✅ array has .length
+getLength(42);        // ❌ number has no .length
+```
+
+`T extends SomeType` means "T must be assignable to SomeType."
+
+## `keyof` Constraints
+
+Constrain a type parameter to the keys of another:
+
+```typescript
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const user = { id: 1, name: "Alice" };
+getProperty(user, "name");  // ✅ returns string
+getProperty(user, "email"); // ❌ 'email' is not a key of user
+```
+
+## Default Type Parameters
+
+Type parameters can have defaults:
+
+```typescript
+interface Paginated<T, Meta = Record<string, unknown>> {
+  items: T[];
+  total: number;
+  meta: Meta;
+}
+```

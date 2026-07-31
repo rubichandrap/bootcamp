@@ -1,0 +1,101 @@
+---
+title: "Union, Intersection & Literal Types"
+type: "reading"
+order: 3
+---
+
+# Union, Intersection & Literal Types
+
+## Union Types (`A | B`)
+
+A union type means a value can be **one of several types**:
+
+```typescript
+type StringOrNumber = string | number;
+
+function stringify(value: StringOrNumber): string {
+  if (typeof value === "number") {
+    return value.toFixed(2);
+  }
+  return value;
+}
+```
+
+Unions are narrowed down through type guards (`typeof`, `instanceof`, `in`, discriminant properties).
+
+## Literal Types
+
+Instead of broad primitives, you can restrict to exact values:
+
+```typescript
+type Direction = "north" | "south" | "east" | "west";
+type StatusCode = 200 | 400 | 404 | 500;
+
+function move(dir: Direction): void { /* ... */ }
+move("north"); // ✅
+move("up");    // ❌ Error
+```
+
+Literal types are the backbone of discriminated unions.
+
+## Intersection Types (`A & B`)
+
+An intersection type means a value must satisfy **all** the constituent types simultaneously:
+
+```typescript
+interface Named {
+  name: string;
+}
+
+interface Aged {
+  age: number;
+}
+
+type Person = Named & Aged;
+
+const p: Person = { name: "Alice", age: 30 }; // must have both
+```
+
+Intersections are commonly used to compose types from smaller pieces.
+
+## Discriminated Unions in Depth
+
+A discriminated union is a union where every member has a shared **literal** property (the discriminant):
+
+```typescript
+type Success<T> = { status: "ok"; data: T };
+type Failure = { status: "error"; message: string };
+type Result<T> = Success<T> | Failure;
+
+function handle<T>(result: Result<T>): T | never {
+  if (result.status === "ok") {
+    return result.data;   // result: Success<T>
+  }
+  throw new Error(result.message); // result: Failure
+}
+```
+
+TypeScript narrows automatically on the `status` discriminant.
+
+## `keyof` and Index Access Types
+
+`keyof T` produces a union of all keys of `T`:
+
+```typescript
+interface Config {
+  host: string;
+  port: number;
+  secure: boolean;
+}
+
+type ConfigKey = keyof Config; // "host" | "port" | "secure"
+```
+
+Index access types let you extract the type of a property:
+
+```typescript
+type PortType = Config["port"]; // number
+type AnyConfigValue = Config[keyof Config]; // string | number | boolean
+```
+
+These are the building blocks of advanced utility types.

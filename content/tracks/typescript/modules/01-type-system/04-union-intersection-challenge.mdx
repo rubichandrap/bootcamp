@@ -1,0 +1,61 @@
+---
+title: "Union & Intersection Types Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  // Result type modeling success and failure.
+  export type Ok<T> = { status: "ok"; value: T };
+  export type Err = { status: "error"; message: string };
+  export type Result<T> = Ok<T> | Err;
+
+  // unwrap extracts the value from Ok, or throws an Error with the message from Err.
+  export function unwrap<T>(result: Result<T>): T {
+    // TODO: use discriminated union narrowing on result.status
+    throw new Error('not implemented');
+  }
+
+  // combine merges two objects using an intersection type.
+  // Given objA: A and objB: B, return an object satisfying A & B.
+  export function combine<A extends object, B extends object>(objA: A, objB: B): A & B {
+    // TODO: merge the two objects
+    return {} as A & B;
+  }
+
+  // getConfigValue retrieves a value from a config object by key.
+  // The return type should be inferred from the key using index access types.
+  export function getConfigValue<T extends object, K extends keyof T>(config: T, key: K): T[K] {
+    // TODO: return config[key]
+    return config[key];
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { unwrap, combine, getConfigValue } from './solution';
+
+  describe('unwrap', () => {
+    it('returns value on Ok', () => {
+      expect(unwrap({ status: 'ok', value: 42 })).toBe(42);
+    });
+    it('throws on Err', () => {
+      expect(() => unwrap({ status: 'error', message: 'oops' })).toThrow('oops');
+    });
+  });
+
+  describe('combine', () => {
+    it('merges two objects', () => {
+      const result = combine({ a: 1 }, { b: 'hello' });
+      expect(result).toEqual({ a: 1, b: 'hello' });
+    });
+  });
+
+  describe('getConfigValue', () => {
+    it('retrieves typed value by key', () => {
+      const config = { host: 'localhost', port: 3000 };
+      expect(getConfigValue(config, 'host')).toBe('localhost');
+      expect(getConfigValue(config, 'port')).toBe(3000);
+    });
+  });
+---
+
+# Challenge: Union & Intersection Types
+
+Implement `unwrap` using discriminated union narrowing, `combine` using intersection types, and `getConfigValue` using index access types.

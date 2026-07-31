@@ -1,0 +1,101 @@
+---
+title: "Module 01 Capstone: Typed Event Bus"
+type: "assessment"
+order: 7
+starterCode: |
+  // A minimal type-safe event bus.
+  // Use interfaces, union types, discriminated unions, and utility types.
+
+  export type EventMap = {
+    "user:login": { userId: number; timestamp: number };
+    "user:logout": { userId: number };
+    "item:purchased": { itemId: string; price: number; userId: number };
+  };
+
+  export type EventName = keyof EventMap;
+  export type EventPayload<E extends EventName> = EventMap[E];
+
+  // EventRecord wraps a payload with the event name as a discriminant.
+  export type EventRecord<E extends EventName = EventName> = {
+    [K in E]: { event: K; payload: EventMap[K] };
+  }[E];
+
+  // Handler is a function that receives a typed payload.
+  export type Handler<E extends EventName> = (payload: EventPayload<E>) => void;
+
+  // emit creates an EventRecord from a name and payload.
+  export function emit<E extends EventName>(
+    event: E,
+    payload: EventPayload<E>
+  ): EventRecord<E> {
+    // TODO: return an object { event, payload }
+    return {} as EventRecord<E>;
+  }
+
+  // dispatch calls the correct handler based on the event discriminant.
+  // Use a discriminated union switch over record.event.
+  export function dispatch(
+    record: EventRecord,
+    handlers: {
+      "user:login": Handler<"user:login">;
+      "user:logout": Handler<"user:logout">;
+      "item:purchased": Handler<"item:purchased">;
+    }
+  ): void {
+    // TODO: switch on record.event and call the matching handler
+  }
+
+  // summarize returns a Readonly summary of the event record as a string:
+  // "<event> for userId=<userId>" if the payload contains userId,
+  // otherwise "<event>"
+  export function summarize(record: Readonly<EventRecord>): string {
+    // TODO: narrow on record.event, check for userId in payload
+    return '';
+  }
+testCode: |
+  import { describe, it, expect, vi } from 'vitest';
+  import { emit, dispatch, summarize } from './solution';
+
+  describe('emit', () => {
+    it('creates a login event record', () => {
+      const rec = emit('user:login', { userId: 1, timestamp: 1000 });
+      expect(rec).toEqual({ event: 'user:login', payload: { userId: 1, timestamp: 1000 } });
+    });
+    it('creates a purchase event record', () => {
+      const rec = emit('item:purchased', { itemId: 'abc', price: 9.99, userId: 2 });
+      expect(rec.event).toBe('item:purchased');
+    });
+  });
+
+  describe('dispatch', () => {
+    it('calls the correct handler', () => {
+      const loginHandler = vi.fn();
+      const logoutHandler = vi.fn();
+      const purchaseHandler = vi.fn();
+
+      dispatch(emit('user:login', { userId: 42, timestamp: 999 }), {
+        'user:login': loginHandler,
+        'user:logout': logoutHandler,
+        'item:purchased': purchaseHandler,
+      });
+
+      expect(loginHandler).toHaveBeenCalledWith({ userId: 42, timestamp: 999 });
+      expect(logoutHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('summarize', () => {
+    it('includes userId when present', () => {
+      const rec = emit('user:login', { userId: 7, timestamp: 0 });
+      expect(summarize(rec)).toBe('user:login for userId=7');
+    });
+    it('omits userId when not present... not applicable here — all events have userId except logout', () => {
+      const rec = emit('user:logout', { userId: 5 });
+      expect(summarize(rec)).toBe('user:logout for userId=5');
+    });
+  });
+---
+
+# Assessment: Typed Event Bus
+
+Integrate interfaces, discriminated unions, `keyof`/index access types, and `Readonly` to build a type-safe event bus. All three concepts from this module must work together correctly.

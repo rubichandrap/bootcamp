@@ -1,0 +1,93 @@
+---
+title: "Module 02 Capstone: Generic Data Pipeline"
+type: "assessment"
+order: 7
+starterCode: |
+  // A composable, type-safe data pipeline.
+  // Use generics, overloads, constraints, and mapped types throughout.
+
+  // Step is a transformation from I to O.
+  export type Step<I, O> = (input: I) => O;
+
+  // pipeline composes two steps, feeding the output of step1 into step2.
+  export function pipeline<A, B, C>(step1: Step<A, B>, step2: Step<B, C>): Step<A, C>;
+  // pipeline with 3 steps:
+  export function pipeline<A, B, C, D>(step1: Step<A, B>, step2: Step<B, C>, step3: Step<C, D>): Step<A, D>;
+  export function pipeline(...steps: Array<Step<unknown, unknown>>): Step<unknown, unknown> {
+    // TODO: return a function that runs the value through each step in order
+    return (input: unknown) => input;
+  }
+
+  // filterMap filters an array and transforms each passing element in one pass.
+  // predicate: returns true if the element should be included.
+  // transform: applied only to elements that pass the predicate.
+  export function filterMap<T, U>(
+    items: T[],
+    predicate: (item: T) => boolean,
+    transform: (item: T) => U
+  ): U[] {
+    // TODO: implement filter + map in one reduce pass
+    return [];
+  }
+
+  // mapRecord applies a mapper to every value of a Record, preserving keys.
+  export function mapRecord<K extends string, V, U>(
+    record: Record<K, V>,
+    mapper: (value: V, key: K) => U
+  ): Record<K, U> {
+    // TODO: implement
+    return {} as Record<K, U>;
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { pipeline, filterMap, mapRecord } from './solution';
+
+  describe('pipeline (2 steps)', () => {
+    const doubleToString = pipeline(
+      (n: number) => n * 2,
+      (n: number) => String(n)
+    );
+    it('composes two steps', () => {
+      expect(doubleToString(5)).toBe('10');
+    });
+  });
+
+  describe('pipeline (3 steps)', () => {
+    const addThenDoubleToString = pipeline(
+      (n: number) => n + 1,
+      (n: number) => n * 2,
+      (n: number) => `result: ${n}`
+    );
+    it('composes three steps', () => {
+      expect(addThenDoubleToString(4)).toBe('result: 10');
+    });
+  });
+
+  describe('filterMap', () => {
+    it('filters and transforms in one pass', () => {
+      const result = filterMap(
+        [1, 2, 3, 4, 5],
+        (n) => n % 2 === 0,
+        (n) => n * 10
+      );
+      expect(result).toEqual([20, 40]);
+    });
+  });
+
+  describe('mapRecord', () => {
+    it('maps values while preserving keys', () => {
+      const scores = { alice: 80, bob: 60 } as Record<'alice' | 'bob', number>;
+      const result = mapRecord(scores, (v) => v + 10);
+      expect(result).toEqual({ alice: 90, bob: 70 });
+    });
+    it('passes key to mapper', () => {
+      const labels = { a: 1, b: 2 } as Record<'a' | 'b', number>;
+      const result = mapRecord(labels, (v, k) => `${k}:${v}`);
+      expect(result).toEqual({ a: 'a:1', b: 'b:2' });
+    });
+  });
+---
+
+# Assessment: Generic Data Pipeline
+
+Compose generics, overloads, and `keyof` constraints to build a reusable data pipeline. All three concepts from this module must be applied correctly.

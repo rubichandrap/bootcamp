@@ -7,6 +7,7 @@ import {
 
 export interface MarkAsReadParams {
   chapterId: string;
+  trackId?: string;
   userId?: string;
 }
 
@@ -21,6 +22,7 @@ export async function markAsRead(
 ): Promise<RecordSubmissionResult | undefined> {
   const result = await ports.recordSubmission({
     userId: params.userId || DEFAULT_USER_ID,
+    trackId: params.trackId,
     chapterId: params.chapterId,
     code: READING_PROGRESS_MARKER,
     passed: true,

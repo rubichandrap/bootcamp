@@ -1,0 +1,5 @@
+{
+  "title": "Functions & Generics",
+  "description": "Master function overloads, generic type parameters, generic constraints, and mapped types for reusable, type-safe abstractions.",
+  "order": 2
+}

@@ -1,0 +1,100 @@
+---
+title: "Control Flow & Type Narrowing"
+type: "reading"
+order: 5
+---
+
+# Control Flow & Type Narrowing
+
+TypeScript's type system is **flow-sensitive**: the type of a variable changes inside a branch based on what checks you've performed. This is called **narrowing**.
+
+## `if` / `else` Narrowing
+
+```typescript
+function formatId(id: string | number): string {
+  if (typeof id === "string") {
+    return id.toUpperCase(); // id: string here
+  } else {
+    return id.toFixed(2);   // id: number here
+  }
+}
+```
+
+## `in` Operator Narrowing
+
+Use `in` to narrow based on whether a property exists:
+
+```typescript
+type Cat = { meow: () => void };
+type Dog = { bark: () => void };
+
+function makeSound(animal: Cat | Dog): void {
+  if ("meow" in animal) {
+    animal.meow(); // animal: Cat
+  } else {
+    animal.bark(); // animal: Dog
+  }
+}
+```
+
+## `instanceof` Narrowing
+
+```typescript
+function processError(err: Error | string): string {
+  if (err instanceof Error) {
+    return err.message; // err: Error
+  }
+  return err;           // err: string
+}
+```
+
+## Discriminated Unions
+
+Tag your union members with a shared literal property — TypeScript can narrow on it:
+
+```typescript
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "rect"; width: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      return Math.PI * shape.radius ** 2;
+    case "rect":
+      return shape.width * shape.height;
+  }
+}
+```
+
+The `switch` exhaustively covers the union. If you add a new `kind` and forget to handle it, TypeScript will error.
+
+## Exhaustiveness Checking with `never`
+
+Pair a `default` case with `never` to get a compile-time error if you miss a union member:
+
+```typescript
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      return Math.PI * shape.radius ** 2;
+    case "rect":
+      return shape.width * shape.height;
+    default:
+      const _exhaustive: never = shape;
+      throw new Error(`Unhandled shape: ${_exhaustive}`);
+  }
+}
+```
+
+## Truthiness Narrowing
+
+TypeScript narrows out `null`, `undefined`, `0`, `""`, and `false` inside a truthy check:
+
+```typescript
+function printName(name: string | null): void {
+  if (name) {
+    console.log(name.toUpperCase()); // name: string (null excluded)
+  }
+}
+```

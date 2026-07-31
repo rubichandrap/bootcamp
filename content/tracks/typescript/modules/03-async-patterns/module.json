@@ -1,0 +1,5 @@
+{
+  "title": "Async Patterns & the Runtime",
+  "description": "Master Promises, async/await, typed error handling, and concurrent patterns like Promise.all, race, and allSettled.",
+  "order": 3
+}

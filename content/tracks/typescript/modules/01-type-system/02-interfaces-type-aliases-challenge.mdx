@@ -1,0 +1,74 @@
+---
+title: "Interface Design Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  // Model a product catalog entry using interfaces.
+
+  // 1. Define an interface `Product` with:
+  //    - id: number (readonly)
+  //    - name: string
+  //    - price: number
+  //    - category: string
+  //    - description?: string (optional)
+  export interface Product {
+    // TODO
+  }
+
+  // 2. Define an interface `DiscountedProduct` that extends Product and adds:
+  //    - discountPercent: number (0-100)
+  export interface DiscountedProduct extends Product {
+    // TODO
+  }
+
+  // 3. Implement finalPrice: given a DiscountedProduct, return the price after discount.
+  //    Formula: price * (1 - discountPercent / 100), rounded to 2 decimal places.
+  export function finalPrice(product: DiscountedProduct): number {
+    // TODO
+    return 0;
+  }
+testCode: |
+  import { describe, it, expect } from 'vitest';
+  import { finalPrice } from './solution';
+  import type { Product, DiscountedProduct } from './solution';
+
+  describe('finalPrice', () => {
+    it('applies discount correctly', () => {
+      const p: DiscountedProduct = {
+        id: 1,
+        name: 'Widget',
+        price: 100,
+        category: 'tools',
+        discountPercent: 20,
+      };
+      expect(finalPrice(p)).toBeCloseTo(80, 2);
+    });
+
+    it('handles 0% discount', () => {
+      const p: DiscountedProduct = {
+        id: 2,
+        name: 'Gadget',
+        price: 49.99,
+        category: 'electronics',
+        discountPercent: 0,
+      };
+      expect(finalPrice(p)).toBeCloseTo(49.99, 2);
+    });
+
+    it('accepts optional description', () => {
+      const p: DiscountedProduct = {
+        id: 3,
+        name: 'Thingamajig',
+        price: 200,
+        category: 'misc',
+        description: 'A fine thingamajig',
+        discountPercent: 50,
+      };
+      expect(finalPrice(p)).toBeCloseTo(100, 2);
+    });
+  });
+---
+
+# Challenge: Interface Design
+
+Model a product catalog using interfaces. Define `Product`, extend it into `DiscountedProduct`, and implement `finalPrice`.

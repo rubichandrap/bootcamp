@@ -1,0 +1,47 @@
+---
+title: "Variables & Unknown Types Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  // processInput receives an unknown value.
+  // - If it is a string, return it uppercased.
+  // - If it is a number, return it doubled (as a number).
+  // - Otherwise, return null.
+  export function processInput(input: unknown): string | number | null {
+    // TODO: implement using typeof narrowing
+    return null;
+  }
+
+  // describe receives a tuple [label: string, value: number]
+  // and returns a formatted string: "<label>: <value>"
+  export function describe(entry: [string, number]): string {
+    // TODO: destructure the tuple and return the formatted string
+    return '';
+  }
+testCode: |
+  import { describe as desc, it, expect } from 'vitest';
+  import { processInput, describe } from './solution';
+
+  desc('processInput', () => {
+    it('uppercases strings', () => {
+      expect(processInput('hello')).toBe('HELLO');
+    });
+    it('doubles numbers', () => {
+      expect(processInput(21)).toBe(42);
+    });
+    it('returns null for other types', () => {
+      expect(processInput(true)).toBeNull();
+      expect(processInput(null)).toBeNull();
+    });
+  });
+
+  desc('describe', () => {
+    it('formats tuple entry', () => {
+      expect(describe(['score', 99])).toBe('score: 99');
+    });
+  });
+---
+
+# Challenge: Variables & Unknown Types
+
+Implement two functions using what you learned about `unknown`, `typeof` narrowing, and tuples.

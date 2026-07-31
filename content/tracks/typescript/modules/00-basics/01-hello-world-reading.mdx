@@ -1,15 +1,70 @@
 ---
-title: "Welcome to TypeScript"
+title: "TypeScript Program Structure & Type Annotations"
 type: "reading"
 order: 1
 ---
 
-# Welcome to TypeScript
+# TypeScript Program Structure & Type Annotations
 
-TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
+TypeScript is a **statically typed superset of JavaScript**. Every valid JavaScript file is also valid TypeScript — but TypeScript adds an optional, powerful type layer on top.
+
+## Type Annotations
+
+You annotate variables and function parameters with `: Type` syntax:
+
+```typescript
+const name: string = "Alice";
+const age: number = 30;
+const isAdmin: boolean = false;
+```
+
+TypeScript will catch mismatches at compile time:
+
+```typescript
+const count: number = "hello"; // Error: Type 'string' is not assignable to type 'number'
+```
+
+## Function Signatures
+
+Every parameter and the return value can be typed:
 
 ```typescript
 function greet(name: string): string {
   return `Hello, ${name}!`;
 }
 ```
+
+The return type annotation (`: string` after the closing paren) is optional when TypeScript can infer it — but being explicit makes your intent clear.
+
+## Type Inference
+
+TypeScript infers types automatically when you initialize a variable:
+
+```typescript
+const score = 42;       // inferred: number
+const label = "points"; // inferred: string
+```
+
+You don't need to annotate everything — infer when it's obvious, annotate when it adds clarity or enforces a contract.
+
+## `void` Return Type
+
+Functions that return nothing use `void`:
+
+```typescript
+function logMessage(msg: string): void {
+  console.log(msg);
+}
+```
+
+## Primitive Types at a Glance
+
+| Type | Example |
+|------|---------|
+| `string` | `"hello"` |
+| `number` | `42`, `3.14` |
+| `boolean` | `true`, `false` |
+| `null` | `null` |
+| `undefined` | `undefined` |
+| `bigint` | `9007199254740991n` |
+| `symbol` | `Symbol("id")` |

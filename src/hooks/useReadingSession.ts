@@ -9,10 +9,10 @@ export interface MarkAsReadPorts {
 
 export function useReadingSession() {
   const markAsRead = useCallback(
-    async (chapterSlug: string, ports: MarkAsReadPorts) => {
+    async (chapterSlug: string, ports: MarkAsReadPorts, trackId?: string) => {
       try {
         await markAsReadService(
-          { chapterId: chapterSlug },
+          { chapterId: chapterSlug, trackId },
           {
             recordSubmission: ports.recordSubmission,
             onAdvance: ports.onAdvance,

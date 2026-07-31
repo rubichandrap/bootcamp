@@ -16,9 +16,9 @@ export function useProgressTracker(
   const [failedAttempts, setFailedAttempts] = useState<number>(0);
 
   const loadProgress = useCallback(
-    async (userId = DEFAULT_USER_ID) => {
+    async (userId = DEFAULT_USER_ID, trackId?: string) => {
       try {
-        const data = await adapter.getProgress(userId);
+        const data = await adapter.getProgress(userId, trackId);
         setCompletedChapterIds(data.completedChapterIds);
         setStreakDays(data.streakDays);
       } catch (err) {
@@ -29,9 +29,9 @@ export function useProgressTracker(
   );
 
   const loadFailedAttempts = useCallback(
-    async (chapterId: string, userId = DEFAULT_USER_ID) => {
+    async (chapterId: string, userId = DEFAULT_USER_ID, trackId?: string) => {
       try {
-        const count = await adapter.getFailedAttempts(userId, chapterId);
+        const count = await adapter.getFailedAttempts(userId, chapterId, trackId);
         setFailedAttempts(count);
       } catch (err) {
         console.error('Failed to fetch failed attempts', err);
@@ -42,9 +42,9 @@ export function useProgressTracker(
   );
 
   const getLatestSubmission = useCallback(
-    async (chapterId: string, userId = DEFAULT_USER_ID) => {
+    async (chapterId: string, userId = DEFAULT_USER_ID, trackId?: string) => {
       try {
-        return await adapter.getLatestSubmission(userId, chapterId);
+        return await adapter.getLatestSubmission(userId, chapterId, trackId);
       } catch (err) {
         console.error('Failed to fetch latest submission', err);
         return null;
