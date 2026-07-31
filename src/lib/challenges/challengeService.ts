@@ -2,6 +2,7 @@ import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import {
   RecordSubmissionParams,
   RecordSubmissionResult,
+  recordSubmission as recordSubmissionService,
   DEFAULT_USER_ID,
 } from '@/lib/progress/progressService';
 
@@ -33,6 +34,7 @@ export interface RunChallengeParams {
   testCode: string;
   enableRaceCheck?: boolean;
   userId?: string;
+  autoAdvanceDelayMs?: number;
 }
 
 export interface RunChallengePorts {
@@ -50,18 +52,22 @@ export interface RunChallengeResult {
 
 export async function runChallenge(
   params: RunChallengeParams,
-  ports: RunChallengePorts
+  ports?: Partial<RunChallengePorts>
 ): Promise<RunChallengeResult> {
+  const resolvedExecuteRce = ports?.executeRce || executeRce;
+  const resolvedRecordSubmission = ports?.recordSubmission || recordSubmissionService;
+  const autoAdvanceDelay = params.autoAdvanceDelayMs ?? 1500;
+
   let data: RCEExecuteResponse;
   try {
-    data = await ports.executeRce({
+    data = await resolvedExecuteRce({
       code: params.code,
       testCode: params.testCode,
       enableRaceCheck: params.enableRaceCheck,
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Execution failed';
-    ports.incrementFailedAttempts?.();
+    ports?.incrementFailedAttempts?.();
     return {
       result: {
         success: false,
@@ -76,7 +82,7 @@ export async function runChallenge(
 
   let progressResult: RecordSubmissionResult | undefined;
   try {
-    progressResult = await ports.recordSubmission({
+    progressResult = await resolvedRecordSubmission({
       userId: params.userId || DEFAULT_USER_ID,
       chapterId: params.chapterId,
       code: params.code,
@@ -89,10 +95,14 @@ export async function runChallenge(
     console.error('Failed to record submission', err);
   }
 
-  if (data.success) {
-    setTimeout(() => {
+  if (data.success && ports?.onAdvance) {
+    if (autoAdvanceDelay > 0) {
+      setTimeout(() => {
+        ports.onAdvance!();
+      }, autoAdvanceDelay);
+    } else {
       ports.onAdvance();
-    }, 1500);
+    }
   }
 
   return {

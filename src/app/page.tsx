@@ -290,12 +290,12 @@ export default function Home() {
                   {challengeSession.activeTab === 'code' ? (
                     <CodeEditor
                       value={challengeSession.code}
-                      onChange={(v) => challengeSession.setCode(v || '')}
+                      onChange={(v) => challengeSession.updateCode(v || '')}
                     />
                   ) : challengeSession.activeTab === 'test' ? (
                     <CodeEditor
                       value={challengeSession.testCode}
-                      onChange={(v) => challengeSession.setTestCode(v || '')}
+                      onChange={(v) => challengeSession.updateTestCode(v || '')}
                     />
                   ) : (
                     <CodeEditor value={activeHint.solutionCode || '// Solution Unlocked'} onChange={() => {}} />

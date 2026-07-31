@@ -106,6 +106,71 @@ describe('challengeService', () => {
       expect(mockOnAdvance).toHaveBeenCalledTimes(1);
     });
 
+    it('advances synchronously when autoAdvanceDelayMs is 0', async () => {
+      const mockRceResponse: RCEExecuteResponse = {
+        success: true,
+        passed: 1,
+        failed: 0,
+        tests: [],
+      };
+      const mockExecuteRce = vi.fn().mockResolvedValue(mockRceResponse);
+      const mockRecordSubmission = vi.fn().mockResolvedValue({
+        completedChapterIds: ['ch-1'],
+        streakDays: 1,
+      });
+      const mockOnAdvance = vi.fn();
+
+      await runChallenge(
+        {
+          chapterId: 'ch-1',
+          code: 'package main',
+          testCode: 'package main_test',
+          autoAdvanceDelayMs: 0,
+        },
+        {
+          executeRce: mockExecuteRce,
+          recordSubmission: mockRecordSubmission,
+          onAdvance: mockOnAdvance,
+        }
+      );
+
+      expect(mockOnAdvance).toHaveBeenCalledTimes(1);
+    });
+
+    it('runs with default ports when ports parameter is omitted', async () => {
+      const mockRceResponse: RCEExecuteResponse = {
+        success: true,
+        passed: 1,
+        failed: 0,
+        tests: [],
+      };
+      const mockProgressResponse = {
+        userProgress: { completedChapterIds: ['ch-1'], streakDays: 1 },
+        chapterFailedAttempts: 0,
+      };
+
+      const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+        if (url === '/api/rce/execute') {
+          return { ok: true, json: async () => mockRceResponse };
+        }
+        if (url === '/api/submissions') {
+          return { ok: true, json: async () => mockProgressResponse };
+        }
+        return { ok: false, status: 404 };
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const res = await runChallenge({
+        chapterId: 'ch-1',
+        code: 'package main',
+        testCode: 'package main_test',
+        autoAdvanceDelayMs: 0,
+      });
+
+      expect(res.result).toEqual(mockRceResponse);
+      expect(res.progressResult?.completedChapterIds).toEqual(['ch-1']);
+    });
+
     it('does not auto-advance when test execution fails', async () => {
       const mockRceResponse: RCEExecuteResponse = {
         success: false,

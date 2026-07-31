@@ -1,11 +1,9 @@
 import { useState, useCallback } from 'react';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 import {
-  executeRce as executeRceService,
   runChallenge as runChallengeService,
-  ExecuteRceParams,
+  RunChallengePorts,
 } from '@/lib/challenges/challengeService';
-import { RecordSubmissionParams, RecordSubmissionResult } from '@/lib/progress/progressService';
 
 export const DEFAULT_STARTER_CODE = `package main
 
@@ -40,13 +38,6 @@ func TestFactorial(t *testing.T) {
 }
 `;
 
-export interface RunChallengePorts {
-  executeRce?: (params: ExecuteRceParams) => Promise<RCEExecuteResponse>;
-  recordSubmission: (params: RecordSubmissionParams) => Promise<RecordSubmissionResult>;
-  onAdvance: () => void;
-  incrementFailedAttempts?: () => void;
-}
-
 export function useChallengeSession() {
   const [code, setCode] = useState(DEFAULT_STARTER_CODE);
   const [testCode, setTestCode] = useState(DEFAULT_TEST_CODE);
@@ -54,6 +45,22 @@ export function useChallengeSession() {
   const [result, setResult] = useState<RCEExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [enableRaceCheck, setEnableRaceCheck] = useState(false);
+
+  const updateCode = useCallback((newCode: string) => {
+    setCode(newCode);
+  }, []);
+
+  const updateTestCode = useCallback((newTestCode: string) => {
+    setTestCode(newTestCode);
+  }, []);
+
+  const selectTab = useCallback((tab: 'code' | 'test' | 'solution') => {
+    setActiveTab(tab);
+  }, []);
+
+  const toggleRaceCheck = useCallback(() => {
+    setEnableRaceCheck((prev) => !prev);
+  }, []);
 
   const resetForChapter = useCallback((starterCode?: string, testCodeInput?: string) => {
     setResult(null);
@@ -63,7 +70,7 @@ export function useChallengeSession() {
   }, []);
 
   const runChallengeSession = useCallback(
-    async (chapterId: string, ports: RunChallengePorts) => {
+    async (chapterId: string, ports?: Partial<RunChallengePorts>) => {
       setIsLoading(true);
       try {
         const res = await runChallengeService(
@@ -73,12 +80,7 @@ export function useChallengeSession() {
             testCode,
             enableRaceCheck,
           },
-          {
-            executeRce: ports.executeRce || executeRceService,
-            recordSubmission: ports.recordSubmission,
-            onAdvance: ports.onAdvance,
-            incrementFailedAttempts: ports.incrementFailedAttempts,
-          }
+          ports
         );
 
         setResult(res.result);
@@ -91,18 +93,23 @@ export function useChallengeSession() {
 
   return {
     code,
-    setCode,
     testCode,
-    setTestCode,
     activeTab,
-    setActiveTab,
     result,
-    setResult,
     isLoading,
-    setIsLoading,
     enableRaceCheck,
-    setEnableRaceCheck,
+    updateCode,
+    updateTestCode,
+    selectTab,
+    toggleRaceCheck,
     resetForChapter,
     runChallengeSession,
+    // Preserved for backwards compatibility with existing UI props
+    setCode,
+    setTestCode,
+    setActiveTab,
+    setResult,
+    setIsLoading,
+    setEnableRaceCheck,
   };
 }
