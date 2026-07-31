@@ -8,7 +8,7 @@ import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { useTheme } from '@/hooks/useTheme';
 import { useProgressTracker } from '@/hooks/useProgressTracker';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
-import { getAllTracksOverview, TrackOverview } from '@/lib/tracks/trackCatalog';
+import type { TrackOverview } from '@/lib/tracks/trackCatalog';
 import { Layers, ArrowRight, Code2, CheckCircle2, Terminal as TerminalIcon, Sparkles, Flame } from 'lucide-react';
 
 export default function Homepage() {
@@ -24,8 +24,15 @@ export default function Homepage() {
     async function loadData() {
       await progressTracker.loadProgress();
       await chapterLifecycle.loadModules();
-      const overviewList = getAllTracksOverview();
-      setTracks(overviewList);
+      try {
+        const res = await fetch('/api/tracks');
+        if (res.ok) {
+          const data = await res.json();
+          setTracks(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch track overview', err);
+      }
     }
     loadData();
   }, []);
