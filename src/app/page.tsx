@@ -107,7 +107,6 @@ export default function Home() {
 
   const handleRun = useCallback(() => {
     if (!chapterLifecycle.currentChapter) return;
-    setActiveMobileTab('terminal');
     challengeSession.runChallengeSession(chapterLifecycle.currentChapter.slug, {
       recordSubmission: progressTracker.recordSubmission,
       onAdvance: chapterLifecycle.advanceToNextChapter,
@@ -182,14 +181,14 @@ export default function Home() {
             completedChapterIds={progressTracker.completedChapterIds}
             onSelectChapter={handleSelectChapter}
           />
-          {/* Desktop Sidebar Drag Resizer */}
+          {/* Desktop Sidebar Drag Resizer with 24px Touch Target */}
           <div
             onMouseDown={handleSidebarMouseDown}
             onTouchStart={handleSidebarTouchStart}
-            className="w-1.5 hover:w-2 -mx-1 px-1 bg-zinc-300 dark:bg-zinc-800 hover:bg-cyan-500 dark:hover:bg-cyan-500 transition-all cursor-col-resize shrink-0 z-10 select-none flex items-center justify-center group"
+            className="w-6 -mx-2 px-2 hover:bg-cyan-500/20 transition-all cursor-col-resize shrink-0 z-10 select-none flex items-center justify-center group"
             title="Drag to resize sidebar"
           >
-            <div className="w-0.5 h-6 bg-zinc-400 dark:bg-zinc-600 group-hover:bg-cyan-200 rounded" />
+            <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
           </div>
         </div>
 
@@ -248,7 +247,7 @@ export default function Home() {
                 }`}
               >
                 <TerminalIcon size={13} />
-                <span>Output</span>
+                <span>Terminal</span>
               </button>
             </div>
           )}
@@ -332,12 +331,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Reading vs Editor Pane Vertical Drag Resizer (Desktop/Tablet) */}
+          {/* Reading vs Editor Pane Vertical Drag Resizer (Desktop/Tablet 24px Touch Target) */}
           {currentChapter?.type !== 'reading' && (
             <div
               onMouseDown={handleWorkspaceMouseDown}
               onTouchStart={handleWorkspaceTouchStart}
-              className="hidden md:flex w-2.5 hover:w-3.5 mx-0.5 items-center justify-center cursor-col-resize shrink-0 z-10 select-none group"
+              className="hidden md:flex w-6 -mx-2 px-2 items-center justify-center cursor-col-resize shrink-0 z-10 select-none group"
               title="Drag to resize panels"
             >
               <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
@@ -429,11 +428,11 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Horizontal Drag Resizer between Editor and Console (Desktop/Tablet) */}
+              {/* Horizontal Drag Resizer between Editor and Console (Desktop/Tablet 24px Touch Target) */}
               <div
                 onMouseDown={handleConsoleMouseDown}
                 onTouchStart={handleConsoleTouchStart}
-                className="hidden md:flex h-2.5 hover:h-3.5 my-0.5 items-center justify-center cursor-row-resize shrink-0 z-10 select-none group"
+                className="hidden md:flex h-6 -my-2 py-2 items-center justify-center cursor-row-resize shrink-0 z-10 select-none group"
                 title="Drag to resize console"
               >
                 <div className="h-1 w-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />

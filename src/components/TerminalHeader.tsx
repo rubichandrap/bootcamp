@@ -78,8 +78,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         {/* Streak badge */}
         <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
           <Flame size={12} />
-          <span className="hidden xs:inline">{formatStreakBadge(streakDays)}</span>
-          <span className="xs:hidden">{streakDays}d</span>
+          <span>{formatStreakBadge(streakDays)}</span>
         </div>
 
         {/* Theme mode toggle badge */}
