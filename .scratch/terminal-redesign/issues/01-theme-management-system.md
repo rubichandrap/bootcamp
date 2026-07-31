@@ -4,9 +4,9 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Implement `useTheme` hook with `localStorage` persistence and `prefers-color-scheme` fallback.
-- [ ] Configure `globals.css` monochrome theme variables for background, text, zinc borders, and status colors (green/red/amber).
-- [ ] Bind Monaco Editor theme state to `vs-dark` (dark mode) and `vs` (light mode).
-- [ ] Add unit tests verifying default theme resolution and theme toggle state behavior.
+- [x] Implement `useTheme` hook with `localStorage` persistence and `prefers-color-scheme` fallback.
+- [x] Configure `globals.css` monochrome theme variables for background, text, zinc borders, and status colors (green/red/amber).
+- [x] Bind Monaco Editor theme state to `vs-dark` (dark mode) and `vs` (light mode).
+- [x] Add unit tests verifying default theme resolution and theme toggle state behavior.

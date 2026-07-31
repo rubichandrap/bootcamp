@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Theme Management System & Global Functional Monochrome Design Tokens
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Refactor `TerminalOutput.tsx` to stream execution results as `go test -v ./...` logs.
-- [ ] Implement functional monochrome accents (Green PASS / Red FAIL / Amber Race Warning).
-- [ ] Add `[RUN TESTS: ⌘↵]` CLI shortcut button and execution indicator.
-- [ ] Add unit tests verifying log stream formatting and race detection display.
+- [x] Refactor `TerminalOutput.tsx` to stream execution results as `go test -v ./...` logs.
+- [x] Implement functional monochrome accents (Green PASS / Red FAIL / Amber Race Warning).
+- [x] Add `[RUN TESTS: ⌘↵]` CLI shortcut button and execution indicator.
+- [x] Add unit tests verifying log stream formatting and race detection display.

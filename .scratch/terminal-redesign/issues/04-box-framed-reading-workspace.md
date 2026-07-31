@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Theme Management System & Global Functional Monochrome Design Tokens
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Wrap `MdxRenderer.tsx` content in terminal box-drawing header panels (`┌─ [READING] ... ──┐`).
-- [ ] Enforce monospace typography across all markdown headings, paragraphs, and lists.
-- [ ] Style action buttons with CLI shortcut badges (`[MARK AS READ: ↵]`).
-- [ ] Add component tests verifying reading chapter rendering and mark-as-read interaction.
+- [x] Wrap `MdxRenderer.tsx` content in terminal box-drawing header panels (`┌─ [READING] ... ──┐`).
+- [x] Enforce monospace typography across all markdown headings, paragraphs, and lists.
+- [x] Style action buttons with CLI shortcut badges (`[MARK AS READ: ↵]`).
+- [x] Add component tests verifying reading chapter rendering and mark-as-read interaction.

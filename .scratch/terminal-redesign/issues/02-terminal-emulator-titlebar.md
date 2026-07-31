@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Theme Management System & Global Functional Monochrome Design Tokens
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Render terminal window control dots (`[● ○ ○]`) and `go-mastery-cli` header title.
-- [ ] Embed interactive `[MODE: DARK]` / `[MODE: LIGHT]` status toggle badge in header.
-- [ ] Embed `[CMD+K]` command palette shortcut badge and daily Streak badge (`🔥 streak: Xd`).
-- [ ] Add component tests verifying header toggle interaction and Streak display.
+- [x] Render terminal window control dots (`[● ○ ○]`) and `go-mastery-cli` header title.
+- [x] Embed interactive `[MODE: DARK]` / `[MODE: LIGHT]` status toggle badge in header.
+- [x] Embed `[CMD+K]` command palette shortcut badge and daily Streak badge (`🔥 streak: Xd`).
+- [x] Add component tests verifying header toggle interaction and Streak display.

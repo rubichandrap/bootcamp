@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Theme Management System & Global Functional Monochrome Design Tokens
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Refactor `SidebarNav.tsx` to display Modules and Chapters in an ASCII tree hierarchy.
-- [ ] Implement `>` cursor hover indicator and active selection highlight.
-- [ ] Replace rounded pill icons with minimal monochrome indicators (`[✓]`, `[READ]`, `[CODE]`).
-- [ ] Add component tests verifying tree structure formatting and chapter selection handlers.
+- [x] Refactor `SidebarNav.tsx` to display Modules and Chapters in an ASCII tree hierarchy.
+- [x] Implement `>` cursor hover indicator and active selection highlight.
+- [x] Replace rounded pill icons with minimal monochrome indicators (`[✓]`, `[READ]`, `[CODE]`).
+- [x] Add component tests verifying tree structure formatting and chapter selection handlers.

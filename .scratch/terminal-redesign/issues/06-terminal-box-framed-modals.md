@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Theme Management System & Global Functional Monochrome Design Tokens
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Refactor `CommandPaletteModal.tsx` to use terminal box header (`┌─ [CMD+K] COMMAND PALETTE ──┐`) and monospace list items.
-- [ ] Refactor `SocraticHintModal.tsx` to use terminal dialog framing (`┌─ [HINT SYSTEM] ──┐`) and Amber accents.
-- [ ] Ensure keyboard navigation (`ArrowUp`/`ArrowDown`/`Enter`/`Escape`) is styled with `>` cursor indicators.
-- [ ] Add component tests verifying modal render and keyboard selection behavior.
+- [x] Refactor `CommandPaletteModal.tsx` to use terminal box header (`┌─ [CMD+K] COMMAND PALETTE ──┐`) and monospace list items.
+- [x] Refactor `SocraticHintModal.tsx` to use terminal dialog framing (`┌─ [HINT SYSTEM] ──┐`) and Amber accents.
+- [x] Ensure keyboard navigation (`ArrowUp`/`ArrowDown`/`Enter`/`Escape`) is styled with `>` cursor indicators.
+- [x] Add component tests verifying modal render and keyboard selection behavior.
