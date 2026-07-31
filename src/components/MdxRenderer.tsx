@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export function formatReadingHeader(title: string): string {
-  return `┌─ [MANUAL PAGE] ${title} ─────────────────────┐`;
+  return `┌─ [READING CHAPTER] ${title} ─────────────────────┐`;
 }
 
 export function formatShortcutBadge(label: string, shortcut: string): string {
@@ -25,7 +25,7 @@ export const MdxRenderer: React.FC<MdxRendererProps> = ({ content }) => {
           h1: ({ children }) => (
             <div className="mb-4 pb-2 border-b border-zinc-300 dark:border-zinc-800">
               <span className="text-zinc-500 dark:text-zinc-500 font-normal text-xs block mb-1">
-                MAN(1) -- Go Idioms Manual
+                READING CHAPTER -- Go Mastery Track
               </span>
               <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 <span>$</span>

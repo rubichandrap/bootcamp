@@ -4,13 +4,27 @@ import React, { useState } from 'react';
 import { Terminal, Cpu, MemoryStick, AlertTriangle, Flame, CheckCircle2, XCircle } from 'lucide-react';
 import { RCEExecuteResponse } from '@/app/api/rce/execute/route';
 
+export type ConsoleTab = 'tests' | 'perf' | 'escape';
+
+export interface ConsoleTabItem {
+  id: ConsoleTab;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+export const CONSOLE_TABS: ConsoleTabItem[] = [
+  { id: 'tests', label: '[TESTS]' },
+  { id: 'perf', label: '[PERF]', icon: <Cpu size={12} /> },
+  { id: 'escape', label: '[ESCAPE]', icon: <MemoryStick size={12} /> },
+];
+
 interface TerminalOutputProps {
   result: RCEExecuteResponse | null;
   isLoading: boolean;
 }
 
 export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoading }) => {
-  const [activeTab, setActiveTab] = useState<'tests' | 'perf' | 'escape'>('tests');
+  const [activeTab, setActiveTab] = useState<ConsoleTab>('tests');
 
   return (
     <div className="h-full w-full bg-zinc-950 dark:bg-[#09090b] text-zinc-200 border border-zinc-300 dark:border-zinc-800 rounded p-3 font-mono text-xs overflow-y-auto flex flex-col select-text">
@@ -22,40 +36,22 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
             <span>RCE CONSOLE STREAM</span>
           </div>
 
-          {/* CLI Tab Switcher */}
+          {/* Mapped CLI Tab Switcher */}
           <div className="flex items-center gap-1 bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 p-0.5 rounded text-[11px]">
-            <button
-              onClick={() => setActiveTab('tests')}
-              className={`px-2 py-0.5 rounded font-mono transition-colors cursor-pointer ${
-                activeTab === 'tests'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-zinc-100 font-bold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-            >
-              [TESTS]
-            </button>
-            <button
-              onClick={() => setActiveTab('perf')}
-              className={`px-2 py-0.5 rounded font-mono transition-colors flex items-center gap-1 cursor-pointer ${
-                activeTab === 'perf'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-zinc-100 font-bold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-            >
-              <Cpu size={12} />
-              <span>[PERF]</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('escape')}
-              className={`px-2 py-0.5 rounded font-mono transition-colors flex items-center gap-1 cursor-pointer ${
-                activeTab === 'escape'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-zinc-100 font-bold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-            >
-              <MemoryStick size={12} />
-              <span>[ESCAPE]</span>
-            </button>
+            {CONSOLE_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-2 py-0.5 rounded font-mono transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-zinc-900 dark:bg-zinc-800 text-zinc-100 font-bold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 

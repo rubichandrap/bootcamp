@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { formatReadingHeader, formatShortcutBadge } from './MdxRenderer';
 
-describe('MdxRenderer Terminal Box Helpers', () => {
-  it('should format reading manual page header string', () => {
+describe('MdxRenderer Domain Terminology & Headers', () => {
+  it('should use canonical domain glossary term "Reading Chapter"', () => {
     const formatted = formatReadingHeader('Goroutines and Channels');
-    expect(formatted).toBe('┌─ [MANUAL PAGE] Goroutines and Channels ─────────────────────┐');
+    expect(formatted).toBe('┌─ [READING CHAPTER] Goroutines and Channels ─────────────────────┐');
   });
 
   it('should format shortcut badge for actions', () => {
