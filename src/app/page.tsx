@@ -5,6 +5,7 @@ import { CodeEditor } from '@/components/CodeEditor';
 import { TerminalOutput } from '@/components/TerminalOutput';
 import { SidebarNav } from '@/components/SidebarNav';
 import { MdxRenderer } from '@/components/MdxRenderer';
+import { TerminalHeader } from '@/components/TerminalHeader';
 import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
 import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
@@ -12,10 +13,14 @@ import { useProgressTracker } from '@/hooks/useProgressTracker';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
 import { useChallengeSession } from '@/hooks/useChallengeSession';
 import { useReadingSession } from '@/hooks/useReadingSession';
-import { Play, Sparkles, BookOpen, Code2, Award, Zap, CheckCircle2, ChevronRight, Lock, Key, Search, Flame } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { Play, Sparkles, Code2, Lock, Key, Flame, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export default function Home() {
-  // Four deep sub-module hooks
+  // Theme hook
+  const { theme, toggleTheme, monacoTheme } = useTheme();
+
+  // Sub-module hooks
   const progressTracker = useProgressTracker();
   const chapterLifecycle = useChapterLifecycle();
   const challengeSession = useChallengeSession();
@@ -53,7 +58,7 @@ export default function Home() {
     }
   }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, handleSelectChapter]);
 
-  // 3. Fetch per-Chapter failed attempts and reset editor when currentChapter changes
+  // 3. Reset editor when currentChapter changes
   const currentChapter = chapterLifecycle.currentChapter;
   useEffect(() => {
     if (!currentChapter) return;
@@ -99,92 +104,23 @@ export default function Home() {
   const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
   const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
 
-  const allChapterIds = chapterLifecycle.modules.flatMap((moduleItem) => moduleItem.chapters.map((c) => c.slug));
-  const progressPercent = progressTracker.calculateProgressPercent(
-    progressTracker.completedChapterIds,
-    allChapterIds
-  );
+  const activeModuleTitle = currentChapter
+    ? chapterLifecycle.modules.find((m) => m.slug === currentChapter.moduleSlug)?.title
+    : undefined;
 
   return (
-    <div className="h-screen w-screen bg-[#090d16] text-slate-100 flex flex-col overflow-hidden font-sans">
-      {/* Top Navigation Header */}
-      <header className="h-14 border-b border-slate-800 bg-[#0d1117] px-6 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-violet-500/20">
-            <Zap size={18} />
-          </div>
-          <div>
-            <h1 className="font-bold text-sm tracking-tight text-white flex items-center gap-2">
-              Go Mastery Platform
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
-                Vercel Aesthetic
-              </span>
-            </h1>
-            <p className="text-[11px] text-slate-400">
-              {currentChapter ? `${currentChapter.title}` : 'Loading Track...'}
-            </p>
-          </div>
-        </div>
+    <div className="h-screen w-screen bg-zinc-950 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
+      {/* Top Terminal Emulator Titlebar Header */}
+      <TerminalHeader
+        trackTitle="Go Mastery"
+        activeModuleTitle={activeModuleTitle}
+        streakDays={progressTracker.streakDays}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenSearch={() => setIsPaletteOpen(true)}
+      />
 
-        <div className="flex items-center gap-4">
-          {/* Race Check UI Toggle */}
-          <button
-            onClick={() => challengeSession.toggleRaceCheck()}
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
-              challengeSession.enableRaceCheck
-                ? 'bg-rose-950/40 border-rose-600 text-rose-300 font-semibold'
-                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
-            title="Enable Go Data Race Detector (-race)"
-          >
-            <Flame size={13} className={challengeSession.enableRaceCheck ? 'text-rose-400' : 'text-slate-500'} />
-            <span>-race</span>
-          </button>
-
-          {/* Header Progress Bar */}
-          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-            <span>Progress: {progressPercent}%</span>
-            <div className="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700/60">
-              <div
-                className="bg-linear-to-r from-violet-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Cmd+K Search Trigger */}
-          <button
-            onClick={() => setIsPaletteOpen(true)}
-            className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-md transition-colors cursor-pointer"
-          >
-            <Search size={13} className="text-violet-400" />
-            <span>Search...</span>
-            <kbd className="text-[10px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono">
-              Cmd+K
-            </kbd>
-          </button>
-
-          <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-md">
-            <Award size={14} className="text-amber-400" />
-            <span>
-              Streak: <strong className="text-white">{progressTracker.streakDays} Days</strong>
-            </span>
-          </div>
-
-          {currentChapter?.type !== 'reading' && (
-            <button
-              onClick={handleRun}
-              disabled={challengeSession.isLoading}
-              className="flex items-center gap-2 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-violet-500/25 transition-all disabled:opacity-50 cursor-pointer"
-            >
-              <Play size={14} fill="currentColor" />
-              {challengeSession.isLoading ? 'Executing...' : 'Run & Verify (Cmd+Enter)'}
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Main Workspace Layout */}
+      {/* Main Terminal Workspace Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Nav */}
         <SidebarNav
@@ -194,116 +130,151 @@ export default function Home() {
           onSelectChapter={handleSelectChapter}
         />
 
-        {/* Content & Workspace */}
-        <div className="flex-1 flex overflow-hidden p-4 gap-4">
-          {/* Article / Explanation Pane */}
-          <div className="flex-1 border border-slate-800 rounded-xl bg-[#0d1117]/80 p-6 overflow-y-auto flex flex-col justify-between">
+        {/* Content & Workspace Area */}
+        <div className="flex-1 flex overflow-hidden p-3 gap-3">
+          {/* Left: Reading / Manual Pane */}
+          <div className="flex-1 border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-[#0c0c0e] p-5 overflow-y-auto flex flex-col justify-between select-text">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-violet-400">
-                  <BookOpen size={14} /> {currentChapter?.title || 'Loading...'}
+              {/* Header Box Bar */}
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-300 dark:border-zinc-800">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-200">
+                  <span>┌─ [CHAPTER]</span>
+                  <span>{currentChapter?.title || 'Loading...'}</span>
                 </div>
-                {isPassed && (
-                  <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 py-0.5 rounded-full font-medium">
-                    <CheckCircle2 size={12} /> Completed
-                  </span>
-                )}
+
+                <div className="flex items-center gap-2">
+                  {/* Race Detector Toggle */}
+                  {currentChapter?.type !== 'reading' && (
+                    <button
+                      onClick={() => challengeSession.toggleRaceCheck()}
+                      className={`px-2 py-0.5 rounded border text-[11px] font-mono transition-colors cursor-pointer ${
+                        challengeSession.enableRaceCheck
+                          ? 'border-red-500 bg-red-500/10 text-red-500 font-bold'
+                          : 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                      }`}
+                    >
+                      <Flame size={12} className="inline mr-1" />
+                      <span>-race</span>
+                    </button>
+                  )}
+
+                  {isPassed && (
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                      [✓ COMPLETED]
+                    </span>
+                  )}
+                </div>
               </div>
 
               {currentChapter?.content ? (
                 <MdxRenderer content={currentChapter.content} />
               ) : (
-                <p className="text-xs text-slate-500 italic">Select a chapter to begin...</p>
+                <p className="text-xs text-zinc-500 italic">$ loading manual page content...</p>
               )}
             </div>
 
-            <div className="pt-4 mt-6 border-t border-slate-800/60 flex items-center justify-between">
+            {/* Bottom Actions Bar */}
+            <div className="pt-4 mt-6 border-t border-zinc-300 dark:border-zinc-800 flex items-center justify-between">
               <button
                 onClick={() => setIsHintOpen(true)}
-                className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline font-bold cursor-pointer"
               >
-                <Sparkles size={14} /> Socratic Hint
+                <Sparkles size={14} /> [SOCRATIC HINT: ⌘H]
               </button>
 
-              {currentChapter?.type === 'reading' && (
+              {currentChapter?.type === 'reading' ? (
                 <button
                   onClick={handleMarkAsRead}
-                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-4 py-2 rounded-md shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded shadow transition-colors cursor-pointer"
                 >
-                  <CheckCircle2 size={14} /> Mark as Read &amp; Continue <ChevronRight size={14} />
+                  <span>[MARK AS READ &amp; CONTINUE: ↵]</span>
+                  <ChevronRight size={14} />
+                </button>
+              ) : (
+                <button
+                  onClick={handleRun}
+                  disabled={challengeSession.isLoading}
+                  className="flex items-center gap-1.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-100 dark:text-zinc-900 font-bold text-xs px-4 py-1.5 rounded transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  <Play size={13} fill="currentColor" />
+                  <span>{challengeSession.isLoading ? '[EXECUTING...]' : '[RUN TESTS: ⌘↵]'}</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Code Editor & RCE Output Pane (for Challenge & Assessment Chapters) */}
+          {/* Right: Code Editor & RCE Output Pane (for Challenge & Assessment Chapters) */}
           {currentChapter?.type !== 'reading' && (
-            <div className="w-1/2 flex flex-col gap-4 overflow-hidden">
-              <div className="flex-1 flex flex-col border border-slate-800 rounded-xl overflow-hidden bg-[#0d1117]">
-                <div className="h-10 bg-[#161b22] border-b border-slate-800 px-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+            <div className="w-1/2 flex flex-col gap-3 overflow-hidden">
+              {/* Code Editor Panel */}
+              <div className="flex-1 flex flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-zinc-900 dark:bg-[#1e1e1e]">
+                {/* Editor File Tab Bar */}
+                <div className="h-9 bg-zinc-200 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => challengeSession.selectTab('code')}
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
                         challengeSession.activeTab === 'code'
-                          ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-zinc-950 dark:bg-[#1e1e1e] text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={13} /> main.go
+                      <Code2 size={12} /> main.go
                     </button>
                     <button
                       onClick={() => challengeSession.selectTab('test')}
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
                         challengeSession.activeTab === 'test'
-                          ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-zinc-950 dark:bg-[#1e1e1e] text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={13} /> main_test.go
+                      <Code2 size={12} /> main_test.go
                     </button>
                     <button
                       onClick={() => isUnlocked && challengeSession.selectTab('solution')}
                       disabled={!isUnlocked}
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors ${
                         challengeSession.activeTab === 'solution'
-                          ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+                          ? 'bg-emerald-950 text-emerald-300 font-bold border border-emerald-700'
                           : isUnlocked
-                          ? 'text-emerald-400 hover:text-emerald-300'
-                          : 'text-slate-600 cursor-not-allowed opacity-60'
+                          ? 'text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer'
+                          : 'text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50'
                       }`}
                     >
-                      {isUnlocked ? <Key size={13} /> : <Lock size={13} />} Official Solution
+                      {isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
                     </button>
                   </div>
-
-                  <span className="text-[11px] text-slate-500 font-mono">
-                    {challengeSession.activeTab === 'code'
-                      ? 'Solution Code'
-                      : challengeSession.activeTab === 'test'
-                      ? 'Unit Tests'
-                      : 'Reference Solution'}
-                  </span>
                 </div>
 
                 <div className="flex-1">
                   {challengeSession.activeTab === 'code' ? (
                     <CodeEditor
+                      filename="main.go"
+                      theme={monacoTheme}
                       value={challengeSession.code}
                       onChange={(v) => challengeSession.updateCode(v || '')}
                     />
                   ) : challengeSession.activeTab === 'test' ? (
                     <CodeEditor
+                      filename="main_test.go"
+                      theme={monacoTheme}
                       value={challengeSession.testCode}
                       onChange={(v) => challengeSession.updateTestCode(v || '')}
                     />
                   ) : (
-                    <CodeEditor value={activeHint.solutionCode || '// Solution Unlocked'} onChange={() => {}} />
+                    <CodeEditor
+                      filename="solution.go"
+                      theme={monacoTheme}
+                      value={activeHint.solutionCode || '// Solution Unlocked'}
+                      onChange={() => {}}
+                    />
                   )}
                 </div>
               </div>
 
-              <div className="h-48">
+              {/* RCE Console Output */}
+              <div className="h-52">
                 <TerminalOutput result={challengeSession.result} isLoading={challengeSession.isLoading} />
               </div>
             </div>

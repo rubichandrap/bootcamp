@@ -4,45 +4,63 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+export function formatReadingHeader(title: string): string {
+  return `┌─ [MANUAL PAGE] ${title} ─────────────────────┐`;
+}
+
+export function formatShortcutBadge(label: string, shortcut: string): string {
+  return `[${label}: ${shortcut}]`;
+}
+
 interface MdxRendererProps {
   content: string;
 }
 
 export const MdxRenderer: React.FC<MdxRendererProps> = ({ content }) => {
   return (
-    <article className="prose prose-invert max-w-none text-xs text-slate-300 space-y-4 font-sans leading-relaxed">
+    <article className="max-w-none text-xs text-zinc-800 dark:text-zinc-200 space-y-4 font-mono leading-relaxed">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-xl font-bold text-slate-100 pb-2 border-b border-slate-800/80 mb-4 tracking-tight">
-              {children}
-            </h1>
+            <div className="mb-4 pb-2 border-b border-zinc-300 dark:border-zinc-800">
+              <span className="text-zinc-500 dark:text-zinc-500 font-normal text-xs block mb-1">
+                MAN(1) -- Go Idioms Manual
+              </span>
+              <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <span>$</span>
+                <span>{children}</span>
+                <span className="animate-pulse">█</span>
+              </h1>
+            </div>
           ),
           h2: ({ children }) => (
-            <h2 className="text-base font-semibold text-violet-300 mt-6 mb-2 tracking-tight">
-              {children}
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-6 mb-2 flex items-center gap-1.5">
+              <span className="text-zinc-500">&gt;&gt;</span>
+              <span>{children}</span>
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-sm font-semibold text-slate-200 mt-4 mb-2">
-              {children}
+            <h3 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mt-4 mb-1 flex items-center gap-1">
+              <span className="text-zinc-400">#</span>
+              <span>{children}</span>
             </h3>
           ),
           p: ({ children }) => (
-            <p className="text-slate-300 leading-relaxed my-2 text-xs">
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed my-2 text-xs">
               {children}
             </p>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-5 space-y-1 my-2 text-slate-300 text-xs">
+            <ul className="list-none space-y-1.5 my-2 pl-2 text-zinc-700 dark:text-zinc-300 text-xs">
               {children}
             </ul>
           ),
-          ol: ({ children }) => (
-            <ol className="list-decimal pl-5 space-y-1 my-2 text-slate-300 text-xs">
-              {children}
-            </ol>
+          li: ({ children }) => (
+            <li className="flex items-start gap-2">
+              <span className="text-zinc-400 select-none">-&gt;</span>
+              <div className="flex-1">{children}</div>
+            </li>
           ),
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
@@ -50,7 +68,7 @@ export const MdxRenderer: React.FC<MdxRendererProps> = ({ content }) => {
             if (isInline) {
               return (
                 <code
-                  className="bg-slate-900 text-violet-300 px-1.5 py-0.5 rounded border border-slate-800/80 font-mono text-[11px]"
+                  className="bg-zinc-200 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 px-1.5 py-0.5 rounded border border-zinc-300 dark:border-zinc-700 font-mono text-[11px]"
                   {...props}
                 >
                   {children}
@@ -58,11 +76,12 @@ export const MdxRenderer: React.FC<MdxRendererProps> = ({ content }) => {
               );
             }
             return (
-              <div className="my-3 rounded-lg overflow-hidden border border-slate-800 bg-[#0d1117]">
-                <div className="bg-[#161b22] px-3 py-1 text-[10px] text-slate-400 font-mono border-b border-slate-800 uppercase">
-                  {match ? match[1] : 'code'}
+              <div className="my-4 border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-[#0c0c0e] rounded">
+                <div className="bg-zinc-200 dark:bg-zinc-900 px-3 py-1 text-[10px] text-zinc-600 dark:text-zinc-400 font-mono border-b border-zinc-300 dark:border-zinc-800 uppercase flex items-center justify-between">
+                  <span>┌─ {match ? match[1] : 'code'} ──</span>
+                  <span>[UTF-8]</span>
                 </div>
-                <pre className="p-3 text-[11px] font-mono text-slate-200 overflow-x-auto whitespace-pre">
+                <pre className="p-3 text-[11px] font-mono text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre">
                   <code>{children}</code>
                 </pre>
               </div>
