@@ -11,4 +11,10 @@ describe('TerminalHeader Component Utilities', () => {
     const badge = formatStreakBadge(5);
     expect(badge).toBe('🔥 STREAK: 5d');
   });
+
+  it('should format titlebar text fallback when no active module is selected', () => {
+    const formatted = formatTitlebarText('Go Mastery');
+    expect(formatted).toBe('go-mastery-cli v1.0.0 -- track: Go Mastery');
+  });
 });
+

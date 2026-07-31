@@ -36,7 +36,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           value={value}
           onChange={onChange}
           options={{
-            fontSize: 13,
+            fontSize: 14,
             fontFamily: 'var(--font-geist-mono), JetBrains Mono, Fira Code, monospace',
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -46,6 +46,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             renderLineHighlight: 'all',
             tabSize: 4,
             insertSpaces: true,
+            wordWrap: 'on',
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
           }}
         />
       </div>

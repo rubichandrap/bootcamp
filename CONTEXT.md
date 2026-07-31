@@ -40,3 +40,13 @@ _Avoid_: Run, chain, streak count
 **RCE Engine**:
 The Remote Code Execution service responsible for securely building and executing learner submissions against challenge test suites using `go test`.
 _Avoid_: Runner, compiler, playground
+
+**Theme Engine**:
+The system responsible for managing and persisting visual workspace themes (Dark vs. Light mode) across the platform UI elements and embedded code editor instances.
+_Avoid_: Color scheme switcher, palette toggle
+
+**Workspace Layout**:
+The adaptive arrangement of Reading Guide, Code Editor, and RCE Engine console panes within a Chapter view, supporting side-by-side split view on desktop/tablet devices and segmented tabbed views on mobile devices.
+_Avoid_: Page grid, split screen wrapper
+
+

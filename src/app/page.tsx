@@ -15,7 +15,7 @@ import { useChallengeSession } from '@/hooks/useChallengeSession';
 import { useReadingSession } from '@/hooks/useReadingSession';
 import { useTheme } from '@/hooks/useTheme';
 import { useResizableLayout } from '@/hooks/useResizableLayout';
-import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight } from 'lucide-react';
+import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight, BookOpen, Terminal as TerminalIcon } from 'lucide-react';
 
 export default function Home() {
   // Theme hook
@@ -30,19 +30,27 @@ export default function Home() {
     sidebarWidth,
     workspaceSplit,
     consoleHeight,
+    isDesktop,
     handleSidebarMouseDown,
+    handleSidebarTouchStart,
     handleWorkspaceMouseDown,
+    handleWorkspaceTouchStart,
     handleConsoleMouseDown,
+    handleConsoleTouchStart,
   } = useResizableLayout();
 
   // Page shell UI state
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<'guide' | 'code' | 'terminal'>('guide');
 
   // Chapter selection handler
   const handleSelectChapter = useCallback(
     async (modSlug: string, chSlug: string) => {
       await chapterLifecycle.selectChapter(modSlug, chSlug);
+      setIsSidebarOpen(false);
+      setActiveMobileTab('guide');
     },
     [chapterLifecycle]
   );
@@ -114,7 +122,7 @@ export default function Home() {
     });
   }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle]);
 
-  // 4. Keyboard shortcut listeners (Cmd+Enter / Enter to run or mark-as-read, Cmd+K for search, Cmd+H for hint)
+  // 4. Keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -150,7 +158,7 @@ export default function Home() {
     : undefined;
 
   return (
-    <div className="h-screen w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
+    <div className="h-[100dvh] min-h-[100dvh] w-screen bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
       {/* Top Terminal Emulator Titlebar Header */}
       <TerminalHeader
         trackTitle="Go Mastery"
@@ -159,44 +167,109 @@ export default function Home() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsPaletteOpen(true)}
+        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
 
       {/* Main Terminal Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar Nav */}
-        <SidebarNav
-          width={sidebarWidth}
-          modules={chapterLifecycle.modules}
-          currentChapter={currentChapter}
-          completedChapterIds={progressTracker.completedChapterIds}
-          onSelectChapter={handleSelectChapter}
-        />
-
-        {/* Sidebar Vertical Drag Resizer */}
-        <div
-          onMouseDown={handleSidebarMouseDown}
-          className="w-1.5 hover:w-2 bg-zinc-300 dark:bg-zinc-800 hover:bg-cyan-500 dark:hover:bg-cyan-500 transition-all cursor-col-resize shrink-0 z-10 select-none flex items-center justify-center group"
-          title="Drag to resize sidebar"
-        >
-          <div className="w-0.5 h-6 bg-zinc-400 dark:bg-zinc-600 group-hover:bg-cyan-200 rounded" />
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Desktop Sidebar Nav */}
+        <div className="hidden lg:flex h-full">
+          <SidebarNav
+            width={sidebarWidth}
+            modules={chapterLifecycle.modules}
+            currentChapter={currentChapter}
+            completedChapterIds={progressTracker.completedChapterIds}
+            onSelectChapter={handleSelectChapter}
+          />
+          {/* Desktop Sidebar Drag Resizer with 24px Touch Target */}
+          <div
+            onMouseDown={handleSidebarMouseDown}
+            onTouchStart={handleSidebarTouchStart}
+            className="w-6 -mx-2 px-2 hover:bg-cyan-500/20 transition-all cursor-col-resize shrink-0 z-10 select-none flex items-center justify-center group"
+            title="Drag to resize sidebar"
+          >
+            <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
+          </div>
         </div>
 
-        {/* Content & Workspace Area */}
-        <div id="workspace-container" className="flex-1 flex overflow-hidden p-3 gap-0">
-          {/* Left: Reading / Manual Pane */}
+        {/* Mobile/Tablet Slide-over Sidebar Drawer */}
+        {isSidebarOpen && (
+          <>
+            <div
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity"
+            />
+            <div className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-zinc-50 dark:bg-[#09090b] shadow-2xl lg:hidden flex flex-col">
+              <SidebarNav
+                modules={chapterLifecycle.modules}
+                currentChapter={currentChapter}
+                completedChapterIds={progressTracker.completedChapterIds}
+                onSelectChapter={handleSelectChapter}
+                onClose={() => setIsSidebarOpen(false)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Content & Workspace Container */}
+        <div id="workspace-container" className="flex-1 flex flex-col md:flex-row overflow-hidden p-2 sm:p-3 gap-0">
+          {/* Mobile Segmented View Control Bar */}
+          {currentChapter?.type !== 'reading' && (
+            <div className="flex md:hidden items-center justify-around bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded p-1 mb-2 text-xs font-mono shrink-0">
+              <button
+                onClick={() => setActiveMobileTab('guide')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
+                  activeMobileTab === 'guide'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400'
+                }`}
+              >
+                <BookOpen size={13} />
+                <span>Guide</span>
+              </button>
+              <button
+                onClick={() => setActiveMobileTab('code')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
+                  activeMobileTab === 'code'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400'
+                }`}
+              >
+                <Code2 size={13} />
+                <span>Code</span>
+              </button>
+              <button
+                onClick={() => setActiveMobileTab('terminal')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded transition-colors font-bold ${
+                  activeMobileTab === 'terminal'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400'
+                }`}
+              >
+                <TerminalIcon size={13} />
+                <span>Terminal</span>
+              </button>
+            </div>
+          )}
+
+          {/* Left / Guide Pane */}
           <div
-            style={{ width: currentChapter?.type !== 'reading' ? `${workspaceSplit}%` : '100%' }}
-            className="border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-[#0c0c0e] p-5 overflow-y-auto flex flex-col justify-between select-text shrink-0"
+            style={{ width: isDesktop && currentChapter?.type !== 'reading' ? `${workspaceSplit}%` : '100%' }}
+            className={`border border-zinc-300 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-[#0c0c0e] p-3 sm:p-5 overflow-y-auto flex-col justify-between select-text shrink-0 ${
+              currentChapter?.type === 'reading' || activeMobileTab === 'guide'
+                ? 'flex w-full md:w-auto flex-1 md:flex-initial'
+                : 'hidden md:flex'
+            }`}
           >
             <div>
               {/* Header Box Bar */}
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-300 dark:border-zinc-800">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-200">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-200 truncate">
                   <span>┌─ [CHAPTER]</span>
-                  <span>{currentChapter?.title || 'Loading...'}</span>
+                  <span className="truncate">{currentChapter?.title || 'Loading...'}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {/* Race Detector Toggle */}
                   {currentChapter?.type !== 'reading' && (
                     <button
@@ -228,12 +301,13 @@ export default function Home() {
             </div>
 
             {/* Bottom Actions Bar */}
-            <div className="pt-4 mt-6 border-t border-zinc-300 dark:border-zinc-800 flex items-center justify-between">
+            <div className="pt-4 mt-6 border-t border-zinc-300 dark:border-zinc-800 flex items-center justify-between gap-2">
               <button
                 onClick={() => setIsHintOpen(true)}
                 className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline font-bold cursor-pointer"
               >
-                <Sparkles size={14} /> [SOCRATIC HINT: ⌘H]
+                <Sparkles size={14} />
+                <span>[SOCRATIC HINT]</span>
               </button>
 
               {currentChapter?.type === 'reading' ? (
@@ -241,7 +315,7 @@ export default function Home() {
                   onClick={handleMarkAsRead}
                   className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded shadow transition-colors cursor-pointer"
                 >
-                  <span>[MARK AS READ &amp; CONTINUE: ↵]</span>
+                  <span>[MARK AS READ &amp; CONTINUE]</span>
                   <ChevronRight size={14} />
                 </button>
               ) : (
@@ -251,17 +325,18 @@ export default function Home() {
                   className="flex items-center gap-1.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-100 dark:text-zinc-900 font-bold text-xs px-4 py-1.5 rounded transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <Play size={13} fill="currentColor" />
-                  <span>{challengeSession.isLoading ? '[EXECUTING...]' : '[RUN TESTS: ⌘↵]'}</span>
+                  <span>{challengeSession.isLoading ? '[EXECUTING...]' : '[RUN TESTS]'}</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Reading vs Editor Pane Vertical Drag Resizer */}
+          {/* Reading vs Editor Pane Vertical Drag Resizer (Desktop/Tablet 24px Touch Target) */}
           {currentChapter?.type !== 'reading' && (
             <div
               onMouseDown={handleWorkspaceMouseDown}
-              className="w-2.5 hover:w-3.5 mx-1 flex items-center justify-center cursor-col-resize shrink-0 z-10 select-none group"
+              onTouchStart={handleWorkspaceTouchStart}
+              className="hidden md:flex w-6 -mx-2 px-2 items-center justify-center cursor-col-resize shrink-0 z-10 select-none group"
               title="Drag to resize panels"
             >
               <div className="w-1 h-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
@@ -272,14 +347,22 @@ export default function Home() {
           {currentChapter?.type !== 'reading' && (
             <div
               id="right-pane-container"
-              style={{ width: `${100 - workspaceSplit}%` }}
-              className="flex flex-col overflow-hidden shrink-0"
+              style={{ width: isDesktop ? `${100 - workspaceSplit}%` : '100%' }}
+              className={`flex-col overflow-hidden shrink-0 ${
+                activeMobileTab === 'code' || activeMobileTab === 'terminal'
+                  ? 'flex w-full md:w-auto flex-1 md:flex-initial'
+                  : 'hidden md:flex'
+              }`}
             >
               {/* Code Editor Panel */}
-              <div className="flex-1 flex flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e]">
+              <div
+                className={`flex-1 flex-col border border-zinc-300 dark:border-zinc-800 rounded overflow-hidden bg-white dark:bg-[#1e1e1e] ${
+                  activeMobileTab === 'code' ? 'flex' : 'hidden md:flex'
+                }`}
+              >
                 {/* Editor File Tab Bar */}
                 <div className="h-9 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 overflow-x-auto">
                     <button
                       onClick={() => challengeSession.selectTab('code')}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
@@ -345,17 +428,25 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Horizontal Drag Resizer between Editor and Console */}
+              {/* Horizontal Drag Resizer between Editor and Console (Desktop/Tablet 24px Touch Target) */}
               <div
                 onMouseDown={handleConsoleMouseDown}
-                className="h-2.5 hover:h-3.5 my-0.5 flex items-center justify-center cursor-row-resize shrink-0 z-10 select-none group"
+                onTouchStart={handleConsoleTouchStart}
+                className="hidden md:flex h-6 -my-2 py-2 items-center justify-center cursor-row-resize shrink-0 z-10 select-none group"
                 title="Drag to resize console"
               >
                 <div className="h-1 w-8 rounded bg-zinc-300 dark:bg-zinc-800 group-hover:bg-cyan-500 transition-colors" />
               </div>
 
               {/* RCE Console Output */}
-              <div style={{ height: `${consoleHeight}px` }} className="shrink-0">
+              <div
+                style={{ height: !isDesktop || activeMobileTab === 'terminal' ? '100%' : `${consoleHeight}px` }}
+                className={`shrink-0 ${
+                  activeMobileTab === 'terminal'
+                    ? 'flex flex-1 h-full'
+                    : 'hidden md:block'
+                }`}
+              >
                 <TerminalOutput result={challengeSession.result} isLoading={challengeSession.isLoading} />
               </div>
             </div>
