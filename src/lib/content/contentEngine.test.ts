@@ -37,10 +37,10 @@ describe('Curriculum Content Engine', () => {
   });
 
   it('should get a chapter using getChapter and getChapterBySlug', () => {
-    const ch = getChapter('typescript', '00-basics', '03-basics-assessment');
+    const ch = getChapter('typescript', '00-basics', '07-basics-assessment');
     expect(ch).not.toBeNull();
     expect(ch?.type).toBe('assessment');
-    expect(ch?.title).toContain('Assessment');
+    expect(ch?.title).toContain('Module 00');
   });
 
   it('should list modules for default or specific track', () => {
