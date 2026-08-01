@@ -9,32 +9,22 @@ import { MdxRenderer } from '@/components/MdxRenderer';
 import { TerminalHeader } from '@/components/TerminalHeader';
 import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
-import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
-import { useProgressTracker } from '@/hooks/useProgressTracker';
-import { DEFAULT_USER_ID } from '@/lib/progress/progressTracker';
-import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
-import { useChallengeSession } from '@/hooks/useChallengeSession';
-import { useReadingSession } from '@/hooks/useReadingSession';
+import { useWorkspaceSession } from '@/hooks/useWorkspaceSession';
 import { useTheme } from '@/hooks/useTheme';
 import { useResizableLayout } from '@/hooks/useResizableLayout';
 import { setStoredTrack } from '@/hooks/useTrack';
+import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
 import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight, BookOpen, Terminal as TerminalIcon } from 'lucide-react';
 
 interface TrackWorkspaceProps {
-  initialTrackSlug?: string;
+  trackSlug?: TrackSlug;
 }
 
-export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug = 'go' }) => {
+export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ trackSlug = 'go' }) => {
   const router = useRouter();
 
-  // Theme hook
+  // Layout hooks
   const { theme, toggleTheme, monacoTheme } = useTheme();
-
-  // Sub-module hooks
-  const progressTracker = useProgressTracker();
-  const chapterLifecycle = useChapterLifecycle();
-  const challengeSession = useChallengeSession();
-  const readingSession = useReadingSession();
   const {
     sidebarWidth,
     workspaceSplit,
@@ -48,123 +38,45 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
     handleConsoleTouchStart,
   } = useResizableLayout();
 
-  // Page shell UI state
+  // Workspace Session — owns all Chapter, Challenge, and Progress coordination
+  const session = useWorkspaceSession(trackSlug);
+
+  // Track config — replaces all repeated track ternaries
+  const trackCfg = getTrackConfig(trackSlug);
+
+  // Layout-only state
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<'guide' | 'code' | 'terminal'>('guide');
 
-  // Chapter selection handler
+  // Chapter selection — wraps session action with layout side-effects
   const handleSelectChapter = useCallback(
     async (modSlug: string, chSlug: string) => {
-      await chapterLifecycle.selectChapter(modSlug, chSlug, initialTrackSlug);
+      await session.selectChapter(modSlug, chSlug);
       setIsSidebarOpen(false);
       setActiveMobileTab('guide');
     },
-    [chapterLifecycle, initialTrackSlug]
+    // session.selectChapter is a stable memoized callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [session.selectChapter]
   );
 
-  // 1. Initial & track change data loading effect
-  useEffect(() => {
-    async function loadInitialData() {
-      setStoredTrack(initialTrackSlug);
-      await progressTracker.loadProgress(DEFAULT_USER_ID, initialTrackSlug);
-      await chapterLifecycle.loadModules(initialTrackSlug);
-    }
-    loadInitialData();
-  }, [initialTrackSlug]);
-
-  // 2. Auto-select first Chapter when modules load or track changes
-  useEffect(() => {
-    if (chapterLifecycle.modules.length > 0) {
-      const isCurrentInModules =
-        chapterLifecycle.currentChapter &&
-        chapterLifecycle.currentChapter.trackSlug === initialTrackSlug &&
-        chapterLifecycle.modules.some((m) =>
-          m.chapters.some((c) => c.slug === chapterLifecycle.currentChapter?.slug)
-        );
-
-      if (!isCurrentInModules) {
-        const firstMod = chapterLifecycle.modules[0];
-        if (firstMod.chapters.length > 0) {
-          const firstCh = firstMod.chapters[0];
-          handleSelectChapter(firstCh.moduleSlug, firstCh.slug);
-        }
-      }
-    }
-  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, initialTrackSlug, handleSelectChapter]);
-
-  // 3. Synchronously & asynchronously reset editor when currentChapter changes
-  const currentChapter = chapterLifecycle.currentChapter;
-  useEffect(() => {
-    if (!currentChapter) return;
-    const ch = currentChapter;
-    let isSubscribed = true;
-
-    challengeSession.resetForChapter(ch.starterCode, ch.testCode, undefined, ch.slug);
-
-    async function initChapter() {
-      progressTracker.loadFailedAttempts(ch.slug, DEFAULT_USER_ID, initialTrackSlug);
-      if (ch.type !== 'reading') {
-        const latestSub = await progressTracker.getLatestSubmission(ch.slug, DEFAULT_USER_ID, initialTrackSlug);
-        if (latestSub?.code && isSubscribed) {
-          challengeSession.resetForChapter(
-            ch.starterCode,
-            ch.testCode,
-            latestSub.code,
-            ch.slug
-          );
-        }
-      }
-    }
-    initChapter();
-    return () => {
-      isSubscribed = false;
-    };
-  }, [currentChapter?.slug, initialTrackSlug]);
-
-  const handleRun = useCallback(() => {
-    if (!chapterLifecycle.currentChapter) return;
-    challengeSession.runChallengeSession(
-      chapterLifecycle.currentChapter.slug,
-      {
-        recordSubmission: (params) =>
-          progressTracker.recordSubmission({ ...params, trackId: initialTrackSlug }),
-        onAdvance: chapterLifecycle.advanceToNextChapter,
-        incrementFailedAttempts: progressTracker.incrementFailedAttempts,
-      },
-      initialTrackSlug
-    );
-  }, [chapterLifecycle.currentChapter, challengeSession, progressTracker, initialTrackSlug]);
-
-  const handleMarkAsRead = useCallback(() => {
-    if (!chapterLifecycle.currentChapter) return;
-    readingSession.markAsRead(
-      chapterLifecycle.currentChapter.slug,
-      {
-        recordSubmission: (params) =>
-          progressTracker.recordSubmission({ ...params, trackId: initialTrackSlug }),
-        onAdvance: chapterLifecycle.advanceToNextChapter,
-      },
-      initialTrackSlug
-    );
-  }, [chapterLifecycle.currentChapter, readingSession, progressTracker, chapterLifecycle, initialTrackSlug]);
-
-  // 4. Keyboard shortcut listeners
+  // Keyboard shortcuts — layout concern; calls session actions for run/read
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (chapterLifecycle.currentChapter) {
-          if (chapterLifecycle.currentChapter.type === 'reading') {
-            handleMarkAsRead();
+        if (session.currentChapter) {
+          if (session.currentChapter.type === 'reading') {
+            session.markAsRead();
           } else {
-            handleRun();
+            session.run();
           }
         }
-      } else if (e.key === 'Enter' && chapterLifecycle.currentChapter?.type === 'reading' && !isPaletteOpen && !isHintOpen) {
+      } else if (e.key === 'Enter' && session.currentChapter?.type === 'reading' && !isPaletteOpen && !isHintOpen) {
         e.preventDefault();
-        handleMarkAsRead();
+        session.markAsRead();
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
@@ -175,26 +87,18 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chapterLifecycle.currentChapter, handleRun, handleMarkAsRead, isPaletteOpen, isHintOpen]);
+  }, [session.currentChapter, session.run, session.markAsRead, isPaletteOpen, isHintOpen]);
 
-  const activeHint = getSocraticHint(currentChapter?.slug || 'default');
-  const isPassed = currentChapter ? progressTracker.completedChapterIds.includes(currentChapter.slug) : false;
-  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: progressTracker.failedAttempts });
-
-  const activeModuleTitle = currentChapter
-    ? chapterLifecycle.modules.find((m) => m.slug === currentChapter.moduleSlug)?.title
-    : undefined;
-
-  const trackTitle = initialTrackSlug === 'typescript' ? 'TypeScript Mastery' : 'Go Mastery';
+  const currentChapter = session.currentChapter;
 
   return (
     <div className="h-[100dvh] min-h-[100dvh] w-full max-w-full bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
       {/* Top Terminal Emulator Titlebar Header */}
       <TerminalHeader
-        trackTitle={trackTitle}
-        activeTrackSlug={initialTrackSlug}
-        activeModuleTitle={activeModuleTitle}
-        streakDays={progressTracker.streakDays}
+        trackTitle={trackCfg.title}
+        activeTrackSlug={trackSlug}
+        activeModuleTitle={session.activeModuleTitle}
+        streakDays={session.streakDays}
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenSearch={() => setIsPaletteOpen(true)}
@@ -211,9 +115,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
         <div className="hidden lg:flex h-full">
           <SidebarNav
             width={sidebarWidth}
-            modules={chapterLifecycle.modules}
+            modules={session.modules}
             currentChapter={currentChapter}
-            completedChapterIds={progressTracker.completedChapterIds}
+            completedChapterIds={session.completedChapterIds}
             onSelectChapter={handleSelectChapter}
           />
           {/* Desktop Sidebar Drag Resizer */}
@@ -236,9 +140,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
             />
             <div className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-zinc-50 dark:bg-[#09090b] shadow-2xl lg:hidden flex flex-col">
               <SidebarNav
-                modules={chapterLifecycle.modules}
+                modules={session.modules}
                 currentChapter={currentChapter}
-                completedChapterIds={progressTracker.completedChapterIds}
+                completedChapterIds={session.completedChapterIds}
                 onSelectChapter={handleSelectChapter}
                 onClose={() => setIsSidebarOpen(false)}
               />
@@ -308,9 +212,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                   {/* Race Detector Toggle */}
                   {currentChapter?.type !== 'reading' && (
                     <button
-                      onClick={() => challengeSession.toggleRaceCheck()}
+                      onClick={() => session.toggleRaceCheck()}
                       className={`px-2 py-0.5 rounded border text-[11px] font-mono transition-colors cursor-pointer ${
-                        challengeSession.enableRaceCheck
+                        session.enableRaceCheck
                           ? 'border-red-500 bg-red-500/10 text-red-500 font-bold'
                           : 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
                       }`}
@@ -320,7 +224,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                     </button>
                   )}
 
-                  {isPassed && (
+                  {session.isPassed && (
                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
                       [✓ COMPLETED]
                     </span>
@@ -347,7 +251,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
 
               {currentChapter?.type === 'reading' ? (
                 <button
-                  onClick={handleMarkAsRead}
+                  onClick={session.markAsRead}
                   className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded shadow transition-colors cursor-pointer"
                 >
                   <span>[MARK AS READ &amp; CONTINUE]</span>
@@ -355,12 +259,12 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                 </button>
               ) : (
                 <button
-                  onClick={handleRun}
-                  disabled={challengeSession.isLoading}
+                  onClick={session.run}
+                  disabled={session.isLoading}
                   className="flex items-center gap-1.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-100 dark:text-zinc-900 font-bold text-xs px-4 py-1.5 rounded transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <Play size={13} fill="currentColor" />
-                  <span>{challengeSession.isLoading ? '[EXECUTING...]' : '[RUN TESTS]'}</span>
+                  <span>{session.isLoading ? '[EXECUTING...]' : '[RUN TESTS]'}</span>
                 </button>
               )}
             </div>
@@ -399,70 +303,70 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                 <div className="h-9 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-800 px-3 flex items-center justify-between text-xs font-mono select-none shrink-0">
                   <div className="flex items-center gap-1 overflow-x-auto">
                     <button
-                      onClick={() => challengeSession.selectTab('code')}
+                      onClick={() => session.selectTab('code')}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
-                        challengeSession.activeTab === 'code'
+                        session.activeTab === 'code'
                           ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={12} /> {initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}
+                      <Code2 size={12} /> {trackCfg.codeFile}
                     </button>
                     <button
-                      onClick={() => challengeSession.selectTab('test')}
+                      onClick={() => session.selectTab('test')}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors cursor-pointer ${
-                        challengeSession.activeTab === 'test'
+                        session.activeTab === 'test'
                           ? 'bg-zinc-200 dark:bg-[#1e1e1e] text-zinc-950 dark:text-zinc-100 font-bold border border-zinc-400 dark:border-zinc-700'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={12} /> {initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}
+                      <Code2 size={12} /> {trackCfg.testFile}
                     </button>
                     <button
-                      onClick={() => isUnlocked && challengeSession.selectTab('solution')}
-                      disabled={!isUnlocked}
+                      onClick={() => session.isUnlocked && session.selectTab('solution')}
+                      disabled={!session.isUnlocked}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors ${
-                        challengeSession.activeTab === 'solution'
+                        session.activeTab === 'solution'
                           ? 'bg-emerald-950 text-emerald-300 font-bold border border-emerald-700'
-                          : isUnlocked
+                          : session.isUnlocked
                           ? 'text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer'
                           : 'text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50'
                       }`}
                     >
-                      {isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
+                      {session.isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
                     </button>
                   </div>
                 </div>
 
                 <div className="flex-1">
-                  {challengeSession.activeTab === 'code' ? (
+                  {session.activeTab === 'code' ? (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-code`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
-                      path={`${currentChapter?.slug || 'default'}/${initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}`}
+                      filename={trackCfg.codeFile}
+                      language={trackCfg.language}
+                      path={`${currentChapter?.slug || 'default'}/${trackCfg.codeFile}`}
                       theme={monacoTheme}
-                      value={challengeSession.code}
-                      onChange={(v) => challengeSession.updateCode(v || '', currentChapter?.slug)}
+                      value={session.code}
+                      onChange={(v) => session.updateCode(v || '', currentChapter?.slug)}
                     />
-                  ) : challengeSession.activeTab === 'test' ? (
+                  ) : session.activeTab === 'test' ? (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-test`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
-                      path={`${currentChapter?.slug || 'default'}/${initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}`}
+                      filename={trackCfg.testFile}
+                      language={trackCfg.language}
+                      path={`${currentChapter?.slug || 'default'}/${trackCfg.testFile}`}
                       theme={monacoTheme}
-                      value={challengeSession.testCode}
-                      onChange={(v) => challengeSession.updateTestCode(v || '')}
+                      value={session.testCode}
+                      onChange={(v) => session.updateTestCode(v || '')}
                     />
                   ) : (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-solution`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.ts' : 'solution.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
+                      filename={trackCfg.solutionFile}
+                      language={trackCfg.language}
                       path={`${currentChapter?.slug || 'default'}/solution`}
                       theme={monacoTheme}
-                      value={activeHint.solutionCode || '// Solution Unlocked'}
+                      value={session.activeHint.solutionCode || '// Solution Unlocked'}
                       onChange={() => {}}
                     />
                   )}
@@ -488,7 +392,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                     : 'hidden md:block'
                 }`}
               >
-                <TerminalOutput result={challengeSession.result} isLoading={challengeSession.isLoading} />
+                <TerminalOutput result={session.result} isLoading={session.isLoading} />
               </div>
             </div>
           )}
@@ -499,16 +403,16 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
       <SocraticHintModal
         isOpen={isHintOpen}
         onClose={() => setIsHintOpen(false)}
-        hint={activeHint}
-        isUnlocked={isUnlocked}
-        failedAttempts={progressTracker.failedAttempts}
+        hint={session.activeHint}
+        isUnlocked={session.isUnlocked}
+        failedAttempts={session.failedAttempts}
       />
 
       {/* Command Palette Modal (Cmd+K) */}
       <CommandPaletteModal
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
-        modules={chapterLifecycle.modules}
+        modules={session.modules}
         onSelectChapter={handleSelectChapter}
       />
     </div>

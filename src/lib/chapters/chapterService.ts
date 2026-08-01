@@ -35,3 +35,19 @@ export function findNextChapter(
   }
   return null;
 }
+
+export function resolveInitialChapter(
+  modules: ModuleMeta[],
+  currentChapter: ChapterMeta | null,
+  trackSlug: string
+): ChapterMeta | null {
+  if (modules.length === 0) return null;
+  const firstChapter = modules[0].chapters[0] ?? null;
+  if (!currentChapter) return firstChapter;
+  if (currentChapter.trackSlug !== trackSlug) return firstChapter;
+  const existsInModules = modules.some((m) =>
+    m.chapters.some((c) => c.slug === currentChapter.slug)
+  );
+  if (!existsInModules) return firstChapter;
+  return null;
+}

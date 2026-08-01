@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchModules, fetchChapter, findNextChapter } from './chapterService';
+import { fetchModules, fetchChapter, findNextChapter, resolveInitialChapter } from './chapterService';
 import { ModuleMeta, ChapterMeta } from '@/lib/content/contentEngine';
 
 describe('chapterService', () => {
@@ -183,6 +183,51 @@ describe('chapterService', () => {
     it('returns null if modules array is empty', () => {
       const next = findNextChapter([], 'ch-1');
       expect(next).toBeNull();
+    });
+  });
+
+  describe('resolveInitialChapter', () => {
+    const ch1: ChapterMeta = {
+      slug: 'ch-1',
+      title: 'Chapter 1',
+      type: 'reading',
+      moduleSlug: 'mod-1',
+      trackSlug: 'go',
+      order: 1,
+      content: '# Chapter 1',
+    };
+
+    const modules: ModuleMeta[] = [
+      {
+        slug: 'mod-1',
+        trackSlug: 'go',
+        title: 'Module 1',
+        description: 'Desc',
+        order: 1,
+        chapters: [ch1],
+      },
+    ];
+
+    it('returns null when module list is empty', () => {
+      expect(resolveInitialChapter([], null, 'go')).toBeNull();
+    });
+
+    it('returns first Chapter of first Module when currentChapter is null', () => {
+      expect(resolveInitialChapter(modules, null, 'go')).toEqual(ch1);
+    });
+
+    it('returns null when currentChapter is already valid for the given Track and present in modules', () => {
+      expect(resolveInitialChapter(modules, ch1, 'go')).toBeNull();
+    });
+
+    it('returns first Chapter of first Module when currentChapter belongs to a different Track', () => {
+      const tsChapter: ChapterMeta = { ...ch1, trackSlug: 'typescript' };
+      expect(resolveInitialChapter(modules, tsChapter, 'go')).toEqual(ch1);
+    });
+
+    it('returns first Chapter of first Module when currentChapter slug is not found in modules', () => {
+      const orphanChapter: ChapterMeta = { ...ch1, slug: 'ch-orphan' };
+      expect(resolveInitialChapter(modules, orphanChapter, 'go')).toEqual(ch1);
     });
   });
 });

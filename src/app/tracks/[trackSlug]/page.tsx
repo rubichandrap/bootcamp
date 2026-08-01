@@ -2,6 +2,7 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { getTrackDashboard } from '@/lib/tracks/trackCatalog';
 import { TrackWorkspace } from '@/components/TrackWorkspace';
+import { TrackSlug } from '@/lib/tracks/trackConfig';
 
 interface TrackDashboardProps {
   params: Promise<{ trackSlug: string }>;
@@ -25,5 +26,5 @@ export default async function TrackDashboardPage({ params }: TrackDashboardProps
     notFound();
   }
 
-  return <TrackWorkspace initialTrackSlug={trackSlug} />;
+  return <TrackWorkspace trackSlug={trackSlug as TrackSlug} />;
 }
