@@ -1,11 +1,18 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useChapterLifecycle } from '@/hooks/useChapterLifecycle';
 import { useChallengeSession } from '@/hooks/useChallengeSession';
 import { useProgressTracker } from '@/hooks/useProgressTracker';
 import { useReadingSession } from '@/hooks/useReadingSession';
-import { DEFAULT_USER_ID } from '@/lib/progress/progressTracker';
+import {
+  DEFAULT_USER_ID,
+  calculateProgressPercent,
+  RecordSubmissionInput,
+  RecordSubmissionResult,
+} from '@/lib/progress/progressTracker';
 import { resolveInitialChapter } from '@/lib/chapters/chapterService';
+import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
 import { setStoredTrack } from '@/hooks/useTrack';
+import { TrackSlug } from '@/lib/tracks/trackConfig';
 
 /**
  * useWorkspaceSession — the Workspace Session for a given Track.
@@ -17,11 +24,21 @@ import { setStoredTrack } from '@/hooks/useTrack';
  * Layout concerns (sidebar open state, mobile tabs, modals) are NOT owned here
  * — they remain in the calling component.
  */
-export function useWorkspaceSession(trackSlug: string) {
+export function useWorkspaceSession(trackSlug: TrackSlug) {
   const chapterLifecycle = useChapterLifecycle();
   const challengeSession = useChallengeSession();
   const progressTracker = useProgressTracker();
   const readingSession = useReadingSession();
+
+  // ── Shared port factory ───────────────────────────────────────────────────
+  // Eliminates the duplicated recordSubmission callback in run and markAsRead.
+  const makeRecordSubmission = useCallback(
+    (params: RecordSubmissionInput): Promise<RecordSubmissionResult | undefined> =>
+      progressTracker.recordSubmission({ ...params, trackId: trackSlug }),
+    // progressTracker.recordSubmission is a stable memoized callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [progressTracker.recordSubmission, trackSlug]
+  );
 
   // ── Effect 1: Track/Progress load ────────────────────────────────────────
   // Fires when trackSlug changes. Stores the active Track, loads Progress and
@@ -41,6 +58,9 @@ export function useWorkspaceSession(trackSlug: string) {
   // ── Effect 2: Auto-select initial Chapter ────────────────────────────────
   // Fires when Modules load or Track changes. Delegates the selection decision
   // to the pure resolveInitialChapter function from lib/chapters/chapterService.
+  // currentChapter is deliberately excluded from deps: resolveInitialChapter
+  // reads it as a snapshot, not a trigger — auto-select should only re-run when
+  // the module list or track changes, not on every chapter navigation.
   useEffect(() => {
     if (chapterLifecycle.modules.length === 0) return;
     const toSelect = resolveInitialChapter(
@@ -53,7 +73,7 @@ export function useWorkspaceSession(trackSlug: string) {
     }
     // chapterLifecycle.selectChapter is stable (empty useCallback deps).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterLifecycle.modules, chapterLifecycle.currentChapter, trackSlug]);
+  }, [chapterLifecycle.modules, trackSlug]);
 
   // ── Effect 3: Chapter-change reset ───────────────────────────────────────
   // Fires when the current Chapter slug changes. Resets the Challenge editor
@@ -102,7 +122,6 @@ export function useWorkspaceSession(trackSlug: string) {
     async (moduleSlug: string, chapterSlug: string) => {
       return chapterLifecycle.selectChapter(moduleSlug, chapterSlug, trackSlug);
     },
-    // chapterLifecycle.selectChapter is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [chapterLifecycle.selectChapter, trackSlug]
   );
@@ -113,8 +132,7 @@ export function useWorkspaceSession(trackSlug: string) {
     challengeSession.runChallengeSession(
       ch.slug,
       {
-        recordSubmission: (params) =>
-          progressTracker.recordSubmission({ ...params, trackId: trackSlug }),
+        recordSubmission: makeRecordSubmission,
         onAdvance: chapterLifecycle.advanceToNextChapter,
         incrementFailedAttempts: progressTracker.incrementFailedAttempts,
       },
@@ -124,7 +142,7 @@ export function useWorkspaceSession(trackSlug: string) {
     chapterLifecycle.currentChapter,
     chapterLifecycle.advanceToNextChapter,
     challengeSession.runChallengeSession,
-    progressTracker.recordSubmission,
+    makeRecordSubmission,
     progressTracker.incrementFailedAttempts,
     trackSlug,
   ]);
@@ -135,8 +153,7 @@ export function useWorkspaceSession(trackSlug: string) {
     readingSession.markAsRead(
       ch.slug,
       {
-        recordSubmission: (params) =>
-          progressTracker.recordSubmission({ ...params, trackId: trackSlug }),
+        recordSubmission: makeRecordSubmission,
         onAdvance: chapterLifecycle.advanceToNextChapter,
       },
       trackSlug
@@ -145,20 +162,50 @@ export function useWorkspaceSession(trackSlug: string) {
     chapterLifecycle.currentChapter,
     chapterLifecycle.advanceToNextChapter,
     readingSession.markAsRead,
-    progressTracker.recordSubmission,
+    makeRecordSubmission,
     trackSlug,
   ]);
+
+  // ── Derived domain values ─────────────────────────────────────────────────
+  // Computed here rather than in the layout shell — these are domain queries,
+  // not layout concerns.
+
+  const allChapterIds = useMemo(
+    () => chapterLifecycle.modules.flatMap((m) => m.chapters.map((c) => c.slug)),
+    [chapterLifecycle.modules]
+  );
+
+  const isPassed = currentChapter
+    ? progressTracker.completedChapterIds.includes(currentChapter.slug)
+    : false;
+
+  const isUnlocked = isSolutionUnlocked({
+    passed: isPassed,
+    failedAttempts: progressTracker.failedAttempts,
+  });
+
+  const activeModuleTitle = currentChapter
+    ? chapterLifecycle.modules.find((m) => m.slug === currentChapter.moduleSlug)?.title
+    : undefined;
+
+  const activeHint = getSocraticHint(currentChapter?.slug || 'default');
+
+  const progressPercent = calculateProgressPercent(
+    progressTracker.completedChapterIds,
+    allChapterIds
+  );
 
   // ── Interface ─────────────────────────────────────────────────────────────
 
   return {
     // Chapter navigation
     modules: chapterLifecycle.modules,
-    currentChapter: chapterLifecycle.currentChapter,
+    currentChapter,
     // Progress display
     completedChapterIds: progressTracker.completedChapterIds,
     streakDays: progressTracker.streakDays,
     failedAttempts: progressTracker.failedAttempts,
+    progressPercent,
     // Challenge editor state
     code: challengeSession.code,
     testCode: challengeSession.testCode,
@@ -166,6 +213,11 @@ export function useWorkspaceSession(trackSlug: string) {
     result: challengeSession.result,
     isLoading: challengeSession.isLoading,
     enableRaceCheck: challengeSession.enableRaceCheck,
+    // Derived domain values (domain queries, not layout)
+    isPassed,
+    isUnlocked,
+    activeModuleTitle,
+    activeHint,
     // Actions
     selectChapter,
     run,

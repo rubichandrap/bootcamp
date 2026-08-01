@@ -9,18 +9,18 @@ import { MdxRenderer } from '@/components/MdxRenderer';
 import { TerminalHeader } from '@/components/TerminalHeader';
 import { SocraticHintModal } from '@/components/SocraticHintModal';
 import { CommandPaletteModal } from '@/components/CommandPaletteModal';
-import { getSocraticHint, isSolutionUnlocked } from '@/lib/hints/socraticHints';
 import { useWorkspaceSession } from '@/hooks/useWorkspaceSession';
 import { useTheme } from '@/hooks/useTheme';
 import { useResizableLayout } from '@/hooks/useResizableLayout';
 import { setStoredTrack } from '@/hooks/useTrack';
+import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
 import { Play, Sparkles, Code2, Lock, Key, Flame, ChevronRight, BookOpen, Terminal as TerminalIcon } from 'lucide-react';
 
 interface TrackWorkspaceProps {
-  initialTrackSlug?: string;
+  trackSlug?: TrackSlug;
 }
 
-export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug = 'go' }) => {
+export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ trackSlug = 'go' }) => {
   const router = useRouter();
 
   // Layout hooks
@@ -39,7 +39,10 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
   } = useResizableLayout();
 
   // Workspace Session — owns all Chapter, Challenge, and Progress coordination
-  const session = useWorkspaceSession(initialTrackSlug);
+  const session = useWorkspaceSession(trackSlug);
+
+  // Track config — replaces all repeated track ternaries
+  const trackCfg = getTrackConfig(trackSlug);
 
   // Layout-only state
   const [isHintOpen, setIsHintOpen] = useState(false);
@@ -86,23 +89,15 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [session.currentChapter, session.run, session.markAsRead, isPaletteOpen, isHintOpen]);
 
-  // Derived display values
   const currentChapter = session.currentChapter;
-  const activeHint = getSocraticHint(currentChapter?.slug || 'default');
-  const isPassed = currentChapter ? session.completedChapterIds.includes(currentChapter.slug) : false;
-  const isUnlocked = isSolutionUnlocked({ passed: isPassed, failedAttempts: session.failedAttempts });
-  const activeModuleTitle = currentChapter
-    ? session.modules.find((m) => m.slug === currentChapter.moduleSlug)?.title
-    : undefined;
-  const trackTitle = initialTrackSlug === 'typescript' ? 'TypeScript Mastery' : 'Go Mastery';
 
   return (
     <div className="h-[100dvh] min-h-[100dvh] w-full max-w-full bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col overflow-hidden font-mono select-none">
       {/* Top Terminal Emulator Titlebar Header */}
       <TerminalHeader
-        trackTitle={trackTitle}
-        activeTrackSlug={initialTrackSlug}
-        activeModuleTitle={activeModuleTitle}
+        trackTitle={trackCfg.title}
+        activeTrackSlug={trackSlug}
+        activeModuleTitle={session.activeModuleTitle}
         streakDays={session.streakDays}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -229,7 +224,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                     </button>
                   )}
 
-                  {isPassed && (
+                  {session.isPassed && (
                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
                       [✓ COMPLETED]
                     </span>
@@ -315,7 +310,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={12} /> {initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}
+                      <Code2 size={12} /> {trackCfg.codeFile}
                     </button>
                     <button
                       onClick={() => session.selectTab('test')}
@@ -325,20 +320,20 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      <Code2 size={12} /> {initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}
+                      <Code2 size={12} /> {trackCfg.testFile}
                     </button>
                     <button
-                      onClick={() => isUnlocked && session.selectTab('solution')}
-                      disabled={!isUnlocked}
+                      onClick={() => session.isUnlocked && session.selectTab('solution')}
+                      disabled={!session.isUnlocked}
                       className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded transition-colors ${
                         session.activeTab === 'solution'
                           ? 'bg-emerald-950 text-emerald-300 font-bold border border-emerald-700'
-                          : isUnlocked
+                          : session.isUnlocked
                           ? 'text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer'
                           : 'text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50'
                       }`}
                     >
-                      {isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
+                      {session.isUnlocked ? <Key size={12} /> : <Lock size={12} />} [SOLUTION]
                     </button>
                   </div>
                 </div>
@@ -347,9 +342,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                   {session.activeTab === 'code' ? (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-code`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
-                      path={`${currentChapter?.slug || 'default'}/${initialTrackSlug === 'typescript' ? 'solution.ts' : 'main.go'}`}
+                      filename={trackCfg.codeFile}
+                      language={trackCfg.language}
+                      path={`${currentChapter?.slug || 'default'}/${trackCfg.codeFile}`}
                       theme={monacoTheme}
                       value={session.code}
                       onChange={(v) => session.updateCode(v || '', currentChapter?.slug)}
@@ -357,9 +352,9 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                   ) : session.activeTab === 'test' ? (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-test`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
-                      path={`${currentChapter?.slug || 'default'}/${initialTrackSlug === 'typescript' ? 'solution.test.ts' : 'main_test.go'}`}
+                      filename={trackCfg.testFile}
+                      language={trackCfg.language}
+                      path={`${currentChapter?.slug || 'default'}/${trackCfg.testFile}`}
                       theme={monacoTheme}
                       value={session.testCode}
                       onChange={(v) => session.updateTestCode(v || '')}
@@ -367,11 +362,11 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
                   ) : (
                     <CodeEditor
                       key={`${currentChapter?.slug || 'default'}-solution`}
-                      filename={initialTrackSlug === 'typescript' ? 'solution.ts' : 'solution.go'}
-                      language={initialTrackSlug === 'typescript' ? 'typescript' : 'go'}
+                      filename={trackCfg.solutionFile}
+                      language={trackCfg.language}
                       path={`${currentChapter?.slug || 'default'}/solution`}
                       theme={monacoTheme}
-                      value={activeHint.solutionCode || '// Solution Unlocked'}
+                      value={session.activeHint.solutionCode || '// Solution Unlocked'}
                       onChange={() => {}}
                     />
                   )}
@@ -408,8 +403,8 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ initialTrackSlug
       <SocraticHintModal
         isOpen={isHintOpen}
         onClose={() => setIsHintOpen(false)}
-        hint={activeHint}
-        isUnlocked={isUnlocked}
+        hint={session.activeHint}
+        isUnlocked={session.isUnlocked}
         failedAttempts={session.failedAttempts}
       />
 
