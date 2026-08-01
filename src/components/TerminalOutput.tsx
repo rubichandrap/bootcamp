@@ -71,11 +71,10 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
       {isLoading ? (
         <div className="flex items-center justify-center flex-1 text-zinc-400 gap-2 text-xs font-mono">
           <span className="animate-spin text-zinc-300">/</span>
-          <span>$ go test -v -benchmem ./... (executing...)</span>
+          <span>executing...</span>
         </div>
       ) : !result ? (
         <div className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-xs font-mono space-y-1">
-          <div>$ go test -v ./...</div>
           <div className="text-[11px] text-zinc-600 dark:text-zinc-600">
             [Press ⌘↵ or click RUN to execute code against RCE Engine]
           </div>
@@ -111,9 +110,6 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
           {/* Test Breakdown Tab */}
           {activeTab === 'tests' && result.tests.length > 0 && (
             <div className="space-y-2">
-              <div className="text-[11px] text-zinc-500 font-bold uppercase tracking-wide">
-                $ go test -v
-              </div>
               {result.tests.map((test) => (
                 <div
                   key={test.name}
@@ -152,9 +148,6 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ result, isLoadin
           {/* Performance & Allocations Tab */}
           {activeTab === 'perf' && (
             <div className="space-y-2.5 font-mono">
-              <div className="text-[11px] text-zinc-500 font-bold uppercase">
-                $ go test -benchmem
-              </div>
 
               {result.bench?.hasBench ? (
                 <div className="space-y-2">
