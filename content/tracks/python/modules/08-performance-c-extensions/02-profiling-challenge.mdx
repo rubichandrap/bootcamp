@@ -1,0 +1,71 @@
+---
+title: "Profiling Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  import cProfile
+  import pstats
+  import time
+  import timeit
+
+
+  # elapsed_ms(fn, *args, iterations=100) runs fn(*args) iterations times
+  # and returns the total elapsed milliseconds as a float.
+  def elapsed_ms(fn, *args, iterations=100):
+      # TODO: time perf_counter around a loop that calls fn(*args)
+      # iterations times, then return the milliseconds.
+      return 0.0
+
+
+  # call_count(fn, *args) profiles fn(*args) with cProfile and returns the
+  # total number of function calls recorded.
+  def call_count(fn, *args):
+      # TODO: profile fn(*args), then return pstats.Stats(profile).total_calls.
+      return 0
+
+
+  # timeit_seconds(fn, number=1000) benchmarks fn with timeit.timeit and
+  # returns the total seconds as a float.
+  def timeit_seconds(fn, number=1000):
+      # TODO: return timeit.timeit(fn, number=number).
+      return 0.0
+testCode: |
+  from solution import call_count, elapsed_ms, timeit_seconds
+
+
+  def test_elapsed_ms_returns_float():
+      assert isinstance(elapsed_ms(lambda: None), float)
+
+
+  def test_elapsed_ms_slow_is_slower():
+      fast = elapsed_ms(lambda: sum(range(100)), iterations=50)
+      slow = elapsed_ms(lambda: sum(range(300_000)), iterations=50)
+      assert fast < slow
+
+
+  def test_call_count_returns_int():
+      assert isinstance(call_count(lambda: None), int)
+
+
+  def test_call_count_grows_with_work():
+      def fib(n):
+          return n if n < 2 else fib(n - 1) + fib(n - 2)
+
+      assert call_count(fib, 10) > call_count(fib, 6)
+
+
+  def test_timeit_seconds_returns_positive():
+      seconds = timeit_seconds(lambda: sum(range(10)), number=1000)
+      assert isinstance(seconds, float)
+      assert seconds > 0
+---
+
+# Profiling Challenge
+
+Now that you have read about `perf_counter`, `timeit`, and `cProfile`, apply what you learned!
+
+## Tasks
+
+1. Implement `elapsed_ms(fn, *args, iterations=100)` to time a loop calling `fn(*args)` with `time.perf_counter` and return the total milliseconds as a float.
+2. Implement `call_count(fn, *args)` to run `fn(*args)` under `cProfile.Profile` and return `pstats.Stats(profile).total_calls`.
+3. Implement `timeit_seconds(fn, number=1000)` to benchmark `fn` with `timeit.timeit` and return the total seconds.

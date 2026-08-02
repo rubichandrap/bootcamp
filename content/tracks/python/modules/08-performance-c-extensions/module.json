@@ -1,0 +1,5 @@
+{
+  "title": "Performance & C-Extensions",
+  "description": "Profile slow code, understand memory and the GIL, and reach native speed with ctypes and Cython.",
+  "order": 8
+}

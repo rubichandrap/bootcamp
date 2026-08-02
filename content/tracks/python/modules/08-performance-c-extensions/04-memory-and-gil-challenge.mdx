@@ -1,0 +1,92 @@
+---
+title: "Memory & the GIL Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  import sys
+
+
+  # refcount(obj) returns the number of live references to obj, using
+  # sys.getrefcount (which counts its own temporary argument).
+  def refcount(obj):
+      # TODO: return sys.getrefcount(obj) - 1.
+      return 0
+
+
+  # size_bytes(obj) returns the memory that obj itself occupies, via
+  # sys.getsizeof.
+  def size_bytes(obj):
+      # TODO: return sys.getsizeof(obj).
+      return 0
+
+
+  # same_object(a, b) returns True when a and b refer to the same object
+  # (identity via is), not merely equal objects.
+  def same_object(a, b):
+      # TODO: return a is b.
+      return False
+
+
+  # parallel_strategy(kind) returns "thread" for I/O-bound work (the GIL is
+  # released while waiting, so threads overlap) and "process" for CPU-bound
+  # pure-Python work (the GIL serializes threads).
+  def parallel_strategy(kind):
+      # TODO: "io" and "network" -> "thread"; anything else -> "process".
+      return "process"
+testCode: |
+  from solution import parallel_strategy, refcount, same_object, size_bytes
+
+
+  def test_refcount_returns_int():
+      l = []
+      assert isinstance(refcount(l), int)
+
+
+  def test_refcount_rises_with_reference():
+      l = [1, 2, 3]
+      base = refcount(l)
+      alias = l
+      assert refcount(l) == base + 1
+
+
+  def test_size_bytes_returns_int():
+      assert isinstance(size_bytes("hello"), int)
+
+
+  def test_size_bytes_grows_with_elements():
+      assert size_bytes([1, 2, 3]) > size_bytes([])
+
+
+  def test_same_object_aliased():
+      l = [1, 2, 3]
+      assert same_object(l, l) is True
+
+
+  def test_same_object_distinct_lists():
+      assert same_object([1, 2, 3], [1, 2, 3]) is False
+
+
+  def test_same_object_small_int_interned():
+      assert same_object(5, 5) is True
+
+
+  def test_parallel_strategy_io():
+      assert parallel_strategy("io") == "thread"
+      assert parallel_strategy("network") == "thread"
+
+
+  def test_parallel_strategy_cpu():
+      assert parallel_strategy("cpu") == "process"
+      assert parallel_strategy("math") == "process"
+---
+
+# Memory & the GIL Challenge
+
+Now that you have read about reference counting, memory measurement, identity, and the GIL, apply what you learned!
+
+## Tasks
+
+1. Implement `refcount(obj)` to return the live reference count of `obj` using `sys.getrefcount` (subtracting its own temporary argument).
+2. Implement `size_bytes(obj)` to return the memory `obj` occupies using `sys.getsizeof`.
+3. Implement `same_object(a, b)` to return whether `a` and `b` are the same object (identity via `is`).
+4. Implement `parallel_strategy(kind)` returning `"thread"` for I/O-bound workloads (the GIL is released while waiting) and `"process"` for CPU-bound pure-Python workloads (the GIL serializes threads).

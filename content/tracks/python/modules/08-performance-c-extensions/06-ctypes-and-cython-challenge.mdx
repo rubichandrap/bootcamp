@@ -1,0 +1,81 @@
+---
+title: "C-Extensions Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  import ctypes
+  import ctypes.util
+
+
+  # load_libm() loads the platform's C math library and returns the CDLL.
+  # When find_library cannot resolve it, fall back to the well-known Linux
+  # name so the load never silently fails.
+  def load_libm():
+      name = ctypes.util.find_library("m") or "libm.so.6"
+      return ctypes.CDLL(name)
+
+
+  # c_sqrt(x) calls libm's sqrt through ctypes, declaring a double argument
+  # and a double return, and returns the result as a float.
+  def c_sqrt(x):
+      # TODO: declare argtypes/restype on libm.sqrt, then call it with
+      # ctypes.c_double(x).
+      return 0.0
+
+
+  # c_pow(base, exp) calls libm's pow through ctypes, declaring two double
+  # arguments and a double return.
+  def c_pow(base, exp):
+      # TODO: declare argtypes/restype on libm.pow, then call it with two
+      # c_double values.
+      return 0.0
+
+
+  # has_function(lib, name) returns True when the loaded library exposes a
+  # function named name.
+  def has_function(lib, name):
+      # TODO: return hasattr(lib, name).
+      return False
+testCode: |
+  import math
+
+  from solution import c_pow, c_sqrt, has_function, load_libm
+
+
+  def test_load_libm_exposes_sqrt():
+      assert hasattr(load_libm(), "sqrt") is True
+
+
+  def test_c_sqrt_perfect_square():
+      assert c_sqrt(81) == 9.0
+
+
+  def test_c_sqrt_matches_math():
+      assert math.isclose(c_sqrt(2), math.sqrt(2))
+
+
+  def test_c_pow():
+      assert c_pow(2, 10) == 1024.0
+
+
+  def test_c_pow_matches_math():
+      assert math.isclose(c_pow(3, 0.5), 3 ** 0.5)
+
+
+  def test_has_function_present():
+      assert has_function(load_libm(), "sqrt") is True
+
+
+  def test_has_function_absent():
+      assert has_function(load_libm(), "definitely_not_a_fn_xyz") is False
+---
+
+# C-Extensions Challenge
+
+Now that you have read about `ctypes` and Cython, apply what you learned by calling a native C library through ctypes!
+
+## Tasks
+
+1. Implement `c_sqrt(x)` to call `libm.sqrt` through ctypes with a declared `argtypes`/`restype`, wrapping the argument in `ctypes.c_double`.
+2. Implement `c_pow(base, exp)` to call `libm.pow` through ctypes with two declared double arguments.
+3. Implement `has_function(lib, name)` to return whether the loaded library exposes a function with that name.

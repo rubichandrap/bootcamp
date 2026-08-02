@@ -1,0 +1,87 @@
+---
+title: "Profiling"
+type: "reading"
+order: 1
+---
+
+# Profiling
+
+Programmers are bad at guessing where their code is slow. The reliable way to find a bottleneck is to **measure** it — and Python's standard library ships the measuring tools: `time.perf_counter` for single spots, `timeit` for microbenchmarks, and `cProfile` for whole programs.
+
+## Timing One Spot: `time.perf_counter`
+
+To time a specific piece of code, take a monotonic clock reading before and after. `time.perf_counter` returns a high-resolution clock that is unaffected by the wall clock (no NTP jumps), which makes it ideal for elapsed-time measurement:
+
+```python
+import time
+
+t0 = time.perf_counter()
+result = sum(range(10_000_000))
+elapsed = time.perf_counter() - t0
+```
+
+`time.perf_counter_ns()` returns the same clock in nanoseconds as an integer, avoiding float rounding on very short timings. Wrap the call in a loop and divide when the work is too fast to time once.
+
+## Microbenchmarks: `timeit`
+
+Hand-rolled timing loops are easy to get wrong — the loop itself, the function-call overhead, and system noise all leak in. The `timeit` module automates a well-formed measurement: it runs a statement many times and returns the total seconds:
+
+```python
+import timeit
+
+seconds = timeit.timeit("sum(range(100))", number=10_000)
+```
+
+`timeit.timeit` takes either a string of code or a callable, and `number` says how many runs to batch. `timeit.repeat` returns a list of repeated timings so you can take the minimum and discard startup noise. Use `timeit` when comparing small alternatives — which way to sort, which container to use.
+
+## Whole-Program Profiling: `cProfile`
+
+For "where is all the time going?" across a real run, use **`cProfile`** — a profiler that records every function call with call counts and times:
+
+```python
+import cProfile, pstats
+
+p = cProfile.Profile()
+p.enable()
+run_workload()
+p.disable()
+
+stats = pstats.Stats(p)
+stats.sort_stats("cumtime")
+stats.print_stats()
+```
+
+Each function gets a row with:
+- **`ncalls`** — how many times the function was called
+- **`tottime`** — total time spent *inside* the function (excluding calls it made)
+- **`cumtime`** — total time including everything it called
+
+`Stats.total_calls` gives the raw call count, and sorting by `tottime` or `cumtime` surfaces the real bottleneck. The function with the biggest `cumtime` is where your program spends its time, transitively.
+
+## A Worked Profile
+
+A profile of a `sum`-heavy script looks like this:
+
+```text
+         1000003 function calls in 0.410 seconds
+
+   ncalls  tottime  cumtime  percall  filename:lineno(function)
+        1    0.000    0.410    0.410  <stdin>:1(<module>)
+  1000000    0.410    0.410    0.000  {built-in method builtins.sum}
+```
+
+One million calls to `sum` account for essentially all of the 0.41 seconds — that is the hot spot. The line counts (`1` module-level call, `1000000` calls into the built-in) come straight from `Stats.total_calls`, so counting calls gives you the same signal even before you trust the clock. For reading a spot timing, remember that `perf_counter` returns seconds; multiply by `1000` for milliseconds or use `perf_counter_ns` for an integer count of nanoseconds.
+
+## The Profile-Then-Optimize Loop
+
+Optimization without measurement is guesswork. The disciplined loop:
+
+1. **Profile** the whole run and find the function with the largest `cumtime`.
+2. **Microbenchmark** that function's internals with `timeit` to compare candidate rewrites.
+3. **Re-profile** after the change to confirm the improvement is real and the bottleneck moved.
+
+Optimize the hot spot, not the cold code — and measure before *and* after, because intuition is the least reliable instrument in the box.
+
+## The Golden Rule
+
+`perf_counter` times one spot, `timeit` compares small alternatives reliably, and `cProfile` reveals the call counts and cumulative times that show where a whole program actually spends its time. In the next chapter you will time functions, count calls under the profiler, and benchmark with `timeit`.

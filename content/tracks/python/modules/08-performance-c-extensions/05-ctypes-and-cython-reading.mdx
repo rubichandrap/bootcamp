@@ -1,0 +1,71 @@
+---
+title: "C-Extensions: ctypes & Cython"
+type: "reading"
+order: 5
+---
+
+# C-Extensions: ctypes & Cython
+
+Pure Python is expressive but slow on tight loops — each bytecode step, each object allocation, each dynamic lookup adds up. When profiling proves a hot spot, the expert's escape hatch is **native code**: call an existing C library at runtime with **`ctypes`**, or compile Python-like code to a C extension with **`Cython`**.
+
+## ctypes: Calling C Libraries from Python
+
+**`ctypes`** is a standard-library module that loads shared C libraries and calls their functions directly from Python — no compiler, no build step. Load a library, set argument and return types, and call:
+
+```python
+import ctypes
+import ctypes.util
+
+libm = ctypes.CDLL(ctypes.util.find_library("m"))   # the C math library
+
+libm.sqrt.argtypes = [ctypes.c_double]              # one double in
+libm.sqrt.restype = ctypes.c_double                 # one double out
+libm.sqrt(ctypes.c_double(81.0))                    # 9.0
+```
+
+`ctypes.util.find_library("m")` locates the platform's math library (`libm.so.6` on Linux), and `ctypes.CDLL(path)` loads it. Every C function needs its signature declared: `argtypes` is the list of input types, `restype` the return type. The scalar types live in `ctypes` — `c_double`, `c_int`, `c_float`, `c_char_p` — and values are wrapped explicitly, e.g. `ctypes.c_double(81.0)`. Functions without declared signatures default to assuming `int` everywhere, which silently corrupts floats — so the declarations are mandatory, not optional.
+
+Two robustness habits. First, a CDLL raises `AttributeError` when you access a symbol it does not have, so you can probe whether a library exposes a function with the ordinary built-in `hasattr`:
+
+```python
+libm = load_libm()
+hasattr(libm, "sqrt")     # True
+hasattr(libm, "nope")     # False — no such symbol
+```
+
+Second, `find_library` can return `None` on machines without the lookup tooling (or on some minimal systems). Fall back to a known library name rather than letting the load fail:
+
+```python
+name = ctypes.util.find_library("m") or "libm.so.6"
+libm = ctypes.CDLL(name)
+```
+
+## What ctypes Is Good For
+
+ctypes is for **using** code that already exists as a compiled library: `libm` math, `libc` string and system calls, and any vendor `.so`/`.dll`/`.dylib`. The GIL is released while the native function runs, so CPU-heavy C calls do not block other Python threads. The cost: crossing the Python↔C boundary is not free, and per-call marshaling of arguments means ctypes suits chunky calls (a few big operations) better than millions of tiny ones.
+
+## Cython: Compiling Python for Speed
+
+**`Cython`** takes a different route: you write Python — or Python with type annotations — in a `.pyx` file, and a compiler turns it into a C extension module that runs without the interpreter's per-step overhead:
+
+```cython
+# fib.pyx
+def fib(int n):
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+```
+
+The `int n` declaration lets Cython emit C-level arithmetic instead of Python's object dispatch. A `.pyx` file is built with `cythonize` plus a compiler toolchain (gcc/clang), producing a `.so` you `import` like any module. Cython is also the layer behind many fast Python libraries — and its compiled functions can **release the GIL** for the duration of a pure-C block, enabling real parallel native work.
+
+## Choosing an Escape Hatch
+
+- **ctypes** — call an existing compiled library now, no build step; best for occasional large native calls.
+- **Cython** — compile your own annotated Python into a fast C extension; best when your own loop is the bottleneck and you control the source.
+- **Both** — the target is the same: work done in C, outside the interpreter's dynamic overhead, often with the GIL released.
+
+A note on the sandbox: Cython requires a compiler and a build step, so this module's challenge exercises the **ctypes** path — loading a native library, declaring its signature, and calling it — which is exactly how you add native speed to a running Python process.
+
+## The Golden Rule
+
+Profile to find the hot spot, then reach for native code: `ctypes` loads existing C libraries at runtime with declared `argtypes`/`restype` signatures, while Cython compiles your annotated Python into a C extension — and both can run without the GIL. In the next chapter you will load a native library and call its functions through ctypes.
