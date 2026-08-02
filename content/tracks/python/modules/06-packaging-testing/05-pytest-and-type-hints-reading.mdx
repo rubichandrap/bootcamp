@@ -1,0 +1,117 @@
+---
+title: "pytest & Type Hints"
+type: "reading"
+order: 5
+---
+
+# pytest & Type Hints
+
+A project is only as trustworthy as the tests that verify it. The de-facto Python testing tool is **pytest** — a runner that discovers plain functions, treats every `assert` as a check, and reports exactly what failed. **Type hints** are the other half of verifiability: they document — and, with a type checker, enforce — what each function accepts and returns.
+
+## Test Discovery: Simple Functions
+
+pytest discovers tests by name. Files matching `test_*.py` are collected, and inside them any function named `test_*` is a test. A test passes when its body finishes without raising; the standard way to check behavior is `assert`:
+
+```python
+def add(a, b):
+    return a + b
+
+
+def test_add():
+    assert add(2, 3) == 5
+```
+
+Run the suite from the project root:
+
+```bash
+python -m pytest
+```
+
+## `assert` Rewriting
+
+pytest **rewrites** the `assert` statement so that a failure tells you the values involved, not just "assertion failed":
+
+```text
+>   assert add(2, 3) == 6
+E   assert 5 == 6
+E    +  where 5 = add(2, 3)
+```
+
+The `+ where` line shows exactly which call produced the offending value — this is why plain `assert`, with no assertion library, is enough for pytest.
+
+## Comparisons: `pytest.approx`
+
+Floating-point math rarely compares exactly. `2 * 0.1` is `0.2` in spirit but not in bits, so `0.1 + 0.1 == 0.2` is `False`. pytest provides `approx` for tolerant comparison:
+
+```python
+import pytest
+
+def test_pi():
+    assert 3.14159 == pytest.approx(3.14159265, abs=1e-4)
+```
+
+`approx` passes when the values are close within a relative or absolute tolerance. For testable code, the same idea is often exposed as a plain helper — a function `nearly_equal(a, b, tol)` returning `True` when `abs(a - b) <= tol`.
+
+## Parametrized Tests and Fixtures
+
+**`@pytest.mark.parametrize`** runs one test body over many inputs — write the case once, get many test results:
+
+```python
+import pytest
+
+@pytest.mark.parametrize("n,expected", [(1, 2), (2, 4), (3, 6)])
+def test_double(n, expected):
+    assert n * 2 == expected
+```
+
+**Fixtures** provide setup and teardown: a function decorated with `@pytest.fixture` supplies a value that tests receive by declaring it as a parameter:
+
+```python
+import pytest
+
+@pytest.fixture
+def sample():
+    return [3, 1, 2]
+
+def test_sorted(sample):
+    assert sorted(sample) == [1, 2, 3]
+```
+
+## Type Hints: Annotations at the Signature
+
+**Type hints** attach types to function parameters and return values. They are ordinary syntax evaluated (and stored) at definition time — Python does not enforce them at runtime, but they are real data you can inspect:
+
+```python
+def total(prices: list[float]) -> float:
+    return sum(prices)
+
+
+total.__annotations__
+# {'prices': list[float], 'return': float}
+```
+
+`__annotations__` is a plain dict mapping each parameter name (and `'return'`) to its type. Because hints are data, tests can assert them directly.
+
+## Common Hints
+
+- `-> int`, `-> str`, `-> bool` for simple returns
+- `list[float]`, `dict[str, int]` for containers
+- `float | None` (or `Optional[float]`) for a value that may be missing
+- `Callable[[int], int]` for a function taking an `int` and returning an `int`
+
+```python
+from collections.abc import Callable
+
+def multiplier(factor: int) -> Callable[[int], int]:
+    return lambda x: x * factor
+```
+
+`float | None` is Python 3.10+ syntax; `Optional[float]` from `typing` means the same and works on older versions. The challenges in this module verify your hints against the modern `|` form, so write `float | None` (and `dict[str, ...]`, `list[...]`) rather than the `Optional` / `Dict` aliases.
+
+## Why Hints Help Tests
+
+Hints make the contract explicit, so a test author knows what to pass and what to expect. A function annotated `average(values: list[float]) -> float | None` tells the tester that `values` may be any list, that it might return `None`, and therefore that the empty-list case deserves a test. The hints and the tests reinforce each other.
+
+## The Golden Rule
+
+Write one `test_` function per behavior, rely on `assert` and `approx` for tolerant math, fan cases out with `parametrize`, share setup with fixtures, and annotate signatures so tests can verify the contract. In the next chapter you will write annotated functions and a tolerant-comparison helper, and verify the hints themselves.

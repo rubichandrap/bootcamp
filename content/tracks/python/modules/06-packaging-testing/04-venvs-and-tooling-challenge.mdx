@@ -1,0 +1,82 @@
+---
+title: "Virtual Environments & Tooling Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  import tomllib
+
+
+  # parse_requirements(text) parses the text of a requirements.txt file and
+  # returns a dict mapping each package name to its pinned version (or None
+  # when the package is unpinned). Blank lines and "#" comments are
+  # ignored. Exact pins use "name==version".
+  def parse_requirements(text):
+      # TODO: for each non-blank, non-comment line, split the package name
+      # from any "==" version pin.
+      return {}
+
+
+  # pinned(name, version) returns the pip-style exact pin for a package,
+  # e.g. pinned("requests", "2.31.0") -> "requests==2.31.0".
+  def pinned(name, version):
+      # TODO: return f"{name}=={version}".
+      return None
+
+
+  # project_name(pyproject_text) parses the TOML text of a pyproject.toml
+  # file with tomllib and returns the project name from its [project] table.
+  def project_name(pyproject_text):
+      # TODO: tomllib.loads(pyproject_text)["project"]["name"].
+      return None
+testCode: |
+  from solution import parse_requirements, pinned, project_name
+
+
+  def test_parse_requirements_pinned_and_unpinned():
+      text = (
+          "# runtime deps\n"
+          "requests==2.31.0\n"
+          "flask\n"
+          "pytest\n"
+      )
+      assert parse_requirements(text) == {
+          "requests": "2.31.0",
+          "flask": None,
+          "pytest": None,
+      }
+
+
+  def test_parse_requirements_ignores_blanks_and_comments():
+      text = "# only a comment\n\n\n# another\nflask==2.0\n"
+      assert parse_requirements(text) == {"flask": "2.0"}
+
+
+  def test_pinned_format():
+      assert pinned("requests", "2.31.0") == "requests==2.31.0"
+
+
+  def test_project_name():
+      toml_text = '[project]\nname = "myapp"\nversion = "1.0.0"\n'
+      assert project_name(toml_text) == "myapp"
+
+
+  def test_project_name_with_dependencies():
+      toml_text = (
+          '[project]\n'
+          'name = "webapp"\n'
+          'dependencies = [\n'
+          '  "requests==2.31.0",\n'
+          ']\n'
+      )
+      assert project_name(toml_text) == "webapp"
+---
+
+# Virtual Environments & Tooling Challenge
+
+Now that you have read about virtual environments, `pip`, `requirements.txt`, and `pyproject.toml`, apply what you learned!
+
+## Tasks
+
+1. Implement `parse_requirements(text)` to turn the text of a `requirements.txt` file into a dict of package names to pinned versions (or `None`), ignoring blank lines and `#` comments.
+2. Implement `pinned(name, version)` to return the pip-style exact pin, e.g. `"requests==2.31.0"`.
+3. Implement `project_name(pyproject_text)` to parse TOML with `tomllib` and return the project's name from its `[project]` table.

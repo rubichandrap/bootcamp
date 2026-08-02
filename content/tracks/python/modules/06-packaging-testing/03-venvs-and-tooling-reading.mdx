@@ -1,0 +1,107 @@
+---
+title: "Virtual Environments & Project Tooling"
+type: "reading"
+order: 3
+---
+
+# Virtual Environments & Project Tooling
+
+A real Python project is more than code: it depends on specific versions of third-party packages, and those dependencies are what the project is built against. Managing that is the job of **virtual environments** and a few small project files.
+
+## The Problem: Dependency Conflicts
+
+Two projects can need different versions of the same package — one uses `requests 2.x`, the other pins `requests 1.x`. If they shared one global install, installing either would break the other. The fix is to give each project **its own isolated Python environment**.
+
+## Virtual Environments: An Isolated Python
+
+A **virtual environment** (venv) is a self-contained directory holding its own Python interpreter and its own copy of the package install area (`site-packages`). Create one with the standard-library `venv` module:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Linux/macOS  (Windows: .venv\Scripts\activate)
+```
+
+Once activated, `python` and `pip` resolve to the environment's copies, and `pip install` puts packages only inside it. Your project's dependencies never leak into other projects.
+
+## Detecting an Active Environment
+
+Python itself can tell you whether you are inside a virtual environment. The interpreter distinguishes the environment's location (`sys.prefix`) from the base installation it was created from (`sys.base_prefix`). When they differ, an environment is active:
+
+```python
+import sys
+
+in_venv = sys.prefix != sys.base_prefix   # True when active
+```
+
+## Installing Dependencies with pip
+
+**`pip`** is Python's package installer. It downloads and installs packages from PyPI into the active environment:
+
+```bash
+pip install requests
+pip install "requests==2.31.0"   # install an exact version
+pip install "flask>=2.0"         # install a minimum version
+```
+
+Exact pins make a project reproducible: the same version installed on every machine.
+
+## `requirements.txt`: The Dependency List
+
+Projects record their dependencies in a plain-text file. The convention is one package per line, often pinned to an exact version; blank lines and `#` comments are ignored:
+
+```text
+# Web app dependencies
+requests==2.31.0
+flask>=2.0
+pytest
+```
+
+Read it back with `pip install -r requirements.txt`. Because the format is just text, parsing it yourself is straightforward: split into lines, drop blanks and comments, and split each pinned line on `==` to separate the name from the version.
+
+## `pyproject.toml`: The Modern Project File
+
+`pyproject.toml` is the modern, standardized metadata file for a Python project — it describes the project itself rather than the environment. Its key table is `[project]`, holding the name and the declared dependencies:
+
+```toml
+[project]
+name = "myapp"
+version = "1.0.0"
+dependencies = [
+  "requests==2.31.0",
+  "flask>=2.0",
+]
+```
+
+TOML is a small structured format, and Python can read it with the standard-library **`tomllib`**:
+
+```python
+import tomllib
+
+with open("pyproject.toml", "rb") as f:
+    data = tomllib.load(f)
+
+name = data["project"]["name"]   # "myapp"
+```
+
+`tomllib.load` reads a file (opened in binary mode); `tomllib.loads` parses a string. The result is nested dicts and lists you index like any Python data structure.
+
+## A Typical Project Layout
+
+A conventional layout keeps source and tests separate, so tools and humans can tell them apart at a glance:
+
+```text
+myapp/
+  pyproject.toml
+  src/
+    myapp/
+      __init__.py
+      core.py
+  tests/
+    test_core.py
+```
+
+The package directory under `src/` is the importable code; `tests/` holds the test suite that verifies it (the subject of the next chapter).
+
+## The Golden Rule
+
+Isolate each project with `python -m venv`, record dependencies in `requirements.txt`, describe the project in `pyproject.toml`, and read that metadata with `tomllib`. In the next chapter you will parse dependency files and inspect environment state.

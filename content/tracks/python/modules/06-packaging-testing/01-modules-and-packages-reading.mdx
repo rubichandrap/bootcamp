@@ -1,0 +1,115 @@
+---
+title: "Modules & Packages"
+type: "reading"
+order: 1
+---
+
+# Modules & Packages
+
+Every Python project grows. At first a single file is fine; soon it becomes a wall of code that is hard to navigate, hard to reuse, and full of name collisions. The solution is to split code into **modules** and group modules into **packages** — the two organizational units that shape every real Python project.
+
+## Modules: One File, One Namespace
+
+A **module** is simply a `.py` file. Its filename (without the extension) is its name, and every name defined at its top level lives in the module's own **namespace**:
+
+```python
+# helpers.py
+def shout(text):
+    return text.upper()
+
+SHOUTS = 0
+```
+
+Other files reach that code with `import`, and read the module's names as **attributes**:
+
+```python
+import helpers
+
+helpers.shout("hi")   # "HI" — access via module attribute
+print(helpers.SHOUTS) # 0
+```
+
+The module name is the prefix, so `helpers.shout` can never collide with a `shout` you define in your own file. That namespace isolation is the whole point.
+
+Every module also records its own name as the **`__module__`** attribute of the functions defined in it — a function remembers which file it came from:
+
+```python
+import helpers
+import math
+
+helpers.shout.__module__   # "helpers"
+math.sqrt.__module__       # "math"
+```
+
+## Importing Names Directly
+
+When you use a name constantly, the prefix gets noisy. `from ... import ...` copies a name into the current namespace:
+
+```python
+from helpers import shout
+
+shout("hi")   # no prefix needed
+```
+
+You can also rename on import with `as`, which is idiomatic for long package names:
+
+```python
+import helpers as h
+import json as j
+```
+
+## `if __name__ == "__main__"`
+
+Every module has a built-in attribute `__name__`. When a file is run directly — `python helpers.py` — Python sets `__name__` to the string `"__main__"`. When the same file is imported, `__name__` is the module's name instead. The classic guard uses this to separate "run me as a script" from "import me as a library":
+
+```python
+def main():
+    print("helpers running directly")
+
+if __name__ == "__main__":
+    main()   # only runs when executed, never on import
+```
+
+Importing `helpers` from another file does **not** trigger `main()` — that is exactly the behavior you want from a reusable module.
+
+## Packages: Directories of Modules
+
+A **package** is a directory of modules that share a namespace, marked by an `__init__.py` file (which may be empty). The file tells Python: "this directory is importable."
+
+```text
+myapp/
+  __init__.py
+  models.py
+  views.py
+```
+
+```python
+import myapp.models        # import a submodule
+from myapp import views    # import a member of the package
+from myapp.models import User
+```
+
+A package is itself a module — it just has an extra attribute, `__path__`, which holds the directory it was found in. You can check whether an importable name is a package or a plain module by testing for `__path__`:
+
+```python
+import json, math
+hasattr(json, "__path__")   # True  — json is a package
+hasattr(math, "__path__")   # False — math is a module
+```
+
+## Importing Dynamically
+
+Normally imports are written at the top of a file and resolved when Python starts. But you can also import at runtime by name, using the standard-library `importlib` module:
+
+```python
+import importlib
+
+math = importlib.import_module("math")   # same as import math
+sqrt = getattr(math, "sqrt")             # read an attribute by name
+```
+
+`importlib.import_module` takes the module name as a string and returns the module object; `getattr` then reads whatever attribute you ask for. This is how plugins and configuration-driven code decide *what* to load from data instead of from code.
+
+## The Golden Rule
+
+Split code into modules for reuse and namespacing, group modules into packages with `__init__.py`, gate scripts behind `if __name__ == "__main__":`, and use `importlib` when you need to import by name. In the next chapter you will inspect modules, import attributes dynamically, and distinguish packages from plain modules.
