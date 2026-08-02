@@ -1,4 +1,5 @@
 import { runInSandboxTmpDir } from '@/lib/rce/executorUtils';
+import { buildResult } from '@/lib/rce/resultBuilder';
 import {
   ExecuteSubmissionParams,
   LanguageExecutor,
@@ -29,35 +30,36 @@ export function parsePytestOutput(
   }
 
   const tests: TestResultItem[] = [];
+  let sawErrorStatus = false;
 
-  // Per-test result lines: "<file>::<test_name> PASSED/FAILED"
-  const testLineRe = /^(\S+\.py)::([^\s]+)\s+(PASSED|FAILED)/;
+  // Per-test result lines: "<file>::<test_name> PASSED/FAILED/ERROR"
+  const testLineRe = /^(\S+\.py)::([^\s]+)\s+(PASSED|FAILED|ERROR)/;
   for (const line of stdout.split('\n')) {
     const match = testLineRe.exec(line);
     if (match) {
+      if (match[3] === 'ERROR') {
+        sawErrorStatus = true;
+      }
       tests.push({ name: match[2], passed: match[3] === 'PASSED' });
     }
   }
 
+  const errorBlockRe = /(E\s+\w+Error[^\n]*|ModuleNotFoundError[^\n]*|SyntaxError[^\n]*|IndentationError[^\n]*)/;
+
   // Collection errors (import / syntax) surface as ERROR blocks with a traceback.
   if (tests.length === 0 && /(ModuleNotFoundError|ImportError|SyntaxError|IndentationError)/.test(stdout)) {
-    const errorMatch = stdout.match(/(E\s+\w+Error[^\n]*|ModuleNotFoundError[^\n]*|SyntaxError[^\n]*)/);
+    const errorMatch = stdout.match(errorBlockRe);
     compileError = errorMatch ? errorMatch[1] : 'Python compilation error';
+  } else if (sawErrorStatus) {
+    const errorMatch = stdout.match(errorBlockRe);
+    if (errorMatch) {
+      compileError = errorMatch[1];
+    }
+  } else if (tests.length === 0) {
+    compileError = 'No tests collected';
   }
 
-  const passedCount = tests.filter((t) => t.passed).length;
-  const failedCount = tests.filter((t) => !t.passed).length;
-
-  const isSuccess = compileError ? false : failedCount === 0 && passedCount > 0;
-
-  return {
-    success: isSuccess,
-    passed: passedCount,
-    failed: failedCount,
-    tests,
-    compileError,
-    rawOutput,
-  };
+  return buildResult(tests, compileError, rawOutput);
 }
 
 export class PythonExecutor implements LanguageExecutor {

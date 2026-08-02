@@ -59,6 +59,23 @@ const SYNTAX_ERROR_STDOUT = [
   '!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!',
 ].join('\n');
 
+const ERROR_STDOUT = [
+  '============================= test session starts ==============================',
+  'platform linux -- Python 3.14.4, pytest-9.0.2, pluggy-1.6.0',
+  'collecting ... collected 1 item',
+  '',
+  'test_solution.py::test_setup ERROR                                       [100%]',
+  '',
+  '==================================== ERRORS ====================================',
+  '_________________________________ ERROR at setup ________________________________',
+  'test_solution.py:3: in setup',
+  '    raise RuntimeError("boom")',
+  'E   RuntimeError: boom',
+  '=========================== short test summary info ============================',
+  'ERROR test_solution.py::test_setup',
+  '=============================== 1 error in 0.02s ===============================',
+].join('\n');
+
 describe('parsePytestOutput', () => {
   it('parses all-passing output with per-test results', () => {
     const result = parsePytestOutput(PASS_STDOUT, '');
@@ -106,6 +123,17 @@ describe('parsePytestOutput', () => {
 
     expect(result.success).toBe(false);
     expect(result.compileError).toContain('timed out');
+  });
+
+  it('counts ERROR-status tests as failed', () => {
+    const result = parsePytestOutput(ERROR_STDOUT, '');
+
+    expect(result.success).toBe(false);
+    expect(result.passed).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.tests).toHaveLength(1);
+    expect(result.tests[0]).toEqual({ name: 'test_setup', passed: false });
+    expect(result.compileError).toContain('RuntimeError');
   });
 
   it('returns failure when no tests are collected and no error is found', () => {

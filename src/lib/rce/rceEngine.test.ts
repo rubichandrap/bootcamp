@@ -122,5 +122,10 @@ func TestAdd(t *testing.T) {
       const executor = getLanguageExecutor('python');
       expect(executor.constructor.name).toBe('PythonExecutor');
     });
+
+    it('dispatches py alias to PythonExecutor correctly', () => {
+      const executor = getLanguageExecutor('py');
+      expect(executor.constructor.name).toBe('PythonExecutor');
+    });
   });
 });
