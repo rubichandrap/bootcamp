@@ -1,0 +1,88 @@
+---
+title: "Control Flow Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  # classify returns "positive", "negative", or "zero" for n.
+  def classify(n):
+      # TODO: Implement using if/elif/else
+      return ""
+
+
+  # sum_numbers returns the sum of all numbers in the list.
+  def sum_numbers(numbers):
+      # TODO: Implement using a for loop
+      return 0
+
+
+  # countdown returns a list of integers from n down to 0 inclusive.
+  def countdown(n):
+      # TODO: Implement using a while loop
+      return []
+
+
+  # count_even returns the number of even values in numbers.
+  def count_even(numbers):
+      # TODO: Return count of even numbers using a loop
+      return 0
+
+
+  # describe returns "even" if n is even, "odd" if n is odd.
+  def describe(n):
+      # TODO: Use if/elif/else with the modulo operator
+      return ""
+testCode: |
+  from solution import classify, sum_numbers, countdown, count_even, describe
+
+
+  def test_classify_positive():
+      assert classify(5) == "positive"
+
+
+  def test_classify_negative():
+      assert classify(-3) == "negative"
+
+
+  def test_classify_zero():
+      assert classify(0) == "zero"
+
+
+  def test_sum_numbers():
+      assert sum_numbers([1, 2, 3, 4]) == 10
+
+
+  def test_sum_numbers_empty():
+      assert sum_numbers([]) == 0
+
+
+  def test_countdown():
+      assert countdown(3) == [3, 2, 1, 0]
+
+
+  def test_count_even():
+      assert count_even([1, 2, 3, 4, 5, 6]) == 3
+
+
+  def test_describe_odd():
+      assert describe(3) == "odd"
+
+
+  def test_describe_even_div4():
+      assert describe(8) == "even"
+
+
+  def test_describe_even_not_div4():
+      assert describe(6) == "even"
+---
+
+# Control Flow Challenge
+
+Now that you have read about control flow, apply what you learned!
+
+## Tasks
+
+1. Implement `classify(n)` using `if`/`elif`/`else`.
+2. Implement `sum_numbers(numbers)` using a `for` loop.
+3. Implement `countdown(n)` using a `while` loop.
+4. Implement `count_even(numbers)` counting even values.
+5. Implement `describe(n)` using the modulo operator and conditionals.

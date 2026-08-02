@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Search, Terminal, Flame, Sun, Moon, Menu, Layers } from 'lucide-react';
 import { Theme } from '@/hooks/useTheme';
+import { TRACK_CONFIG, TrackSlug } from '@/lib/tracks/trackConfig';
 
 export function formatTitlebarText(
   trackTitle?: string,
@@ -29,10 +30,10 @@ export interface TrackOption {
   title: string;
 }
 
-const DEFAULT_TRACKS: TrackOption[] = [
-  { slug: 'go', title: 'Go Mastery' },
-  { slug: 'typescript', title: 'TypeScript Mastery' },
-];
+const DEFAULT_TRACKS: TrackOption[] = (Object.keys(TRACK_CONFIG) as TrackSlug[]).map((slug) => ({
+  slug,
+  title: TRACK_CONFIG[slug].title,
+}));
 
 interface TerminalHeaderProps {
   trackTitle?: string;

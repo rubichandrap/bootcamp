@@ -117,5 +117,10 @@ func TestAdd(t *testing.T) {
       const executor = getLanguageExecutor('typescript');
       expect(executor.constructor.name).toBe('TypeScriptExecutor');
     });
+
+    it('dispatches python trackId to PythonExecutor correctly', () => {
+      const executor = getLanguageExecutor('python');
+      expect(executor.constructor.name).toBe('PythonExecutor');
+    });
   });
 });

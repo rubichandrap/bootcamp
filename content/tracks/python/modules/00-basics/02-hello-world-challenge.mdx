@@ -1,0 +1,49 @@
+---
+title: "Hello World & Function Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # hello_world returns the exact string "Hello, World!"
+  def hello_world():
+      # TODO: Return exact string "Hello, World!"
+      return ""
+
+  # greet returns a greeting for the given name, formatted as "Hello, <name>!"
+  def greet(name):
+      # TODO: Return "Hello, " + name + "!"
+      return ""
+
+
+  # is_even returns True if n is divisible by 2, False otherwise.
+  def is_even(n):
+      # TODO: Return True when n is even, False otherwise
+      return False
+testCode: |
+  from solution import hello_world, greet, is_even
+
+
+  def test_hello_world():
+      assert hello_world() == "Hello, World!"
+
+
+  def test_greet():
+      assert greet("Pythonista") == "Hello, Pythonista!"
+
+
+  def test_is_even_true():
+      assert is_even(4) is True
+
+
+  def test_is_even_false():
+      assert is_even(7) is False
+---
+
+# Hello World & Function Challenge
+
+Now that you have read about Python program structure and function syntax, apply what you learned!
+
+## Tasks
+
+1. Implement `hello_world()` so that it returns `"Hello, World!"`.
+2. Implement `greet(name)` so that it returns `"Hello, " + name + "!"`.
+3. Implement `is_even(n)` so that it returns `True` when `n` is even and `False` otherwise.

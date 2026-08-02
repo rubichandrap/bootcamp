@@ -209,8 +209,8 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ trackSlug = 'go'
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Race Detector Toggle */}
-                  {currentChapter?.type !== 'reading' && (
+                  {/* Race Detector Toggle (Go-only) */}
+                  {currentChapter?.type !== 'reading' && trackCfg.supportsRaceCheck && (
                     <button
                       onClick={() => session.toggleRaceCheck()}
                       className={`px-2 py-0.5 rounded border text-[11px] font-mono transition-colors cursor-pointer ${

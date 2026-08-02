@@ -1,0 +1,101 @@
+---
+title: "Module 00 Capstone: Basics Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  # greet_full returns a greeting for first and last name: "Hello, <first> <last>!"
+  def greet_full(first, last):
+      # TODO: implement
+      return ""
+
+
+  # average returns the arithmetic mean of a list of numbers.
+  # Returns None for an empty list.
+  def average(numbers):
+      # TODO: implement using a loop
+      return None
+
+
+  # sign_parity returns "positive-even", "positive-odd",
+  # "negative-even", "negative-odd", or "zero".
+  def sign_parity(n):
+      # TODO: implement using conditionals and modulo
+      return ""
+
+
+  # fizzbuzz returns the FizzBuzz string for a number:
+  # "Fizz" if divisible by 3, "Buzz" if divisible by 5,
+  # "FizzBuzz" if divisible by both, otherwise the number as a string.
+  def fizzbuzz(n):
+      # TODO: implement
+      return ""
+
+
+  # first_divisible_by returns the first number in numbers divisible by d,
+  # or None if no such number exists.
+  def first_divisible_by(numbers, d):
+      # TODO: implement using a loop and break
+      return None
+testCode: |
+  from solution import greet_full, average, sign_parity, fizzbuzz, first_divisible_by
+
+
+  def test_greet_full():
+      assert greet_full("Ada", "Lovelace") == "Hello, Ada Lovelace!"
+
+
+  def test_average():
+      assert average([2, 4, 6]) == 4
+
+
+  def test_average_empty():
+      assert average([]) is None
+
+
+  def test_sign_parity_positive_even():
+      assert sign_parity(4) == "positive-even"
+
+
+  def test_sign_parity_positive_odd():
+      assert sign_parity(3) == "positive-odd"
+
+
+  def test_sign_parity_negative_even():
+      assert sign_parity(-2) == "negative-even"
+
+
+  def test_sign_parity_negative_odd():
+      assert sign_parity(-5) == "negative-odd"
+
+
+  def test_sign_parity_zero():
+      assert sign_parity(0) == "zero"
+
+
+  def test_fizzbuzz_three():
+      assert fizzbuzz(3) == "Fizz"
+
+
+  def test_fizzbuzz_five():
+      assert fizzbuzz(5) == "Buzz"
+
+
+  def test_fizzbuzz_both():
+      assert fizzbuzz(15) == "FizzBuzz"
+
+
+  def test_fizzbuzz_neither():
+      assert fizzbuzz(7) == "7"
+
+
+  def test_first_divisible_by():
+      assert first_divisible_by([3, 8, 9, 10], 5) == 10
+
+
+  def test_first_divisible_by_none():
+      assert first_divisible_by([3, 8], 5) is None
+---
+
+# Assessment: Basics Toolkit
+
+Integrate program structure, function definition, variables and types, and control flow to implement a small toolkit of everyday functions. All four concepts from this module must be applied correctly to pass.

@@ -17,6 +17,7 @@ export interface SandboxExecOptions {
 export interface SandboxExecResult {
   stdout: string;
   stderr: string;
+  timedOut?: boolean;
 }
 
 export async function runInSandboxTmpDir(options: SandboxExecOptions): Promise<SandboxExecResult> {
@@ -40,9 +41,10 @@ export async function runInSandboxTmpDir(options: SandboxExecOptions): Promise<S
       stdout = result.stdout;
       stderr = result.stderr;
     } catch (err: unknown) {
-      const execErr = err as { stdout?: string; stderr?: string; message?: string };
+      const execErr = err as { stdout?: string; stderr?: string; message?: string; killed?: boolean };
       stdout = execErr.stdout || '';
       stderr = execErr.stderr || execErr.message || '';
+      return { stdout, stderr, timedOut: execErr.killed === true };
     }
 
     return { stdout, stderr };

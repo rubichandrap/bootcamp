@@ -10,16 +10,30 @@ import {
 } from './contentEngine';
 
 describe('Curriculum Content Engine', () => {
-  it('should list all language tracks (go, typescript)', () => {
+  it('should list all language tracks (go, typescript, python)', () => {
     const tracks = getAllTracks();
-    expect(tracks.length).toBeGreaterThanOrEqual(2);
+    expect(tracks.length).toBeGreaterThanOrEqual(3);
     const goTrack = tracks.find((t) => t.slug === 'go');
     const tsTrack = tracks.find((t) => t.slug === 'typescript');
+    const pyTrack = tracks.find((t) => t.slug === 'python');
 
     expect(goTrack).toBeDefined();
     expect(goTrack?.title).toBe('Go Mastery');
     expect(tsTrack).toBeDefined();
     expect(tsTrack?.title).toBe('TypeScript Mastery');
+    expect(pyTrack).toBeDefined();
+    expect(pyTrack?.title).toBe('Python Mastery');
+    expect(pyTrack?.language).toBe('python');
+    expect(pyTrack?.order).toBe(3);
+  });
+
+  it('should get python track modules and basics chapters', () => {
+    const pyModules = getAllModules('python');
+    expect(pyModules.length).toBeGreaterThan(0);
+    expect(pyModules[0].slug).toBe('00-basics');
+    expect(pyModules[0].chapters.length).toBe(7);
+    expect(pyModules[0].chapters[0].type).toBe('reading');
+    expect(pyModules[0].chapters[6].type).toBe('assessment');
   });
 
   it('should get a track by slug using getTrack and getTrackBySlug', () => {

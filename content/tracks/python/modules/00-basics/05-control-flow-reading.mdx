@@ -1,0 +1,96 @@
+---
+title: "Control Flow"
+type: "reading"
+order: 5
+---
+
+# Control Flow
+
+Python controls program flow with `if`/`elif`/`else` branches and `for`/`while` loops.
+
+## Conditional Statements
+
+Python uses `if`, `elif` (else-if), and `else`:
+
+```python
+def classify(n):
+    if n > 0:
+        return "positive"
+    elif n < 0:
+        return "negative"
+    else:
+        return "zero"
+```
+
+Conditions are expressions that evaluate to a boolean. In boolean contexts, Python treats certain values as **falsy**: `0`, `0.0`, `""` (empty string), `None`, and empty collections. Everything else is **truthy**.
+
+```python
+def is_empty(text):
+    if text:
+        return False
+    return True
+```
+
+## Comparison Operators
+
+```python
+x == y   # equal
+x != y   # not equal
+x < y    # less than
+x <= y   # less than or equal
+x > y    # greater than
+x >= y   # greater than or equal
+x and y  # logical AND (short-circuit)
+x or y   # logical OR (short-circuit)
+not x    # logical NOT
+```
+
+## For Loops
+
+Iterate over a sequence with `for`:
+
+```python
+def sum_list(numbers):
+    total = 0
+    for n in numbers:
+        total = total + n
+    return total
+```
+
+Use the `range()` function to loop a fixed number of times:
+
+```python
+def count_down_to_zero(n):
+    result = []
+    for i in range(n, -1, -1):
+        result.append(i)
+    return result
+```
+
+`range(start, stop, step)` generates numbers from `start` up to (but not including) `stop`.
+
+## While Loops
+
+Loop while a condition holds:
+
+```python
+def countdown(n):
+    result = []
+    while n >= 0:
+        result.append(n)
+        n -= 1
+    return result
+```
+
+## Break and Continue
+
+- `break` exits the loop immediately.
+- `continue` skips to the next iteration.
+
+```python
+def first_even(numbers):
+    for n in numbers:
+        if n % 2 == 0:
+            return n
+    return None
+```
