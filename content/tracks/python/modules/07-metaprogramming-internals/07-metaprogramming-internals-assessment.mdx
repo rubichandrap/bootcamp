@@ -1,0 +1,133 @@
+---
+title: "Module 07 Capstone: Machinery Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import importlib
+
+
+  # ReadOnly is a descriptor that returns a stored value and refuses
+  # assignment.
+  class ReadOnly:
+      def __init__(self, value):
+          self._value = value
+
+      def __get__(self, instance, owner):
+          # TODO: return self._value.
+          return None
+
+      def __set__(self, instance, value):
+          # TODO: raise AttributeError("read-only attribute").
+          pass
+
+
+  class Settings:
+      version = ReadOnly(1)
+
+
+  # AutoLabel is a metaclass that injects a label attribute equal to the
+  # lowercased class name.
+  class AutoLabel(type):
+      def __new__(mcls, name, bases, namespace):
+          # TODO: set namespace["label"] = name.lower().
+          return super().__new__(mcls, name, bases, namespace)
+
+
+  class Product(metaclass=AutoLabel):
+      pass
+
+
+  # Slim declares __slots__ so instances have no __dict__.
+  class Slim:
+      # TODO: add __slots__ = ("value",).
+      def __init__(self, value):
+          self.value = value
+
+
+  # Recorder is a context manager that appends "enter" to log on entry and
+  # "exit" to log on exit.
+  class Recorder:
+      def __init__(self, log):
+          self.log = log
+
+      def __enter__(self):
+          # TODO: append "enter" to self.log, then return self.
+          pass
+
+      def __exit__(self, exc_type, exc_val, exc_tb):
+          # TODO: append "exit" to self.log.
+          pass
+
+
+  # import_attr(module, attr) dynamically imports module with importlib and
+  # returns the attribute named attr from it.
+  def import_attr(module, attr):
+      # TODO: importlib.import_module(module), then getattr the attr.
+      return None
+testCode: |
+  import math
+  import pytest
+
+  from solution import AutoLabel, Product, Recorder, Settings, Slim, import_attr
+
+
+  def test_readonly_gets_value():
+      assert Settings().version == 1
+
+
+  def test_readonly_rejects_assignment():
+      with pytest.raises(AttributeError):
+          Settings().version = 2
+
+
+  def test_autolabel_injects_label():
+      assert Product.label == "product"
+
+
+  def test_autolabel_is_metaclass():
+      assert type(Product) is AutoLabel
+
+
+  def test_slim_has_no_dict():
+      assert hasattr(Slim(1), "__dict__") is False
+
+
+  def test_slim_stores_declared():
+      s = Slim(7)
+      assert s.value == 7
+
+
+  def test_recorder_marks_enter_exit():
+      log = []
+      with Recorder(log):
+          pass
+      assert log == ["enter", "exit"]
+
+
+  def test_recorder_marks_exit_on_error():
+      log = []
+      with pytest.raises(RuntimeError):
+          with Recorder(log):
+              raise RuntimeError("boom")
+      assert log == ["enter", "exit"]
+
+
+  def test_import_attr_function():
+      assert import_attr("math", "sqrt") is math.sqrt
+
+
+  def test_import_attr_constant():
+      assert import_attr("math", "pi") == math.pi
+---
+
+# Assessment: Machinery Toolkit
+
+Integrate descriptors, metaclasses, `__slots__`, context managers, and the import system to build a small machinery toolkit. All five areas from this module must be applied correctly to pass.
+
+## Tasks
+
+1. Implement the `ReadOnly` descriptor so `Settings().version` reads the stored value and assignment raises `AttributeError`.
+2. Implement the `AutoLabel` metaclass so its `__new__` injects a `label` attribute equal to the lowercased class name.
+3. Add `__slots__ = ("value",)` to `Slim` so instances have no `__dict__`.
+4. Implement `Recorder` so entering appends `"enter"` to the shared log and exiting always appends `"exit"` (even when the block raises).
+5. Implement `import_attr(module, attr)` using `importlib.import_module` and `getattr` to load any module and return one of its attributes.

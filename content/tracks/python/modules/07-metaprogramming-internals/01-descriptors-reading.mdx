@@ -1,0 +1,95 @@
+---
+title: "Descriptors"
+type: "reading"
+order: 1
+---
+
+# Descriptors
+
+Attribute access in Python looks like reading a dictionary entry, but behind the scenes it can be a **function call**. A **descriptor** is an object that intercepts `obj.attr` and `obj.attr = value` and decides what happens. It is the machinery underneath `property`, `classmethod`, and many validators.
+
+## The Descriptor Protocol
+
+Any object with at least one of `__get__`, `__set__`, or `__delete__` is a descriptor. The methods receive the instance being accessed and the owning class:
+
+```python
+class ReadOnly:
+    def __init__(self, value):
+        self._value = value
+
+    def __get__(self, instance, owner):
+        return self._value
+
+    def __set__(self, instance, value):
+        raise AttributeError("read-only attribute")
+```
+
+`__get__` runs on `obj.attr`, `__set__` runs on `obj.attr = value`. `owner` is the class that owns the descriptor; `instance` is the object being accessed — it is `None` when the attribute is read on the class itself rather than on an instance.
+
+## Using a Descriptor as a Class Attribute
+
+A descriptor is inert on its own; it becomes active only when stored as a **class attribute**:
+
+```python
+class Config:
+    max_retries = ReadOnly(3)
+
+c = Config()
+c.max_retries        # 3   ->  Config.max_retries.__get__(c, Config)
+c.max_retries = 5    # AttributeError
+```
+
+Every instance shares the one descriptor object sitting on the class. When Python resolves `c.max_retries`, it finds `max_retries` on the class, sees that it is a descriptor, and calls `__get__` with the instance. The descriptor decides how to respond.
+
+## Naming with `__set_name__`
+
+How does a descriptor know its own attribute name? During class creation, Python calls `__set_name__(self, owner, name)` on every descriptor in the class body, passing the class and the attribute name:
+
+```python
+class Validated:
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, instance, owner):
+        return instance.__dict__[self.name]
+
+    def __set__(self, instance, value):
+        instance.__dict__[self.name] = value
+
+class Person:
+    age = Validated()
+```
+
+Without `__set_name__` the descriptor cannot know it is called `age` and cannot store per-instance values. The hook lets one descriptor class serve many attribute names.
+
+## `property` Is a Descriptor
+
+You have used descriptors all along without knowing it: **`property`** is a built-in descriptor. Reading `obj.fahrenheit` calls the getter; assigning calls the setter:
+
+```python
+class Temperature:
+    def __init__(self, celsius):
+        self._celsius = celsius
+
+    @property
+    def celsius(self):
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):
+        self._celsius = value
+
+    @property
+    def fahrenheit(self):
+        return self._celsius * 9 / 5 + 32
+```
+
+`property` implements `__get__`, `__set__`, and `__delete__` for you. Writing your own descriptor is for when you need the same behavior on many attributes — validation, caching, read-only rules — and want to define it once.
+
+## Data Descriptors vs. Non-Data Descriptors
+
+A descriptor that defines `__set__` (or `__delete__`) is a **data descriptor**: it takes priority over the instance `__dict__`, so `obj.attr = value` always reaches it. A descriptor with only `__get__` is a **non-data descriptor** and loses to a value stored in the instance dict — which is how functions become methods (they are non-data descriptors that are shadowed when you assign an attribute over them).
+
+## The Golden Rule
+
+A descriptor is a class attribute whose `__get__`/`__set__`/`__delete__` methods run in place of plain attribute access; use `__set_name__` to learn its attribute name, and remember `property` is just a built-in descriptor. In the next chapter you will write read-only and validating descriptors and build a class with `property` accessors.

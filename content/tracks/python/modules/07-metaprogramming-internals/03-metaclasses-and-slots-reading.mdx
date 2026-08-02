@@ -1,0 +1,94 @@
+---
+title: "Metaclasses & __slots__"
+type: "reading"
+order: 3
+---
+
+# Metaclasses & `__slots__`
+
+You know that objects are instances of classes. The deeper truth is that **classes are instances of metaclasses** — and the metaclass for nearly everything is `type`. Understanding that inversion unlocks the ability to shape classes themselves at the moment they are created.
+
+## Classes Are Objects
+
+A class is an object you can create at runtime, inspect, and pass around. The built-in `type`, when called with three arguments, *makes a class*:
+
+```python
+Greeter = type("Greeter", (), {"greet": lambda self: "hello"})
+g = Greeter()
+g.greet()   # "hello"
+```
+
+Arguments: the class name, a tuple of base classes, and a namespace dict of attributes. `class` statements are just syntax sugar over this call.
+
+## The Metaclass
+
+The class of a class is its **metaclass**. For almost every class that is `type`:
+
+```python
+type(int)        # <class 'type'>
+type(str)        # <class 'type'>
+type(Greeter)    # <class 'type'>
+```
+
+A **custom metaclass** is a class that subclasses `type`. Overriding `__new__` (called to create the new class object) lets you modify the namespace before the class exists:
+
+```python
+class AutoLabel(type):
+    def __new__(mcls, name, bases, namespace):
+        namespace["label"] = name.lower()
+        return super().__new__(mcls, name, bases, namespace)
+
+class Order(metaclass=AutoLabel):
+    pass
+
+Order.label   # "order"
+```
+
+`__new__` receives the future class's name, bases, and namespace; it can inject attributes, validate, or transform anything before the class is built. Attach a metaclass with the `metaclass=` keyword.
+
+## `__init_subclass__`: A Lighter Hook
+
+Writing a full metaclass is heavy for the common case of "do something whenever a class inherits from me." Python provides `__init_subclass__` for exactly that — it runs on the *parent* when a subclass is created:
+
+```python
+class Tracked:
+    subclasses = []
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        Tracked.subclasses.append(cls)
+
+class Widget(Tracked):
+    pass
+
+Tracked.subclasses   # [<class 'Widget'>]
+```
+
+`cls` is the newly created subclass. No metaclass needed — inheritance alone registers each subclass.
+
+## `__slots__`: Cutting the Instance Dict
+
+Normally every instance carries a `__dict__` for its attributes. For classes with many instances, that per-object dictionary is memory. Declaring `__slots__` fixes the attribute list and *removes* the instance dict:
+
+```python
+class Point:
+    __slots__ = ("x", "y")
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+p = Point(1, 2)
+p.x          # 1
+p.z = 3      # AttributeError: 'Point' object has no attribute 'z'
+```
+
+With `__slots__`, `x` and `y` are stored in compact fixed-width descriptors instead of a dict, and the instance has **no `__dict__`** at all — `hasattr(p, "__dict__")` is `False`. Attempting an undeclared attribute raises `AttributeError`. The cost: you can no longer attach arbitrary attributes.
+
+## When `__slots__` Helps
+
+Use `__slots__` when a class will have many instances (data records, coordinates, cache entries) and you want the memory savings and the typo protection of a fixed attribute set. Avoid it when attributes are dynamic or when code outside the class expects to set extra attributes.
+
+## The Golden Rule
+
+`type(name, bases, ns)` builds classes; a metaclass (a `type` subclass) intercepts that construction via `__new__`; `__init_subclass__` handles per-subclass hooks on a normal class; and `__slots__` replaces the instance dict with a fixed, memory-light attribute set. In the next chapter you will write a metaclass that injects behavior and a slotted class that refuses unknown attributes.

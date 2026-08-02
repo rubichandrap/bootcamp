@@ -1,0 +1,82 @@
+---
+title: "Metaclasses & __slots__ Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # AddGreeting is a metaclass that injects a greet() method, returning
+  # "hello", into every class it creates.
+  class AddGreeting(type):
+      def __new__(mcls, name, bases, namespace):
+          # TODO: set namespace["greet"] to a function returning "hello".
+          return super().__new__(mcls, name, bases, namespace)
+
+
+  # Hello is created with the AddGreeting metaclass.
+  class Hello(metaclass=AddGreeting):
+      pass
+
+
+  # SlottedPoint declares __slots__ so instances have no __dict__ and can
+  # only carry the declared attributes.
+  class SlottedPoint:
+      # TODO: add __slots__ = ("x", "y").
+      def __init__(self, x, y):
+          self.x = x
+          self.y = y
+
+
+  # Tracked registers every subclass in its subclasses list via
+  # __init_subclass__.
+  class Tracked:
+      subclasses = []
+
+      def __init_subclass__(cls, **kwargs):
+          # TODO: call super().__init_subclass__(**kwargs), then append cls
+          # to Tracked.subclasses.
+          super().__init_subclass__(**kwargs)
+testCode: |
+  import pytest
+
+  from solution import AddGreeting, Hello, SlottedPoint, Tracked
+
+
+  def test_hello_metaclass_greet():
+      assert Hello().greet() == "hello"
+
+
+  def test_hello_uses_custom_metaclass():
+      assert type(Hello) is AddGreeting
+
+
+  def test_slotted_point_stores_declared():
+      p = SlottedPoint(1, 2)
+      assert p.x == 1
+      assert p.y == 2
+
+
+  def test_slotted_point_has_no_dict():
+      assert hasattr(SlottedPoint(3, 4), "__dict__") is False
+
+
+  def test_slotted_point_rejects_unknown_attribute():
+      p = SlottedPoint(0, 0)
+      with pytest.raises(AttributeError):
+          p.z = 5
+
+
+  def test_tracked_registers_subclass():
+      class MyWidget(Tracked):
+          pass
+
+      assert MyWidget in Tracked.subclasses
+---
+
+# Metaclasses & `__slots__` Challenge
+
+Now that you have read about metaclasses, `__init_subclass__`, and `__slots__`, apply what you learned!
+
+## Tasks
+
+1. Implement the `AddGreeting` metaclass so its `__new__` injects a `greet()` method returning `"hello"` into the namespace of every class it creates.
+2. Add `__slots__ = ("x", "y")` to `SlottedPoint` so instances have no `__dict__` and reject unknown attributes with `AttributeError`.
+3. Implement `Tracked.__init_subclass__` so every subclass registers itself in the `Tracked.subclasses` list.

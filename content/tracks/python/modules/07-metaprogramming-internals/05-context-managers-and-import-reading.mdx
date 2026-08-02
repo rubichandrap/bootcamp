@@ -1,0 +1,101 @@
+---
+title: "Context Managers & the Import System"
+type: "reading"
+order: 5
+---
+
+# Context Managers & the Import System
+
+Two machinery pieces appear in almost every real Python codebase: **context managers**, which bracket setup/teardown around a block, and the **import system**, which loads modules at runtime. Both are programmable.
+
+## The `with` Statement
+
+`with` runs a setup step, executes a block, then runs a guaranteed teardown step even if the block raises:
+
+```python
+with open("data.txt") as f:
+    text = f.read()
+# f is closed here, no matter what happened inside
+```
+
+Anything usable in `with` is a **context manager** — an object with `__enter__` and `__exit__`:
+
+```python
+import time
+
+class Timer:
+    def __enter__(self):
+        self.start = time.monotonic()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.elapsed = time.monotonic() - self.start
+        return False
+```
+
+`__enter__` runs on entry; its return value is bound by `as`. `__exit__` runs on exit with the exception details — `exc_type`, `exc_val`, `exc_tb` — all `None` when the block finished cleanly. Returning `True` from `__exit__` **suppresses** the exception; returning `False` (or `None`) lets it propagate.
+
+## Context Managers from Generators: `contextlib`
+
+Writing `__enter__`/`__exit__` by hand is verbose. The standard-library **`contextlib`** lets you write a context manager as a generator: everything before `yield` is the enter step, everything after is the exit step:
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def heading(title, log):
+    log.append(f"<{title}>")
+    try:
+        yield title
+    finally:
+        log.append(f"</{title}>")
+
+log = []
+with heading("h1", log):
+    log.append("body")
+# log == ["<h1>", "body", "</h1>"]
+```
+
+The `try/finally` guarantees the exit step runs even when the block raises. `contextlib` also ships ready-made managers such as `contextlib.suppress(ExceptionType)` (swallow an exception) and `contextlib.closing(obj)`.
+
+## The Import System: `importlib`
+
+Importing is itself a programmable operation. `importlib.import_module(name)` imports a module from a string — the runtime equivalent of `import name`:
+
+```python
+import importlib
+
+math = importlib.import_module("math")
+math.sqrt(16)   # 4.0
+```
+
+Before actually loading a module you can ask whether it *can* be found. `importlib.util.find_spec(name)` returns the module's **spec** (its loader, origin, and other metadata) if importable, and `None` if it cannot be located:
+
+```python
+import importlib.util
+
+importlib.util.find_spec("json")        # <ModuleSpec ...>
+importlib.util.find_spec("nope_xyz")    # None
+```
+
+This is the guard every plugin loader uses: probe with `find_spec`, then load with `import_module`.
+
+## `sys.modules`: The Import Cache
+
+When you import a module twice, it loads once. Python keeps every imported module object in the `sys.modules` dict, keyed by name, so the second import returns the cached object:
+
+```python
+import sys
+
+"math" in sys.modules   # True after any import of math
+```
+
+Programmatic imports respect the same cache, which is why importing a module in several places is cheap and returns the same object.
+
+## Why Programmatic Imports Matter
+
+Plugins, drivers, and config-driven code do not know their dependencies at write time — the names come from data. `find_spec` + `import_module` turns a string from a config file into a live module, letting one program load behavior it was never told about in code.
+
+## The Golden Rule
+
+`with` brackets setup and teardown via `__enter__`/`__exit__` (return `True` to suppress exceptions); `@contextmanager` does the same with a generator; and `find_spec`/`import_module` probe and load modules by name, with `sys.modules` caching the result. In the next chapter you will build a timing context manager, a generator-based manager, and a module probe.
