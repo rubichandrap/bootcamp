@@ -1,0 +1,80 @@
+---
+title: "Closures Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # counter returns a closure that yields the next value on each call,
+  # starting at start. counter(10)() == 11, then 12, 13, ...
+  def counter(start=0):
+      # TODO: Return a closure that increments a captured count
+      return lambda: None
+
+
+  # make_shouter returns a function that appends suffix to its text argument.
+  def make_shouter(suffix):
+      # TODO: Return a closure that returns text + suffix
+      return lambda text: text
+
+
+  # make_averager returns a closure that keeps a running average of
+  # every number passed to it so far.
+  def make_averager():
+      # TODO: Track total and count with nonlocal; return total / count
+      return lambda value: 0.0
+testCode: |
+  from solution import counter, make_shouter, make_averager
+
+
+  def test_counter_custom_start():
+      next_val = counter(5)
+      assert next_val() == 6
+      assert next_val() == 7
+
+
+  def test_counter_sequence():
+      next_val = counter()
+      assert next_val() == 1
+      assert next_val() == 2
+      assert next_val() == 3
+
+
+  def test_counter_independent():
+      a = counter()
+      b = counter()
+      a()
+      a()
+      assert a() == 3
+      assert b() == 1
+
+
+  def test_make_shouter_exclaims():
+      exclaim = make_shouter("!")
+      assert exclaim("Hello") == "Hello!"
+
+
+  def test_make_shouter_questions():
+      question = make_shouter("?")
+      assert question("Really") == "Really?"
+
+
+  def test_make_averager_running():
+      avg = make_averager()
+      avg(10)
+      avg(20)
+      assert avg(30) == 20.0
+
+
+  def test_make_averager_fresh():
+      avg = make_averager()
+      assert avg(4) == 4.0
+---
+
+# Closures Challenge
+
+Now that you have read about closures, apply what you learned!
+
+## Tasks
+
+1. Implement `counter(start=0)` to return a closure that yields the next integer on each call, starting at `start`.
+2. Implement `make_shouter(suffix)` to return a closure that appends `suffix` to its argument.
+3. Implement `make_averager()` to return a closure that keeps a running average of every number passed to it so far.

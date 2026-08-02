@@ -1,0 +1,157 @@
+---
+title: "Decorators & functools"
+type: "reading"
+order: 5
+---
+
+# Decorators & functools
+
+A **decorator** is a function that takes a function and returns a new function — usually a "wrapped" version with extra behavior. Decorators build directly on first-class functions and closures, so you already know all the pieces.
+
+## The Basic Decorator
+
+Here is a decorator that uppercases whatever its function returns:
+
+```python
+def shout(func):
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        return result.upper()
+    return wrapper
+```
+
+`*args` collects positional arguments and `**kwargs` collects keyword arguments, so `wrapper` can call `func` with whatever arguments it received.
+
+## Applying a Decorator with `@`
+
+The `@` syntax applies a decorator to a function definition. `@shout` is exactly the same as writing `greet = shout(greet)` after the function body:
+
+```python
+def shout(func):
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        return result.upper()
+    return wrapper
+
+@shout
+def greet(name):
+    return "Hello, " + name
+
+greet("Ada")   # "HELLO, ADA"
+```
+
+## Preserving Metadata with `functools.wraps`
+
+The wrapper replaces the original function, so its `__name__` and `__doc__` would be overwritten with the wrapper's. `functools.wraps` copies the original metadata across:
+
+```python
+import functools
+
+def shout(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs).upper()
+    return wrapper
+
+@shout
+def greet(name):
+    """Return a greeting."""
+    return "Hello, " + name
+
+greet.__name__   # "greet"  (not "wrapper")
+greet.__doc__    # "Return a greeting."
+```
+
+## Attaching State to a Wrapper
+
+A wrapper is a plain function object, so you can attach attributes to it — a handy way to expose state such as a call count:
+
+```python
+import functools
+
+def count_calls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+    wrapper.calls = 0
+    return wrapper
+
+@count_calls
+def add(a, b):
+    return a + b
+
+add(1, 2)   # 3
+add(3, 4)   # 7
+add.calls   # 2
+```
+
+`wrapper.calls` starts at `0` when the decorator runs and is incremented on every call.
+
+## Decorator Factories
+
+A **decorator factory** takes extra arguments and returns a decorator. The middle `decorator` receives the function; the innermost `wrapper` closes over the factory's arguments:
+
+```python
+import functools
+
+def repeat(times):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            result = None
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def beep():
+    return "beep"
+
+beep()   # "beep" — func called three times, last result returned
+```
+
+Use `@repeat(3)` — the factory runs first, and the decorator it returns is applied to the function.
+
+## `functools.lru_cache`
+
+`lru_cache` memoizes results — repeated calls with the same arguments return instantly from the cache. It is ideal for expensive or recursive functions:
+
+```python
+import functools
+
+@functools.lru_cache(maxsize=None)
+def factorial(n):
+    if n < 2:
+        return 1
+    return n * factorial(n - 1)
+
+factorial(50)                 # fast, even though it recurses deeply
+factorial.cache_info()        # CacheInfo(hits=..., misses=..., ...)
+```
+
+`cache_info()` reports how many calls were cache hits versus misses.
+
+## `functools.partial`
+
+`partial` "freezes" some of a function's arguments, producing a new function with fewer arguments:
+
+```python
+import functools
+
+def power(base, exponent):
+    return base ** exponent
+
+square = functools.partial(power, exponent=2)
+square(5)   # 25
+
+def greet(greeting, name):
+    return greeting + ", " + name + "!"
+
+say_hello = functools.partial(greet, "Hello")
+say_hello("Ada")   # "Hello, Ada!"
+```
+
+`functools` is the standard library module for working with functions. `wraps`, `lru_cache`, and `partial` are three of its most useful tools.

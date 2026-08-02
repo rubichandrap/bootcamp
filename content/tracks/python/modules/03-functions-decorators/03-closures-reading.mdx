@@ -1,0 +1,78 @@
+---
+title: "Closures"
+type: "reading"
+order: 3
+---
+
+# Closures
+
+Python lets you define a function **inside** another function. When the inner function uses a variable from the enclosing scope — and the outer function has already returned — Python keeps that variable alive for the inner function. This pairing of a function with the variables it remembers is called a **closure**.
+
+## Nested Functions
+
+A function defined inside another function is a **nested function**:
+
+```python
+def outer():
+    def inner():
+        return "from inner"
+    return inner()
+
+outer()   # "from inner"
+```
+
+## Capturing Enclosing Variables
+
+An inner function can read variables from the enclosing function's scope, even after the outer function has returned:
+
+```python
+def make_greeter(greeting):
+    def greet(name):
+        return greeting + ", " + name + "!"
+    return greet
+
+say_hi = make_greeter("Hi")
+say_hi("Ada")   # "Hi, Ada!"
+```
+
+The returned `greet` remembers the value of `greeting` from the moment `make_greeter` was called. Each call to `make_greeter` creates its own closure with its own remembered value:
+
+```python
+say_hello = make_greeter("Hello")
+say_hello("Bob")   # "Hello, Bob!"
+say_hi("Ada")      # still "Hi, Ada!" — independent
+```
+
+## Mutating Captured Variables with `nonlocal`
+
+Reading a captured variable is automatic. But if you **assign** to it inside the inner function, Python treats the name as a new local variable of the inner function. Use `nonlocal` to tell Python you mean the variable from the enclosing scope:
+
+```python
+def counter(start=0):
+    count = start
+    def next_value():
+        nonlocal count
+        count += 1
+        return count
+    return next_value
+
+next_val = counter(10)
+next_val()   # 11
+next_val()   # 12
+```
+
+## Closures Carry Independent State
+
+Because the captured variable stays alive as long as the closure does, a closure can hold **state** across calls — and each closure's state is independent:
+
+```python
+a = counter()
+b = counter()
+a()   # 1
+a()   # 2
+b()   # 1  <- b has its own count
+```
+
+## Why Closures Matter
+
+Closures attach small amounts of state to a function without creating a class. They are the building block behind decorators, which you will learn next.
