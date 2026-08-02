@@ -4,14 +4,14 @@
 
 **Blocked by:** #72 — Async & Concurrency Module.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `module.json` created — title "Packaging & Testing", order 6
-- [ ] 7 chapters authored (3 Reading, 3 Challenge, 1 Assessment) covering modules, packages, venv, pytest, type hints
-- [ ] Each Challenge Chapter strictly bounded to concepts from its preceding Reading Chapter
-- [ ] Challenge `starterCode` + pytest `testCode` written for all 3 challenges
-- [ ] Assessment Chapter integrates module concepts
-- [ ] All challenge `testCode` suites verified locally green against real solutions via pytest
+- [x] `module.json` created — title "Packaging & Testing", order 6
+- [x] 7 chapters authored (3 Reading, 3 Challenge, 1 Assessment) covering modules, packages, venv, pytest, type hints
+- [x] Each Challenge Chapter strictly bounded to concepts from its preceding Reading Chapter
+- [x] Challenge `starterCode` + pytest `testCode` written for all 3 challenges
+- [x] Assessment Chapter integrates module concepts
+- [x] All challenge `testCode` suites verified locally green against real solutions via pytest
 
 ## Blocked by
 
