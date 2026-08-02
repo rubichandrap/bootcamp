@@ -3,9 +3,9 @@ title: "Module 01 Capstone: Core Data Structures Toolkit"
 type: "assessment"
 order: 7
 starterCode: |
-  # unique_sorted returns a sorted list of the unique values in numbers.
-  def unique_sorted(numbers):
-      # TODO: Combine set() and sorted()
+  # sorted_keys returns a sorted list of the keys in mapping.
+  def sorted_keys(mapping):
+      # TODO: Combine list(mapping.keys()) and sorted()
       return []
 
 
@@ -33,15 +33,15 @@ starterCode: |
       # TODO: Use a dict comprehension over range(len(values))
       return {}
 testCode: |
-  from solution import unique_sorted, merge_dicts, has_duplicates, index_pairs, indexed
+  from solution import sorted_keys, merge_dicts, has_duplicates, index_pairs, indexed
 
 
-  def test_unique_sorted():
-      assert unique_sorted([3, 1, 3, 2, 1]) == [1, 2, 3]
+  def test_sorted_keys():
+      assert sorted_keys({"b": 2, "a": 1, "c": 3}) == ["a", "b", "c"]
 
 
-  def test_unique_sorted_empty():
-      assert unique_sorted([]) == []
+  def test_sorted_keys_empty():
+      assert sorted_keys({}) == []
 
 
   def test_merge_dicts():
