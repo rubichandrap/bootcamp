@@ -1,0 +1,96 @@
+---
+title: "Lists & Tuples Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # second_element returns the second element of items.
+  def second_element(items):
+      # TODO: Return items[1]
+      return None
+
+
+  # last_element returns the last element of items using a negative index.
+  def last_element(items):
+      # TODO: Return items[-1]
+      return None
+
+
+  # first_three returns a slice of the first three elements of items.
+  def first_three(items):
+      # TODO: Return items[:3]
+      return []
+
+
+  # append_unique adds value to items only if it is not already present,
+  # then returns items.
+  def append_unique(items, value):
+      # TODO: Append only when value is missing, then return items
+      return items
+
+
+  # count_value returns how many times value appears in items.
+  def count_value(items, value):
+      # TODO: Return items.count(value)
+      return 0
+
+
+  # swap_pair returns a new tuple with the two elements swapped.
+  def swap_pair(pair):
+      # TODO: Return (pair[1], pair[0])
+      return (None, None)
+testCode: |
+  from solution import second_element, last_element, first_three, append_unique, count_value, swap_pair
+
+
+  def test_second_element():
+      assert second_element([10, 20, 30]) == 20
+
+
+  def test_last_element():
+      assert last_element([10, 20, 30]) == 30
+
+
+  def test_last_element_single():
+      assert last_element([7]) == 7
+
+
+  def test_first_three():
+      assert first_three([1, 2, 3, 4, 5]) == [1, 2, 3]
+
+
+  def test_first_three_short():
+      assert first_three([1, 2]) == [1, 2]
+
+
+  def test_append_unique_new():
+      assert append_unique([1, 2], 3) == [1, 2, 3]
+
+
+  def test_append_unique_existing():
+      assert append_unique([1, 2, 3], 3) == [1, 2, 3]
+
+
+  def test_count_value():
+      assert count_value([1, 2, 2, 3, 2], 2) == 3
+
+
+  def test_count_value_absent():
+      assert count_value([1, 2], 9) == 0
+
+
+  def test_swap_pair():
+      assert swap_pair((1, 2)) == (2, 1)
+---
+
+# Lists & Tuples Challenge
+
+Now that you have read about lists and tuples, apply what you learned!
+
+## Tasks
+
+1. Implement `second_element(items)` that returns the second element using indexing.
+2. Implement `last_element(items)` that returns the last element using a negative index.
+3. Implement `first_three(items)` that returns a slice of the first three elements.
+4. Implement `append_unique(items, value)` that appends `value` only when it is missing.
+5. Implement `count_value(items, value)` that counts occurrences using `.count()`.
+6. Implement `swap_pair(pair)` that returns a new tuple with the two elements swapped.

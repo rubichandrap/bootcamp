@@ -1,0 +1,85 @@
+---
+title: "Dictionaries Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # get_value returns data[key] when key exists, otherwise default.
+  def get_value(data, key, default):
+      # TODO: Use .get
+      return default
+
+
+  # add_entry sets mapping[key] = value and returns mapping.
+  def add_entry(mapping, key, value):
+      # TODO: Assign the entry, then return mapping
+      return mapping
+
+
+  # collect_keys returns a list of all keys in mapping.
+  def collect_keys(mapping):
+      # TODO: Return list(mapping.keys())
+      return []
+
+
+  # word_count returns a dict mapping each word to the number of times
+  # it appears in words.
+  def word_count(words):
+      # TODO: Build a counting dict, one word at a time
+      return {}
+
+
+  # invert returns a new dict swapping keys and values using items().
+  def invert(mapping):
+      # TODO: Loop over items(); assign result[value] = key
+      return {}
+testCode: |
+  from solution import get_value, add_entry, collect_keys, word_count, invert
+
+
+  def test_get_value_present():
+      assert get_value({"a": 1, "b": 2}, "b", 0) == 2
+
+
+  def test_get_value_missing():
+      assert get_value({"a": 1}, "z", 99) == 99
+
+
+  def test_add_entry_new():
+      assert add_entry({"a": 1}, "b", 2) == {"a": 1, "b": 2}
+
+
+  def test_add_entry_overwrite():
+      assert add_entry({"a": 1}, "a", 9) == {"a": 9}
+
+
+  def test_collect_keys():
+      assert sorted(collect_keys({"x": 1, "y": 2})) == ["x", "y"]
+
+
+  def test_collect_keys_empty():
+      assert collect_keys({}) == []
+
+
+  def test_word_count():
+      assert word_count(["a", "b", "a", "c", "a"]) == {"a": 3, "b": 1, "c": 1}
+
+
+  def test_word_count_empty():
+      assert word_count([]) == {}
+
+
+  def test_invert():
+      assert invert({"a": 1, "b": 2}) == {1: "a", 2: "b"}
+---
+
+# Dictionaries Challenge
+
+Now that you have read about dictionaries, apply what you learned!
+
+## Tasks
+
+1. Implement `get_value(data, key, default)` using `.get()`.
+2. Implement `add_entry(mapping, key, value)` that sets an entry and returns the dict.
+3. Implement `collect_keys(mapping)` that returns a list of all keys.
+4. Implement `word_count(words)` that builds a counting dictionary.
+5. Implement `invert(mapping)` that swaps keys and values using `items()`.

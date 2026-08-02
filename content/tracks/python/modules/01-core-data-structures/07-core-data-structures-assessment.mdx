@@ -1,0 +1,81 @@
+---
+title: "Module 01 Capstone: Core Data Structures Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  # unique_sorted returns a sorted list of the unique values in numbers.
+  def unique_sorted(numbers):
+      # TODO: Combine set() and sorted()
+      return []
+
+
+  # merge_dicts returns a new dict with all entries from a and b,
+  # with entries in b overriding those in a.
+  def merge_dicts(a, b):
+      # TODO: Start from a, then apply b
+      return {}
+
+
+  # has_duplicates returns True if items contains any repeated value.
+  def has_duplicates(items):
+      # TODO: Compare len(items) and len(set(items))
+      return False
+
+
+  # index_pairs returns a list of (index, value) tuples for values.
+  def index_pairs(values):
+      # TODO: Use range() and a list comprehension
+      return []
+
+
+  # indexed returns a dict mapping each index to the value at that index.
+  def indexed(values):
+      # TODO: Use a dict comprehension over range(len(values))
+      return {}
+testCode: |
+  from solution import unique_sorted, merge_dicts, has_duplicates, index_pairs, indexed
+
+
+  def test_unique_sorted():
+      assert unique_sorted([3, 1, 3, 2, 1]) == [1, 2, 3]
+
+
+  def test_unique_sorted_empty():
+      assert unique_sorted([]) == []
+
+
+  def test_merge_dicts():
+      assert merge_dicts({"a": 1, "b": 2}, {"b": 3, "c": 4}) == {"a": 1, "b": 3, "c": 4}
+
+
+  def test_merge_dicts_disjoint():
+      assert merge_dicts({"a": 1}, {"b": 2}) == {"a": 1, "b": 2}
+
+
+  def test_has_duplicates_true():
+      assert has_duplicates([1, 2, 1]) is True
+
+
+  def test_has_duplicates_false():
+      assert has_duplicates([1, 2, 3]) is False
+
+
+  def test_index_pairs():
+      assert index_pairs(["a", "b", "c"]) == [(0, "a"), (1, "b"), (2, "c")]
+
+
+  def test_index_pairs_empty():
+      assert index_pairs([]) == []
+
+
+  def test_indexed():
+      assert indexed(["a", "b", "c"]) == {0: "a", 1: "b", 2: "c"}
+
+
+  def test_indexed_empty():
+      assert indexed([]) == {}
+---
+
+# Assessment: Core Data Structures Toolkit
+
+Integrate lists, tuples, dicts, sets, and comprehensions to implement a small data-handling toolkit. All five concepts from this module must be applied correctly to pass.

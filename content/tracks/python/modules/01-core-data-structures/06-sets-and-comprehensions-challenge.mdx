@@ -1,0 +1,80 @@
+---
+title: "Sets & Comprehensions Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  # unique_values returns a list of the unique values in items.
+  def unique_values(items):
+      # TODO: Use set() then convert back to a list
+      return []
+
+
+  # common_elements returns a list of values present in both a and b.
+  def common_elements(a, b):
+      # TODO: Use set intersection
+      return []
+
+
+  # squares returns a list of squares for integers 1..n inclusive.
+  def squares(n):
+      # TODO: Use a list comprehension with range()
+      return []
+
+
+  # evens returns only the even numbers from numbers.
+  def evens(numbers):
+      # TODO: Use a filtered list comprehension
+      return []
+
+
+  # word_lengths returns a dict mapping each word to its length.
+  def word_lengths(words):
+      # TODO: Use a dict comprehension
+      return {}
+testCode: |
+  from solution import unique_values, common_elements, squares, evens, word_lengths
+
+
+  def test_unique_values():
+      assert sorted(unique_values([3, 1, 3, 2, 1])) == [1, 2, 3]
+
+
+  def test_unique_values_all_unique():
+      assert sorted(unique_values([5, 4, 3])) == [3, 4, 5]
+
+
+  def test_common_elements():
+      assert sorted(common_elements([1, 2, 3], [2, 3, 4])) == [2, 3]
+
+
+  def test_common_elements_none():
+      assert common_elements([1, 2], [3, 4]) == []
+
+
+  def test_squares():
+      assert squares(4) == [1, 4, 9, 16]
+
+
+  def test_evens():
+      assert evens([1, 2, 3, 4, 5, 6]) == [2, 4, 6]
+
+
+  def test_evens_none():
+      assert evens([1, 3, 5]) == []
+
+
+  def test_word_lengths():
+      assert word_lengths(["hi", "python"]) == {"hi": 2, "python": 6}
+---
+
+# Sets & Comprehensions Challenge
+
+Now that you have read about sets and comprehensions, apply what you learned!
+
+## Tasks
+
+1. Implement `unique_values(items)` that deduplicates using `set()`.
+2. Implement `common_elements(a, b)` using set intersection.
+3. Implement `squares(n)` with a list comprehension over `range()`.
+4. Implement `evens(numbers)` with a filtered list comprehension.
+5. Implement `word_lengths(words)` with a dictionary comprehension.

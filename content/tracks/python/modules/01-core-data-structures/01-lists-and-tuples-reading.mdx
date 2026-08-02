@@ -1,0 +1,99 @@
+---
+title: "Lists & Tuples"
+type: "reading"
+order: 1
+---
+
+# Lists & Tuples
+
+Sequences hold ordered collections of values. Python gives you two core sequence types: **lists** (mutable) and **tuples** (immutable).
+
+## Creating Lists
+
+Lists are ordered, mutable collections written with square brackets:
+
+```python
+colors = ["red", "green", "blue"]
+numbers = [1, 2, 3]
+mixed = [1, "two", 3.0, True]
+empty = []
+```
+
+## Indexing
+
+Access elements by position with `[]`. Indexing is zero-based — `0` is the first element. Negative indexes count from the end, where `-1` is the last element.
+
+```python
+colors = ["red", "green", "blue"]
+
+colors[0]   # "red"
+colors[2]   # "blue"
+colors[-1]  # "blue"
+colors[-2]  # "green"
+```
+
+## Slicing
+
+A slice `[start:stop]` returns a new list from `start` up to (but not including) `stop`. Omitting `start` begins at the beginning; omitting `stop` goes to the end.
+
+```python
+nums = [10, 20, 30, 40, 50]
+
+nums[1:3]  # [20, 30]
+nums[:2]   # [10, 20]
+nums[2:]   # [30, 40, 50]
+nums[:]    # a full copy
+```
+
+## Common Operations
+
+```python
+len(nums)        # number of elements
+nums[0] = 99     # replace an element (lists are mutable)
+99 in nums       # True — membership test
+```
+
+## List Methods
+
+Lists mutate in place with methods:
+
+```python
+nums = [1, 2]
+
+nums.append(3)    # add to the end          -> [1, 2, 3]
+nums.extend([4])  # add each element        -> [1, 2, 3, 4]
+nums.insert(0, 0) # insert at an index      -> [0, 1, 2, 3, 4]
+nums.remove(2)    # remove first match      -> [0, 1, 3, 4]
+nums.pop()        # remove and return last  -> 4, nums is [0, 1, 3]
+nums.count(1)     # occurrences of a value  -> 1
+nums.sort()       # sort in place
+```
+
+`sorted(nums)` returns a new sorted list without modifying the original.
+
+## Tuples
+
+Tuples are ordered and immutable — once created they cannot be changed. Use parentheses:
+
+```python
+point = (3, 4)
+point[0]   # 3
+point[1]   # 4
+```
+
+A single-element tuple needs a trailing comma:
+
+```python
+singleton = (5,)
+```
+
+## Tuple Unpacking
+
+A tuple's values can be unpacked into named variables:
+
+```python
+point = (3, 4)
+x, y = point   # x is 3, y is 4
+```
+
+Indexing, slicing, `len`, and `in` all work on tuples too. Use a tuple when the order of values is part of their meaning and should not change; use a list when you need to grow or mutate the collection.
