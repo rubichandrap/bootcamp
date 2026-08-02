@@ -1,0 +1,72 @@
+---
+title: "Generators & Pipelines Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # evens(limit) is a generator yielding 0, 2, 4, ... up to limit.
+  def evens(limit):
+      # TODO: Yield every even number from 0 to limit.
+      yield limit
+
+
+  # squares(nums) is a generator yielding the square of each number in nums.
+  def squares(nums):
+      # TODO: Yield n * n for each n in nums.
+      yield from nums
+
+
+  # fibonacci() is an infinite generator: 0, 1, 1, 2, 3, 5, ...
+  def fibonacci():
+      # TODO: Yield 0, then 1, then each successive sum.
+      yield 0
+testCode: |
+  from solution import evens, squares, fibonacci
+
+
+  def test_evens_sequence():
+      assert list(evens(10)) == [0, 2, 4, 6, 8, 10]
+
+
+  def test_evens_zero():
+      assert list(evens(0)) == [0]
+
+
+  def test_evens_is_generator():
+      g = evens(4)
+      assert next(g) == 0
+      assert next(g) == 2
+      assert next(g) == 4
+
+
+  def test_squares_sequence():
+      assert list(squares([1, 2, 3])) == [1, 4, 9]
+
+
+  def test_squares_empty():
+      assert list(squares([])) == []
+
+
+  def test_pipeline_evens_then_squares():
+      assert list(squares(evens(8))) == [0, 4, 16, 36, 64]
+
+
+  def test_fibonacci_first_terms():
+      f = fibonacci()
+      assert [next(f) for _ in range(8)] == [0, 1, 1, 2, 3, 5, 8, 13]
+
+
+  def test_fibonacci_is_infinite():
+      f = fibonacci()
+      for _ in range(100):
+          next(f)
+---
+
+# Generators & Pipelines Challenge
+
+Now that you have read about generators and pipelines, apply what you learned!
+
+## Tasks
+
+1. Implement `evens(limit)` as a generator yielding every even number from `0` up to `limit`.
+2. Implement `squares(nums)` as a generator yielding the square of each number in `nums`.
+3. Implement `fibonacci()` as an infinite generator yielding `0, 1, 1, 2, 3, 5, ...`.
