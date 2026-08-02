@@ -1,0 +1,71 @@
+---
+title: "Threads & Processes"
+type: "reading"
+order: 3
+---
+
+# Threads & Processes
+
+Async is not the only concurrency tool. Python also has **threads** and **processes**, and each solves a different problem. To use them you must first understand the **GIL** — the rule that shapes all three.
+
+## The GIL, Briefly
+
+CPython (the standard Python) protects its internal memory management with a **Global Interpreter Lock**: only one thread may execute Python bytecode at any instant. This means threads never run Python code *at the same time* — they take turns.
+
+But the GIL is **released** during long-running operations that do not touch Python objects: waiting on I/O, `time.sleep`, and many C-extension calls. During those windows, other threads can run. That single fact is why threads are still useful.
+
+## When Threads Help: I/O-Bound Work
+
+A program that mostly *waits* — network requests, file reads, database queries — is **I/O-bound**. While one thread waits, the GIL is free, so other threads can start their own I/O. A thread pool can turn several slow requests into one roughly-as-slow batch:
+
+```python
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+def fetch(url):
+    time.sleep(0.5)      # simulated network I/O — GIL released here
+    return url.upper()
+
+with ThreadPoolExecutor() as pool:
+    results = list(pool.map(fetch, ["a", "b", "c", "d"]))
+# ~0.5s total, not 2s — the four sleeps overlap
+```
+
+`ThreadPoolExecutor.map` runs `fetch` on a pool of worker threads and returns results in input order. The threads are lightweight and share memory with the main thread.
+
+## When Threads Do Not Help: CPU-Bound Work
+
+If the work is pure Python computation — loops, math, list crunching — the GIL is *not* released, so threads just take turns on the same core. Four threads do not make a CPU-bound job faster; often it gets *slower* from switching overhead:
+
+```python
+def compute_square(n):
+    total = 0
+    for _ in range(100_000):
+        total += n * n
+    return total
+# ThreadPoolExecutor.map(compute_square, big_list) buys you nothing
+```
+
+## When to Reach for Processes
+
+For **CPU-bound** work, spawn **processes** instead. Each process gets its own interpreter *and its own GIL*, so several cores genuinely run at once:
+
+```python
+from concurrent.futures import ProcessPoolExecutor
+
+with ProcessPoolExecutor() as pool:
+    results = list(pool.map(compute_square, [1, 2, 3, 4]))
+# 4 processes, up to 4 cores working in parallel
+```
+
+Processes have real costs: they do not share memory, arguments are copied across the boundary (pickled), and starting one takes time. Use them only when threads cannot help — heavy CPU work.
+
+## Choosing Between Threads and Processes
+
+The rule of thumb:
+
+- **I/O-bound** work (network, disk, sleep) → `ThreadPoolExecutor`. Cheap, shared memory, threads overlap their waits.
+- **CPU-bound** work (math, loops, crunching) → `ProcessPoolExecutor`. Real parallelism, but expensive to start and no shared memory.
+- **Massively concurrent I/O** (thousands of connections) → `asyncio`. Coroutines are cheaper than threads at that scale.
+
+The next chapter will have you pick the right executor for each workload and verify that threads really do overlap I/O waits.

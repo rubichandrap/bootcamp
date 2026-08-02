@@ -1,0 +1,59 @@
+---
+title: "Async/Await Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  import asyncio
+
+
+  # delayed(value, delay) is a coroutine: await asyncio.sleep(delay),
+  # then return value.
+  async def delayed(value, delay):
+      # TODO: await asyncio.sleep(delay), then return value.
+      return value
+
+
+  # run_all() awaits three delayed coroutines CONCURRENTLY with
+  # asyncio.gather and returns their results as a list [1, 2, 3].
+  async def run_all():
+      # TODO: gather delayed(1, 0.1), delayed(2, 0.1), delayed(3, 0.1).
+      return []
+testCode: |
+  import asyncio
+  import inspect
+  import time
+
+  from solution import delayed, run_all
+
+
+  def test_delayed_is_coroutine_function():
+      assert inspect.iscoroutinefunction(delayed)
+
+
+  def test_delayed_returns_value():
+      assert asyncio.run(delayed("ok", 0)) == "ok"
+
+
+  def test_run_all_is_coroutine_function():
+      assert inspect.iscoroutinefunction(run_all)
+
+
+  def test_run_all_returns_in_order():
+      assert asyncio.run(run_all()) == [1, 2, 3]
+
+
+  def test_run_all_is_concurrent():
+      t0 = time.monotonic()
+      asyncio.run(run_all())
+      elapsed = time.monotonic() - t0
+      assert elapsed < 0.2  # 0.1 concurrent vs 0.3 sequential
+---
+
+# Async/Await Challenge
+
+Now that you have read about coroutines and the event loop, apply what you learned!
+
+## Tasks
+
+1. Implement `delayed(value, delay)` so that awaiting `asyncio.sleep(delay)` suspends it and it returns `value`.
+2. Implement `run_all()` using `asyncio.gather` to run three `delayed` coroutines concurrently and return `[1, 2, 3]` in input order.

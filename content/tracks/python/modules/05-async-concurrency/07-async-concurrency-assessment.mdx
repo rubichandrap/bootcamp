@@ -1,0 +1,109 @@
+---
+title: "Module 05 Capstone: Concurrent Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import asyncio
+  import time
+  from concurrent.futures import ThreadPoolExecutor
+
+
+  # async_task(value, delay) awaits asyncio.sleep(delay), then returns value.
+  async def async_task(value, delay):
+      # TODO: await asyncio.sleep(delay), then return value.
+      return value
+
+
+  # run_async_work() gathers three async_task calls CONCURRENTLY and returns
+  # their results as a list [10, 20, 30].
+  async def run_async_work():
+      # TODO: gather async_task(10, 0.05), async_task(20, 0.05),
+      # async_task(30, 0.05).
+      return []
+
+
+  # fetch(url) simulates an I/O-bound request that releases the GIL.
+  def fetch(url):
+      time.sleep(0.05)
+      return f"Fetched {url}"
+
+
+  # fetch_many(urls) fetches all urls in parallel using a ThreadPoolExecutor.
+  def fetch_many(urls):
+      # TODO: map fetch over urls with a ThreadPoolExecutor; return a list.
+      return []
+
+
+  # executor_for(kind) returns "thread" for I/O-bound work and "process"
+  # for CPU-bound work.
+  def executor_for(kind):
+      # TODO: "io", "network" -> "thread"; "cpu", "math" -> "process".
+      return "thread"
+testCode: |
+  import asyncio
+  import inspect
+  import time
+
+  from solution import (
+      async_task,
+      executor_for,
+      fetch,
+      fetch_many,
+      run_async_work,
+  )
+
+
+  def test_async_task_is_coroutine():
+      assert inspect.iscoroutinefunction(async_task)
+
+
+  def test_async_task_returns_value():
+      assert asyncio.run(async_task("done", 0)) == "done"
+
+
+  def test_run_async_work_order():
+      assert asyncio.run(run_async_work()) == [10, 20, 30]
+
+
+  def test_run_async_work_is_concurrent():
+      t0 = time.monotonic()
+      asyncio.run(run_async_work())
+      elapsed = time.monotonic() - t0
+      assert elapsed < 0.12  # 0.05 concurrent vs 0.15 sequential
+
+
+  def test_fetch_returns_content():
+      assert fetch("home") == "Fetched home"
+
+
+  def test_fetch_many_correctness():
+      assert fetch_many(["a", "b"]) == ["Fetched a", "Fetched b"]
+
+
+  def test_fetch_many_is_concurrent():
+      t0 = time.monotonic()
+      fetch_many(["a", "b", "c", "d"])
+      elapsed = time.monotonic() - t0
+      assert elapsed < 0.15  # 0.05 concurrent vs 0.2 sequential
+
+
+  def test_executor_for_io():
+      assert executor_for("io") == "thread"
+      assert executor_for("network") == "thread"
+
+
+  def test_executor_for_cpu():
+      assert executor_for("cpu") == "process"
+      assert executor_for("math") == "process"
+---
+
+# Assessment: Concurrent Toolkit
+
+Integrate async/await, threads, and the GIL concurrency model to build a small concurrent toolkit. All three areas from this module must be applied correctly to pass.
+
+## Tasks
+
+1. Implement `async_task(value, delay)` as a coroutine that sleeps and returns `value`.
+2. Implement `run_async_work()` using `asyncio.gather` to run three `async_task` calls concurrently and return `[10, 20, 30]`.
+3. Implement `fetch_many(urls)` using a `ThreadPoolExecutor` so I/O-bound `fetch` calls overlap.
+4. Implement `executor_for(kind)` returning `"thread"` for I/O-bound workloads and `"process"` for CPU-bound workloads.

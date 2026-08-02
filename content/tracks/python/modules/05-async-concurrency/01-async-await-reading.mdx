@@ -1,0 +1,84 @@
+---
+title: "Async/Await & the Event Loop"
+type: "reading"
+order: 1
+---
+
+# Async/Await & the Event Loop
+
+Some programs spend most of their time waiting — for a network response, a file read, or a database query. A program that waits is a program that is not working. Python's **`asyncio`** lets one thread juggle many of these waits so that useful work happens during what would otherwise be idle time.
+
+## Coroutines: Functions That Can Pause
+
+A **coroutine function** is declared with `async def`. Calling it does **not** run the body — it returns a coroutine object, and the body only runs when the coroutine is awaited (or otherwise driven):
+
+```python
+import asyncio
+
+async def greet(name):
+    return f"Hello, {name}!"
+
+coro = greet("Ada")      # nothing has run yet
+asyncio.run(coro)        # "Hello, Ada!"
+```
+
+`asyncio.run()` is the entry point: it creates an event loop, runs the coroutine to completion, and closes the loop. Use it once at the top of an async program.
+
+## `await` Suspends the Coroutine
+
+Inside a coroutine, `await` hands control back to the event loop until something completes. The coroutine is **suspended** — it remembers exactly where it paused and resumes there when the awaited thing finishes:
+
+```python
+async def slow_greet(name):
+    await asyncio.sleep(1)          # suspend for 1 second
+    return f"Hello, {name}!"
+```
+
+While `slow_greet` is suspended, the event loop can run other coroutines. That is the entire trick: `await` points are where the single thread switches between tasks, and every `await` frees the thread for someone else.
+
+## The Event Loop
+
+The **event loop** is a single-threaded scheduler. It holds a queue of ready tasks, runs one until it hits an `await`, then moves to the next ready task. Concurrency is *cooperative* — tasks switch only at `await` points, never in the middle of a line of code:
+
+```python
+async def report(name, seconds):
+    await asyncio.sleep(seconds)
+    print(name)
+
+async def main():
+    task_a = asyncio.create_task(report("A", 0.2))
+    task_b = asyncio.create_task(report("B", 0.1))
+    await task_a
+    await task_b
+    # B prints before A — its sleep finished first
+
+asyncio.run(main())
+```
+
+`asyncio.create_task()` schedules a coroutine to run concurrently. Both tasks run on the same thread; while `A` sleeps, `B` runs, and vice versa.
+
+## `asyncio.gather` — Run Several Coroutines Together
+
+`gather` awaits multiple coroutines (or tasks) concurrently and returns their results in **input order**, no matter what order they finish:
+
+```python
+async def main():
+    results = await asyncio.gather(
+        slow_greet("Ada"),
+        slow_greet("Bob"),
+        slow_greet("Cy"),
+    )
+    return results   # results are in the order you listed them
+
+asyncio.run(main())  # takes ~1s total, not 3s
+```
+
+Three one-second coroutines complete in about one second because their sleeps overlap. If the coroutines do not `await` anything, there is no concurrency — the event loop has nothing to switch to.
+
+## Why Not Threads?
+
+Async shines for **I/O-bound** work with many concurrent operations — thousands of open connections — because coroutines are cheap. A coroutine is just a function with a pause; no OS thread or process is created for it. For CPU-heavy work, async does nothing for you: no `await` means no switching, and the single thread is still the only thing computing.
+
+## The Golden Rule
+
+An `async def` coroutine only runs when awaited, awaits only coroutines (or awaitables), and gives other tasks their turn exactly at `await` points. In the next chapter you will build coroutines and run them concurrently with `asyncio.gather`.
