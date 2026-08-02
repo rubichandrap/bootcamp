@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 — SQLite Schema & Progress Tracking Persistence
 
-**Status:** completed
+**Status:** done
 
 - [x] Content loader service reading MDX files and metadata from `content/modules/`.
 - [x] MDX rendering component with high-contrast typography, heading anchors, and syntax highlighting for Go code blocks.

@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — App Skeleton & Basic Host RCE Execution Pipeline
 
-**Status:** completed
+**Status:** done
 
 - [x] SQLite database setup with Drizzle ORM schema defining `users`, `modules`, `chapters`, `user_progress`, and `submissions`.
 - [x] Server Action / API route `/api/submissions` to log submission attempts and test results.

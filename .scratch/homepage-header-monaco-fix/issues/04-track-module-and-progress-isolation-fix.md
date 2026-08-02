@@ -4,7 +4,7 @@
 
 **Blocked by:** None — immediate bugfix.
 
-**Status:** completed
+**Status:** done
 
 - [x] `fetchModules` and `fetchChapter` support `trackSlug` parameter.
 - [x] `TrackWorkspace` effect re-fetches modules on `initialTrackSlug` change and auto-selects first chapter of new track.
