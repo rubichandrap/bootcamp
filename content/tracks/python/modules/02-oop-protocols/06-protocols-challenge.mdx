@@ -1,0 +1,85 @@
+---
+title: "Protocols Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  # Deck exposes its cards through the Sequence protocol.
+  class Deck:
+      # TODO: Store self.cards
+      def __init__(self, cards):
+          pass
+
+      # TODO: Return the number of cards
+      def __len__(self):
+          return 0
+
+      # TODO: Return self.cards[index]
+      def __getitem__(self, index):
+          raise IndexError
+
+
+  # Inventory answers membership questions via the Container protocol.
+  class Inventory:
+      # TODO: Store self.items
+      def __init__(self, items):
+          pass
+
+      # TODO: Return item in self.items
+      def __contains__(self, item):
+          return False
+
+
+  # Multiplier is a callable object.
+  class Multiplier:
+      # TODO: Store self.factor
+      def __init__(self, factor):
+          pass
+
+      # TODO: Return value * self.factor
+      def __call__(self, value):
+          return None
+testCode: |
+  from solution import Deck, Inventory, Multiplier
+
+
+  def test_deck_len():
+      assert len(Deck(["A", "B", "C"])) == 3
+
+
+  def test_deck_getitem():
+      assert Deck(["A", "B", "C"])[1] == "B"
+
+
+  def test_deck_negative_index():
+      assert Deck(["A", "B", "C"])[-1] == "C"
+
+
+  def test_inventory_contains():
+      inv = Inventory(["apple", "banana"])
+      assert "apple" in inv
+
+
+  def test_inventory_not_contains():
+      inv = Inventory(["apple"])
+      assert "grape" not in inv
+
+
+  def test_multiplier_call():
+      double = Multiplier(2)
+      assert double(5) == 10
+
+
+  def test_multiplier_call_zero():
+      triple = Multiplier(3)
+      assert triple(0) == 0
+---
+
+# Protocols Challenge
+
+Now that you have read about protocol-based design, apply what you learned!
+
+## Tasks
+
+1. Implement `Deck` with `__len__` and `__getitem__` to satisfy the Sequence protocol.
+2. Implement `Inventory` with `__contains__` to satisfy the Container protocol.
+3. Implement `Multiplier` with `__call__` to satisfy the Callable protocol.

@@ -1,0 +1,143 @@
+---
+title: "Module 02 Capstone: OOP & Protocols Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  # BankAccount tracks an owner's balance.
+  class BankAccount:
+      # TODO: Store self.owner and self.balance
+      def __init__(self, owner, balance=0):
+          pass
+
+      # TODO: Add amount to self.balance
+      def deposit(self, amount):
+          pass
+
+      # TODO: Subtract amount from self.balance
+      def withdraw(self, amount):
+          pass
+
+      # TODO: Return "Account of <owner>: $<balance>"
+      def __str__(self):
+          return ""
+
+      # TODO: Return True when owners and balances match
+      def __eq__(self, other):
+          return False
+
+
+  # Point represents a 2D coordinate.
+  class Point:
+      # TODO: Store self.x and self.y
+      def __init__(self, x, y):
+          pass
+
+      # TODO: Return a new Point with summed coordinates
+      def __add__(self, other):
+          return Point(0, 0)
+
+      # TODO: Return "Point(<x>, <y>)"
+      def __repr__(self):
+          return ""
+
+      # TODO: Return True when the coordinates match
+      def __eq__(self, other):
+          return False
+
+
+  # Team holds members and supports the Sequence and Container protocols.
+  class Team:
+      # TODO: Store self.members
+      def __init__(self, members):
+          pass
+
+      # TODO: Append member to self.members
+      def add(self, member):
+          pass
+
+      # TODO: Return the number of members
+      def __len__(self):
+          return 0
+
+      # TODO: Return self.members[index]
+      def __getitem__(self, index):
+          raise IndexError
+
+      # TODO: Return member in self.members
+      def __contains__(self, member):
+          return False
+testCode: |
+  from solution import BankAccount, Point, Team
+
+
+  def test_account_default_balance():
+      assert BankAccount("Ada").balance == 0
+
+
+  def test_account_deposit():
+      acc = BankAccount("Ada", 100)
+      acc.deposit(50)
+      assert acc.balance == 150
+
+
+  def test_account_withdraw():
+      acc = BankAccount("Ada", 100)
+      acc.withdraw(30)
+      assert acc.balance == 70
+
+
+  def test_account_str():
+      assert str(BankAccount("Ada", 100)) == "Account of Ada: $100"
+
+
+  def test_account_eq():
+      assert BankAccount("Ada", 100) == BankAccount("Ada", 100)
+
+
+  def test_account_neq():
+      assert BankAccount("Ada", 100) != BankAccount("Bob", 100)
+
+
+  def test_point_add():
+      assert Point(1, 2) + Point(3, 4) == Point(4, 6)
+
+
+  def test_point_repr():
+      assert repr(Point(2, 3)) == "Point(2, 3)"
+
+
+  def test_point_eq():
+      assert Point(1, 2) == Point(1, 2)
+
+
+  def test_team_len():
+      assert len(Team(["ada", "linus"])) == 2
+
+
+  def test_team_getitem():
+      assert Team(["ada", "linus"])[1] == "linus"
+
+
+  def test_team_iteration():
+      team = Team(["ada", "linus", "guido"])
+      names = []
+      for member in team:
+          names.append(member)
+      assert names == ["ada", "linus", "guido"]
+
+
+  def test_team_contains():
+      team = Team(["ada"])
+      assert "ada" in team
+      assert "bob" not in team
+
+
+  def test_team_add():
+      team = Team(["ada"])
+      team.add("bob")
+      assert len(team) == 2
+---
+
+# Assessment: OOP & Protocols Toolkit
+
+Integrate classes, dunder methods, and protocol-based design to implement a small object toolkit. All three concepts from this module must be applied correctly to pass.
