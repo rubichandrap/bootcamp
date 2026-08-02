@@ -1,0 +1,5 @@
+{
+  "title": "Core Data Structures",
+  "description": "Master lists, dicts, sets, tuples, and comprehensions to represent and manipulate data idiomatically.",
+  "order": 1
+}

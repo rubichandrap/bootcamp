@@ -1,0 +1,85 @@
+---
+title: "Sets & Comprehensions"
+type: "reading"
+order: 5
+---
+
+# Sets & Comprehensions
+
+Sets store **unique**, unordered values. Comprehensions build new collections from existing ones in a single expression.
+
+## Creating Sets
+
+A set literal uses curly braces — but `{}` creates an empty **dictionary**, so an empty set uses `set()`:
+
+```python
+colors = {"red", "green", "blue"}
+empty = set()
+```
+
+Duplicate values collapse into one:
+
+```python
+{1, 2, 2, 3}   # {1, 2, 3}
+```
+
+## Set Operations
+
+```python
+fruits = {"apple", "banana"}
+citrus = {"orange", "lemon", "apple"}
+
+fruits | citrus        # union: all values            -> {"apple", "banana", "orange", "lemon"}
+fruits & citrus        # intersection: in both        -> {"apple"}
+fruits - citrus        # difference: only in fruits   -> {"banana"}
+"apple" in fruits      # membership: fast, O(1)
+```
+
+Membership tests on sets are fast even for large collections — much faster than scanning a list.
+
+## Building Sets from Sequences
+
+Pass any iterable to `set()` to get its unique values:
+
+```python
+set([1, 2, 2, 3])   # {1, 2, 3}
+```
+
+`len()` works on sets, and adding or removing uses `add()` / `discard()`.
+
+## List Comprehensions
+
+A list comprehension builds a list from an iterable in one line:
+
+```python
+[x * x for x in range(1, 6)]  # [1, 4, 9, 16, 25]
+[x * x for x in range(5)]     # [0, 1, 4, 9, 16]
+[x for x in range(10) if x % 2 == 0]   # [0, 2, 4, 6, 8]
+```
+
+Structure: `[expression for item in iterable if condition]`. The `if` clause is optional and filters which items are included.
+
+```python
+names = ["ada", "linus", "guido"]
+[len(n) for n in names]   # [3, 5, 5]
+```
+
+## Set Comprehensions
+
+Using curly braces instead of brackets gives a set, automatically removing duplicates:
+
+```python
+{x % 3 for x in range(10)}   # {0, 1, 2}
+{len(w) for w in ["hi", "go", "python"]}   # {2, 6}
+```
+
+## Dictionary Comprehensions
+
+With `key: value` inside braces, you build a dictionary:
+
+```python
+words = ["cat", "dog", "fish"]
+{w: len(w) for w in words}   # {"cat": 3, "dog": 3, "fish": 4}
+```
+
+The same `for ... if ...` rules apply, so you can filter as you build.

@@ -1,0 +1,5 @@
+{
+  "title": "Packaging & Testing",
+  "description": "Structure real Python projects with modules, packages, and virtual environments, then verify them with pytest and type hints.",
+  "order": 6
+}

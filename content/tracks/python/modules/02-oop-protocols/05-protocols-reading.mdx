@@ -1,0 +1,77 @@
+---
+title: "Protocol-Based Design"
+type: "reading"
+order: 5
+---
+
+# Protocol-Based Design
+
+Python is **dynamically typed**, so what matters is what an object *can do*, not what it *is*: if it walks like a duck and quacks like a duck, it's a duck. A **protocol** is a set of methods that grants an object a capability. Implement the methods and the behavior comes for free.
+
+## The Sequence Protocol
+
+Implementing `__getitem__` and `__len__` makes an object a Sequence: indexing, `len()`, iteration, and membership all start working automatically.
+
+```python
+class Deck:
+    def __init__(self, cards):
+        self.cards = cards
+
+    def __len__(self):
+        return len(self.cards)
+
+    def __getitem__(self, index):
+        return self.cards[index]
+
+
+deck = Deck(["A", "B", "C"])
+deck[0]      # "A"
+deck[-1]     # "C"
+len(deck)    # 3
+
+for card in deck:
+    print(card)
+
+"B" in deck  # True
+```
+
+Indexing and negative indexing come straight from `__getitem__`; `len()` from `__len__`; iteration and `in` follow automatically from the two.
+
+## The Container Protocol
+
+`__contains__` enables the `in` operator for membership checks:
+
+```python
+class Inventory:
+    def __init__(self, items):
+        self.items = items
+
+    def __contains__(self, item):
+        return item in self.items
+
+
+stock = Inventory(["apple", "banana"])
+"apple" in stock   # True
+"grape" in stock   # False
+```
+
+## The Callable Protocol
+
+`__call__` lets you call an instance like a function — useful for objects that carry configuration around a simple call:
+
+```python
+class Multiplier:
+    def __init__(self, factor):
+        self.factor = factor
+
+    def __call__(self, value):
+        return value * self.factor
+
+
+double = Multiplier(2)
+double(5)   # 10
+```
+
+## Protocols in the Standard Library
+
+The `collections.abc` module names these protocols — `Sequence`, `Container`, `Callable`, and more. They exist mainly as documentation and for `isinstance` checks. In everyday code, you simply implement the methods and the protocol is satisfied.

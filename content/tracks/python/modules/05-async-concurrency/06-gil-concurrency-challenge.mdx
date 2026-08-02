@@ -1,0 +1,74 @@
+---
+title: "GIL & Concurrency Models Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  import threading
+  from concurrent.futures import ThreadPoolExecutor
+
+
+  # bump(shared, lock, times) increments shared[0] by one, times times, while
+  # holding lock so concurrent calls cannot lose updates.
+  def bump(shared, lock, times):
+      # TODO: repeat times times: with lock: shared[0] += 1
+      pass
+
+
+  # run_bumps(threads, times) runs threads workers, each calling
+  # bump(shared, lock, times) on a single shared counter, and returns the
+  # final value.
+  def run_bumps(threads, times):
+      # TODO: shared = [0]; lock = threading.Lock(); submit one bump per
+      # worker via ThreadPoolExecutor(max_workers=threads); wait for all;
+      # return shared[0].
+      return 0
+
+
+  # mode_for(task_type) returns "thread" for I/O-bound work and "process"
+  # for CPU-bound work.
+  def mode_for(task_type):
+      # TODO: "io", "network", "sleep" -> "thread";
+      # "cpu", "math", "compute" -> "process".
+      return "thread"
+testCode: |
+  import threading
+
+  from solution import bump, mode_for, run_bumps
+
+
+  def test_bump_respects_lock():
+      shared = [0]
+      lock = threading.Lock()
+      bump(shared, lock, 50)
+      assert shared[0] == 50
+
+
+  def test_run_bumps_accumulates():
+      assert run_bumps(4, 25) == 100
+
+
+  def test_run_bumps_more_workers():
+      assert run_bumps(8, 40) == 320
+
+
+  def test_mode_for_io():
+      assert mode_for("io") == "thread"
+      assert mode_for("network") == "thread"
+      assert mode_for("sleep") == "thread"
+
+
+  def test_mode_for_cpu():
+      assert mode_for("cpu") == "process"
+      assert mode_for("math") == "process"
+      assert mode_for("compute") == "process"
+---
+
+# GIL & Concurrency Models Challenge
+
+Now that you have read about the GIL and locks, apply what you learned!
+
+## Tasks
+
+1. Implement `bump(shared, lock, times)` so that each increment happens inside `with lock:` and no updates are lost.
+2. Implement `run_bumps(threads, times)` to run `threads` workers bumping one shared counter and return the final value.
+3. Implement `mode_for(task_type)` returning `"thread"` for I/O-bound workloads and `"process"` for CPU-bound workloads.

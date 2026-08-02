@@ -1,0 +1,72 @@
+---
+title: "Modules & Packages Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  import importlib
+
+
+  # module_of(func) returns the name of the module that defines func,
+  # read from its __module__ attribute.
+  def module_of(func):
+      # TODO: return func.__module__.
+      return None
+
+
+  # import_from(module_name, attr) dynamically imports module_name with
+  # importlib and returns the attribute named attr from it.
+  def import_from(module_name, attr):
+      # TODO: importlib.import_module(module_name), then getattr the attr.
+      return None
+
+
+  # is_package(name) imports the module named name and returns True if it
+  # is a package (has a __path__ attribute) and False if it is a plain
+  # module.
+  def is_package(name):
+      # TODO: import name and check hasattr(module, "__path__").
+      return False
+testCode: |
+  import math
+
+  from solution import import_from, is_package, module_of
+
+
+  def test_module_of_math_sqrt():
+      assert module_of(math.sqrt) == "math"
+
+
+  def test_module_of_builtin_function():
+      assert module_of(len) == "builtins"
+
+
+  def test_import_from_returns_attribute():
+      assert import_from("math", "sqrt") is math.sqrt
+
+
+  def test_import_from_named_constant():
+      assert import_from("math", "pi") == math.pi
+
+
+  def test_import_from_returns_function_that_works():
+      sqrt = import_from("math", "sqrt")
+      assert sqrt(81) == 9.0
+
+
+  def test_is_package_positive():
+      assert is_package("json") is True
+
+
+  def test_is_package_negative():
+      assert is_package("math") is False
+---
+
+# Modules & Packages Challenge
+
+Now that you have read about modules, packages, and the import machinery, apply what you learned!
+
+## Tasks
+
+1. Implement `module_of(func)` to return the name of the module that defines `func`, read from its `__module__` attribute.
+2. Implement `import_from(module_name, attr)` using `importlib.import_module` and `getattr` to import any module by name and return one of its attributes.
+3. Implement `is_package(name)` to return `True` when the imported module is a package (it has a `__path__` attribute) and `False` for a plain module.

@@ -1,4 +1,5 @@
 import { runInSandboxTmpDir } from '@/lib/rce/executorUtils';
+import { buildResult } from '@/lib/rce/resultBuilder';
 import {
   ExecuteSubmissionParams,
   LanguageExecutor,
@@ -17,8 +18,6 @@ export function parseVitestJsonOutput(stdout: string, stderr: string): Submissio
   }
 
   const tests: TestResultItem[] = [];
-  let passedCount = 0;
-  let failedCount = 0;
 
   try {
     // Find json substring in stdout
@@ -34,8 +33,6 @@ export function parseVitestJsonOutput(stdout: string, stderr: string): Submissio
             for (const assertion of fileResult.assertionResults) {
               const isPassed = assertion.status === 'passed';
               const name = assertion.title || assertion.fullName || 'test';
-              if (isPassed) passedCount++;
-              else failedCount++;
 
               const failureMsg = Array.isArray(assertion.failureMessages)
                 ? assertion.failureMessages.join('\n')
@@ -60,16 +57,7 @@ export function parseVitestJsonOutput(stdout: string, stderr: string): Submissio
     compileError = stderr;
   }
 
-  const isSuccess = compileError ? false : failedCount === 0 && passedCount > 0;
-
-  return {
-    success: isSuccess,
-    passed: passedCount,
-    failed: failedCount,
-    tests,
-    compileError,
-    rawOutput,
-  };
+  return buildResult(tests, compileError, rawOutput);
 }
 
 export class TypeScriptExecutor implements LanguageExecutor {

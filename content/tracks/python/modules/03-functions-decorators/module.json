@@ -1,0 +1,5 @@
+{
+  "title": "Functions & Decorators",
+  "description": "Master first-class functions, closures, and decorators to write reusable, composable behavior with functools.",
+  "order": 3
+}

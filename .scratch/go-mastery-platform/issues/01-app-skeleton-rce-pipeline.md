@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** completed
+**Status:** done
 
 - [x] Next.js (App Router, TypeScript, TailwindCSS) project initialized.
 - [x] Monaco Code Editor component (`@monaco-editor/react`) rendering Go syntax highlighting.

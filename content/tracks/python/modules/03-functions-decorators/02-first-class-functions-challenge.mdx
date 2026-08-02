@@ -1,0 +1,71 @@
+---
+title: "First-Class Functions Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # apply_twice calls func twice: func(func(value)).
+  def apply_twice(func, value):
+      # TODO: Return func(func(value))
+      return value
+
+
+  # negate returns a NEW function that negates func's result.
+  # Use `not func(...)` so booleans flip.
+  def negate(func):
+      # TODO: Return a function that wraps func
+      return func
+
+
+  # make_multiplier returns a function that multiplies its argument by n.
+  def make_multiplier(n):
+      # TODO: Return a new function that returns x * n
+      return lambda x: x
+testCode: |
+  from solution import apply_twice, negate, make_multiplier
+
+
+  def test_apply_twice_lambda_double():
+      assert apply_twice(lambda x: x * 2, 3) == 12
+
+
+  def test_apply_twice_lambda_add():
+      assert apply_twice(lambda x: x + 1, 5) == 7
+
+
+  def test_apply_twice_named_function():
+      def square(x):
+          return x * x
+
+      assert apply_twice(square, 3) == 81
+
+
+  def test_negate_flips_true():
+      always_true = negate(lambda x: True)
+      assert always_true(1) is False
+
+
+  def test_negate_flips_predicate():
+      positive = negate(lambda x: x > 0)
+      assert positive(5) is False
+      assert positive(-5) is True
+
+
+  def test_make_multiplier_double():
+      double = make_multiplier(2)
+      assert double(5) == 10
+
+
+  def test_make_multiplier_triple_zero():
+      triple = make_multiplier(3)
+      assert triple(0) == 0
+---
+
+# First-Class Functions Challenge
+
+Now that you have read about first-class functions, apply what you learned!
+
+## Tasks
+
+1. Implement `apply_twice(func, value)` so it calls `func` twice on `value`.
+2. Implement `negate(func)` to return a new function whose result is the negation of `func`'s result.
+3. Implement `make_multiplier(n)` to return a function that multiplies its argument by `n`.

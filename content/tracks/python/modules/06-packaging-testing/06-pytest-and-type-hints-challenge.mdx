@@ -1,0 +1,77 @@
+---
+title: "pytest & Type Hints Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  # double(x: int) -> int doubles its argument.
+  def double(x: int) -> int:
+      # TODO: return x * 2.
+      return 0
+
+
+  # average(values: list[float]) -> float | None returns the mean of values,
+  # or None when the list is empty.
+  def average(values: list[float]) -> float | None:
+      # TODO: return sum(values) / len(values), or None when values is empty.
+      return 0.0
+
+
+  # nearly_equal(a: float, b: float, tol: float = 1e-6) -> bool returns True
+  # when a and b are within tol of each other (pytest.approx-style tolerant
+  # comparison).
+  def nearly_equal(a: float, b: float, tol: float = 1e-6) -> bool:
+      # TODO: return abs(a - b) <= tol.
+      return False
+testCode: |
+  from solution import average, double, nearly_equal
+
+
+  def test_double_behavior():
+      assert double(4) == 8
+      assert double(-3) == -6
+
+
+  def test_double_annotations():
+      assert double.__annotations__["x"] is int
+      assert double.__annotations__["return"] is int
+
+
+  def test_average_behavior():
+      assert average([1.0, 2.0, 3.0]) == 2.0
+      assert average([10.0, 20.0]) == 15.0
+
+
+  def test_average_empty_returns_none():
+      assert average([]) is None
+
+
+  def test_average_annotations():
+      assert average.__annotations__["values"] == list[float]
+      assert average.__annotations__["return"] == float | None
+
+
+  def test_nearly_equal_close_values():
+      assert nearly_equal(0.1 + 0.2, 0.3) is True
+      assert nearly_equal(1.0, 1.0001, tol=1e-4) is True
+
+
+  def test_nearly_equal_far_values():
+      assert nearly_equal(1.0, 2.0) is False
+
+
+  def test_nearly_equal_annotations():
+      assert nearly_equal.__annotations__["a"] is float
+      assert nearly_equal.__annotations__["b"] is float
+      assert nearly_equal.__annotations__["tol"] is float
+      assert nearly_equal.__annotations__["return"] is bool
+---
+
+# pytest & Type Hints Challenge
+
+Now that you have read about pytest assertions and type hints, apply what you learned!
+
+## Tasks
+
+1. Implement `double(x: int) -> int` to return `x * 2`, with correct type hints.
+2. Implement `average(values: list[float]) -> float | None` to return the mean of `values`, or `None` when `values` is empty, with correct type hints.
+3. Implement `nearly_equal(a: float, b: float, tol: float = 1e-6) -> bool` to return whether `a` and `b` are within `tol` of each other (a `pytest.approx`-style tolerant comparison), with correct type hints.

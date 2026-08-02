@@ -1,0 +1,94 @@
+---
+title: "Dunder Methods"
+type: "reading"
+order: 3
+---
+
+# Dunder Methods
+
+**Dunder** (double-underscore) methods let your classes plug into Python's built-in behavior. Python calls them automatically at the right times — you just define them.
+
+## `__str__` and `__repr__`
+
+- `__str__` returns a friendly string for humans (`str()`, `print()`).
+- `__repr__` returns an unambiguous string for developers.
+
+```python
+class Money:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __str__(self):
+        return "$" + str(self.amount)
+
+    def __repr__(self):
+        return "Money(" + str(self.amount) + ")"
+
+
+str(Money(25))     # "$25"
+repr(Money(25))    # "Money(25)"
+```
+
+## `__eq__` and `__add__`
+
+`__eq__` controls `==`. Without it, instances compare by identity — two objects with identical data are still considered different. `__add__` defines what `+` means and usually returns a new instance rather than mutating either operand:
+
+```python
+class Money:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __eq__(self, other):
+        return self.amount == other.amount
+
+    def __add__(self, other):
+        return Money(self.amount + other.amount)
+
+
+Money(5) == Money(5)            # True
+Money(5) != Money(6)            # True
+(Money(10) + Money(15)).amount  # 25
+```
+
+Defining `__eq__` also gives you `!=` for free.
+
+## `__lt__` and Sorting
+
+`__lt__` controls `<`. Sorting functions such as `list.sort()` and `sorted()` use it to compare elements:
+
+```python
+class Book:
+    def __init__(self, title, year):
+        self.title = title
+        self.year = year
+
+    def __lt__(self, other):
+        return self.year < other.year
+
+
+books = [Book("Newer", 2020), Book("Older", 1980)]
+books.sort()
+books[0].title   # "Older"
+```
+
+## `__len__`
+
+`__len__` makes `len()` work on your objects:
+
+```python
+class Playlist:
+    def __init__(self):
+        self.tracks = []
+
+    def add(self, track):
+        self.tracks.append(track)
+
+    def __len__(self):
+        return len(self.tracks)
+
+
+p = Playlist()
+len(p)          # 0
+p.add("song")
+len(p)          # 1
+```

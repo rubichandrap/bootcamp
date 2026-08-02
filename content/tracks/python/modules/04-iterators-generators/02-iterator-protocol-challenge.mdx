@@ -1,0 +1,95 @@
+---
+title: "Iterator Protocol Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # Countdown is a custom iterator: iter(Countdown(3)) yields 3, 2, 1, 0.
+  class Countdown:
+      def __init__(self, start):
+          self.current = start
+
+      # TODO: __iter__ must return the iterator itself.
+      def __iter__(self):
+          return self
+
+      # TODO: __next__ returns the current value, decrements it, and
+      # raises StopIteration once current drops below 0.
+      def __next__(self):
+          raise StopIteration
+
+
+  # take(it, n) returns the first n items from iterator it as a list.
+  def take(it, n):
+      # TODO: Pull up to n items with iter()/next() (or a for loop).
+      return []
+
+
+  # interleave(a, b) returns a list alternating items between iterators
+  # a and b until both are exhausted.
+  def interleave(a, b):
+      # TODO: Alternate next(a) and next(b); handle StopIteration.
+      return []
+testCode: |
+  from solution import Countdown, take, interleave
+
+
+  def test_countdown_basic():
+      assert list(Countdown(3)) == [3, 2, 1, 0]
+
+
+  def test_countdown_is_iterator():
+      cd = Countdown(2)
+      assert iter(cd) is cd
+      assert next(cd) == 2
+      assert next(cd) == 1
+      assert next(cd) == 0
+
+
+  def test_countdown_exhausted():
+      cd = Countdown(1)
+      next(cd)
+      next(cd)
+      try:
+          next(cd)
+      except StopIteration:
+          return
+      raise AssertionError("expected StopIteration")
+
+
+  def test_countdown_zero():
+      assert list(Countdown(0)) == [0]
+
+
+  def test_take_first_two():
+      assert take([1, 2, 3, 4], 2) == [1, 2]
+
+
+  def test_take_more_than_available():
+      assert take([7], 5) == [7]
+
+
+  def test_take_empty():
+      assert take([], 3) == []
+
+
+  def test_interleave_equal_lengths():
+      assert interleave([1, 2], ["a", "b"]) == [1, "a", 2, "b"]
+
+
+  def test_interleave_unequal_lengths():
+      assert interleave([1, 2, 3], ["a"]) == [1, "a", 2, 3]
+
+
+  def test_interleave_first_empty():
+      assert interleave([], [1, 2]) == [1, 2]
+---
+
+# Iterator Protocol Challenge
+
+Now that you have read about the iterator protocol, apply what you learned!
+
+## Tasks
+
+1. Implement `Countdown(start)` so `list(Countdown(3))` yields `[3, 2, 1, 0]` and raising `StopIteration` once exhausted.
+2. Implement `take(it, n)` to return the first `n` items from an iterator as a list.
+3. Implement `interleave(a, b)` to return a list alternating items between two iterators until both are exhausted.

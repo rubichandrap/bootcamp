@@ -1,0 +1,90 @@
+---
+title: "Classes & Instances"
+type: "reading"
+order: 1
+---
+
+# Classes & Instances
+
+Classes bundle data and behavior into objects — the foundation of object-oriented programming in Python.
+
+## Defining a Class
+
+Use the `class` keyword, a PascalCase name, and an indented body:
+
+```python
+class Dog:
+    pass
+```
+
+`pass` is a placeholder that does nothing — used when a body is required but not yet written.
+
+## The Constructor: `__init__`
+
+`__init__` runs automatically when you create an instance. Its first parameter is `self`, which refers to the instance being created. Attributes are stored on the instance with `self.<name>`:
+
+```python
+class Dog:
+    def __init__(self, name):
+        self.name = name
+```
+
+## Creating Instances
+
+Call the class like a function. Each call returns a fresh instance:
+
+```python
+rex = Dog("Rex")
+rex.name   # "Rex"
+```
+
+## Methods
+
+Methods are functions defined inside the class. Their first parameter is always `self`, so they can read and write the instance's attributes:
+
+```python
+class Dog:
+    def __init__(self, name):
+        self.name = name
+
+    def bark(self):
+        return self.name + " says woof!"
+
+
+rex = Dog("Rex")
+rex.bark()   # "Rex says woof!"
+```
+
+Call a method on an instance with `instance.method()`.
+
+## Default Values
+
+`__init__` parameters can have defaults, making some attributes optional:
+
+```python
+class Counter:
+    def __init__(self, start=0):
+        self.count = start
+
+    def increment(self):
+        self.count += 1
+
+    def value(self):
+        return self.count
+
+
+Counter().value()     # 0
+Counter(10).value()   # 10
+```
+
+## Independent Instances
+
+Each instance owns its attributes — mutating one never affects another:
+
+```python
+a = Counter()
+b = Counter()
+a.increment()
+a.value()   # 1
+b.value()   # 0
+```

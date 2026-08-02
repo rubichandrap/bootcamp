@@ -1,0 +1,105 @@
+---
+title: "Dictionaries"
+type: "reading"
+order: 3
+---
+
+# Dictionaries
+
+Dictionaries map **keys** to **values**. They are Python's hash-table structure — lookups by key are fast regardless of collection size. Dictionaries are mutable and written with curly braces.
+
+## Creating Dictionaries
+
+```python
+person = {"name": "Ada", "age": 36}
+scores = {"math": 90, "science": 85}
+empty = {}
+```
+
+Keys must be immutable (strings, numbers, tuples); values can be anything.
+
+## Reading Values
+
+Access a value by key with `[]`. Accessing a missing key raises a `KeyError`, so prefer `.get(key, default)`, which returns `default` when the key is absent.
+
+```python
+person["name"]          # "Ada"
+person.get("age", 0)    # 36
+person.get("city", "unknown")  # "unknown"
+```
+
+## Adding and Updating
+
+Assigning to a key inserts or overwrites it:
+
+```python
+person["age"] = 37          # update existing
+person["city"] = "London"   # add new
+```
+
+## Membership and Length
+
+```python
+"name" in person   # True
+len(person)        # number of key-value pairs
+```
+
+## Iterating
+
+Loop over keys, values, or both:
+
+```python
+for key in person:
+    print(key)          # keys by default
+
+for value in person.values():
+    print(value)
+
+for key, value in person.items():
+    print(key, value)   # each pair as (key, value)
+```
+
+`person.keys()` returns the keys. To turn it into a list, use `list(person.keys())`.
+
+## Building Dictionaries
+
+The `dict()` constructor builds a dictionary from an iterable of key-value pairs:
+
+```python
+pairs = [("a", 1), ("b", 2)]
+data = dict(pairs)   # {"a": 1, "b": 2}
+```
+
+`.update()` merges another mapping into the current one, overwriting shared keys:
+
+```python
+base = {"a": 1, "b": 2}
+base.update({"b": 9, "c": 3})   # {"a": 1, "b": 9, "c": 3}
+```
+
+## Counting with `.get()`
+
+A common idiom counts occurrences by defaulting missing keys to `0` before incrementing:
+
+```python
+def word_count(words):
+    counts = {}
+    for word in words:
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+
+word_count(["a", "b", "a"])   # {"a": 2, "b": 1}
+```
+
+## Nesting
+
+Values can themselves be dictionaries, so you can model nested data:
+
+```python
+users = {
+    "ada": {"age": 36, "city": "London"},
+    "linus": {"age": 48, "city": "Helsinki"},
+}
+
+users["ada"]["city"]   # "London"
+```

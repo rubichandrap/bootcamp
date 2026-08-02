@@ -1,0 +1,104 @@
+---
+title: "Module 04 Capstone: Streaming Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import itertools
+
+
+  # FizzBuzz is a custom iterator yielding "Fizz", "Buzz", "FizzBuzz", or
+  # the number as a string for 1..limit.
+  class FizzBuzz:
+      def __init__(self, limit):
+          self.limit = limit
+          self.current = 0
+
+      # TODO: Implement the iterator protocol.
+      def __iter__(self):
+          return self
+
+      def __next__(self):
+          raise StopIteration
+
+
+  # even_squares(limit) is a generator yielding the square of every even
+  # number from 0 up to limit.
+  def even_squares(limit):
+      # TODO: Pipeline evens -> squares.
+      yield -1
+
+
+  # paginate(items, size) yields tuples of size consecutive items from items.
+  def paginate(items, size):
+      # TODO: Use itertools.islice to chunk the iterator into tuples.
+      return []
+testCode: |
+  from solution import FizzBuzz, even_squares, paginate
+
+
+  def test_fizzbuzz_first_fifteen():
+      assert list(FizzBuzz(15)) == [
+          "1",
+          "2",
+          "Fizz",
+          "4",
+          "Buzz",
+          "Fizz",
+          "7",
+          "8",
+          "Fizz",
+          "Buzz",
+          "11",
+          "Fizz",
+          "13",
+          "14",
+          "FizzBuzz",
+      ]
+
+
+  def test_fizzbuzz_iterator_contract():
+      fb = FizzBuzz(3)
+      assert iter(fb) is fb
+      assert next(fb) == "1"
+      assert next(fb) == "2"
+      assert next(fb) == "Fizz"
+
+
+  def test_fizzbuzz_single():
+      assert list(FizzBuzz(1)) == ["1"]
+
+
+  def test_even_squares_sequence():
+      assert list(even_squares(10)) == [0, 4, 16, 36, 64, 100]
+
+
+  def test_even_squares_zero():
+      assert list(even_squares(0)) == [0]
+
+
+  def test_paginate_even_chunks():
+      assert list(paginate(range(6), 2)) == [(0, 1), (2, 3), (4, 5)]
+
+
+  def test_paginate_ragged_chunks():
+      assert list(paginate(range(10), 3)) == [
+          (0, 1, 2),
+          (3, 4, 5),
+          (6, 7, 8),
+          (9,),
+      ]
+
+
+  def test_paginate_single():
+      assert list(paginate(range(2), 5)) == [(0, 1)]
+---
+
+# Assessment: Streaming Toolkit
+
+Integrate the iterator protocol, generators, and itertools to build a small streaming toolkit. All three areas from this module must be applied correctly to pass.
+
+## Tasks
+
+1. Implement the `FizzBuzz` iterator class using the iterator protocol.
+2. Implement the `even_squares(limit)` generator pipeline.
+3. Implement `paginate(items, size)` using `itertools.islice`.

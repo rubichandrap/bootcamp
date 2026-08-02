@@ -1,0 +1,84 @@
+---
+title: "The GIL & Concurrency Models"
+type: "reading"
+order: 5
+---
+
+# The GIL & Concurrency Models
+
+By now you have seen the three tools — async, threads, processes — and the GIL behind them. This chapter goes one level deeper: what the GIL actually is, why shared state needs locks, and how to decide which model to use.
+
+## What the GIL Is
+
+The **Global Interpreter Lock** is one mutex held by CPython while executing bytecode. It exists so that CPython's reference counting and object allocation stay safe without locking every individual operation. The cost is that bytecode does not run in parallel across threads.
+
+What matters in practice is **when the GIL is held**:
+
+- **Held** during ordinary Python bytecode — `x = x + 1`, loops, list operations.
+- **Released** during blocking calls — `time.sleep`, socket/disk I/O, and many C libraries (NumPy, etc.) — and periodically so other threads get turns.
+
+Because it is released during I/O, threads overlap I/O waits. Because it is held during bytecode, threads do not speed up pure-Python CPU loops. Processes bypass the GIL entirely by giving each process its own interpreter and lock.
+
+## The GIL Is Not a Data-Protection Shield
+
+The GIL serializes *bytecode*, not *programs*. Two threads reading and mutating the same object can still interleave at the wrong moment. Consider an increment:
+
+```python
+shared = [0]
+
+def bump():
+    shared[0] += 1
+```
+
+`shared[0] += 1` is several bytecode steps — load the value, add one, store it back. Two threads can both load `0` before either stores `1`, and one increment is lost. The GIL does not make this safe; threads *can* be switched between the steps.
+
+## Locks Protect Shared State
+
+`threading.Lock` gives you a mutual-exclusion primitive: a `with lock:` block is entered by exactly one thread at a time:
+
+```python
+import threading
+
+shared = [0]
+lock = threading.Lock()
+
+def bump():
+    with lock:
+        shared[0] += 1
+```
+
+The critical section is the code *inside* `with lock:`. Keep it short — the lock blocks other threads, so holding it while doing I/O defeats concurrency.
+
+To run several `bump` workers over the same shared counter, submit each call to a thread pool, then wait for every future with `.result()`:
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+with ThreadPoolExecutor(max_workers=4) as pool:
+    futures = [pool.submit(bump, shared, lock) for _ in range(4)]
+    for f in futures:
+        f.result()   # raises if the worker raised; here just waits
+print(shared[0])     # 4 — no increments lost
+```
+
+`pool.submit` schedules one call and returns a `Future`; `.result()` blocks until that call finishes. Gathering all the futures and calling `.result()` on each is the standard wait-for-all pattern.
+
+A process-based program does not need locks for the same reason — each process has its own memory, so nothing is shared. But nothing is shared: any result must be returned through the executor's `map`/`submit` return values.
+
+## Choosing a Concurrency Model
+
+Decide by the shape of the work:
+
+| Workload | What it looks like | Use |
+| --- | --- | --- |
+| I/O-bound, few-to-many operations | network, disk, sleep | threads (`ThreadPoolExecutor`) |
+| I/O-bound, very many concurrent ops | thousands of connections | async (`asyncio`) |
+| CPU-bound | math, loops, parsing | processes (`ProcessPoolExecutor`) |
+
+When work mixes kinds, pick the dominant cost. And when threads share data, always guard it with a lock.
+
+## The Three Tools Together
+
+You now have the full picture: `asyncio` gives cheap cooperative concurrency for I/O within one thread; threads give simple overlap of I/O waits at the cost of shared-state care; processes give true CPU parallelism at the cost of isolation and startup overhead. The GIL is what explains all of it.
+
+The next chapter will have you protect shared state with locks and classify workloads into the right model.

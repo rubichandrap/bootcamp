@@ -1,0 +1,86 @@
+---
+title: "itertools Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  import itertools
+
+
+  # take(it, n) returns the first n items from iterator it as a list.
+  def take(it, n):
+      # TODO: Use itertools.islice.
+      return []
+
+
+  # product_pairs(a, b) returns every (x, y) pair from sequences a and b.
+  def product_pairs(a, b):
+      # TODO: Use itertools.product.
+      return []
+
+
+  # running_sums(nums) returns the cumulative sums of nums as a list.
+  def running_sums(nums):
+      # TODO: Use itertools.accumulate.
+      return []
+
+
+  # repeating(value, times) returns value repeated times as a list.
+  def repeating(value, times):
+      # TODO: Use itertools.repeat.
+      return []
+testCode: |
+  from solution import take, product_pairs, running_sums, repeating
+  from itertools import count
+
+
+  def test_take_three_items():
+      assert take(iter([1, 2, 3, 4, 5]), 3) == [1, 2, 3]
+
+
+  def test_take_bounds_infinite_stream():
+      assert take(count(), 4) == [0, 1, 2, 3]
+
+
+  def test_take_more_than_available():
+      assert take(iter([7]), 5) == [7]
+
+
+  def test_product_pairs_ordered():
+      assert product_pairs([1, 2], ["a", "b"]) == [
+          (1, "a"),
+          (1, "b"),
+          (2, "a"),
+          (2, "b"),
+      ]
+
+
+  def test_product_pairs_single_row():
+      assert product_pairs([1], [2, 3]) == [(1, 2), (1, 3)]
+
+
+  def test_running_sums_sequence():
+      assert running_sums([1, 2, 3, 4]) == [1, 3, 6, 10]
+
+
+  def test_running_sums_single():
+      assert running_sums([9]) == [9]
+
+
+  def test_repeating_fixed_times():
+      assert repeating("x", 3) == ["x", "x", "x"]
+
+
+  def test_repeating_zero_times():
+      assert repeating("x", 0) == []
+---
+
+# itertools Challenge
+
+Now that you have read about itertools, apply what you learned!
+
+## Tasks
+
+1. Implement `take(it, n)` to return the first `n` items from an iterator as a list.
+2. Implement `product_pairs(a, b)` to return every `(x, y)` pair from two sequences.
+3. Implement `running_sums(nums)` to return the cumulative sums of `nums`.
+4. Implement `repeating(value, times)` to return `value` repeated `times` times.

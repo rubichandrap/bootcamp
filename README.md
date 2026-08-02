@@ -43,4 +43,4 @@ npx tsc --noEmit
 
 - [CONTEXT.md](CONTEXT.md) — Ubiquitous domain language and terminology.
 - [docs/adr/](docs/adr/) — Architectural Decision Records (ADRs).
-- [docs/specs/](docs/specs/) — Feature specifications and specs.
+- [docs/spec/](docs/spec/) — Feature specifications and specs.

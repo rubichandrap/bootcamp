@@ -1,0 +1,82 @@
+---
+title: "Variables & Types"
+type: "reading"
+order: 3
+---
+
+# Variables & Types
+
+Python is **dynamically typed**: variables hold values of any type, and their type can change over time. No type annotations are required (though they can be added for clarity).
+
+## Assigning Variables
+
+Variables are created simply by assigning a value:
+
+```python
+count = 5
+name = "Python"
+ratio = 3.14
+is_active = True
+```
+
+## Core Built-in Types
+
+Python's fundamental types include:
+
+- `int`: Whole numbers like `5`, `-2`, `1000`.
+- `float`: Decimal numbers like `3.14`, `2.0`.
+- `str`: Text in quotes — `"hello"` or `'hello'`.
+- `bool`: `True` or `False`.
+- `NoneType`: The single value `None`, meaning "no value".
+
+```python
+count = 5          # int
+ratio = 3.14       # float
+name = "Python"    # str
+is_active = True   # bool
+result = None      # NoneType
+```
+
+## Type Checking
+
+Use the built-in `type()` function to inspect a value's type:
+
+```python
+print(type(5))      # <class 'int'>
+print(type("hi"))   # <class 'str'>
+```
+
+## Type Conversion
+
+Python provides explicit conversion functions:
+
+```python
+int("42")       # 42
+str(3.14)       # "3.14"
+float("2.5")    # 2.5
+bool(0)         # False
+bool("hello")   # True
+```
+
+## String Operations
+
+Strings support concatenation with `+` and repetition with `*`:
+
+```python
+first = "Hello, "
+second = "World!"
+message = first + second   # "Hello, World!"
+shout = "Go" * 3           # "GoGoGo"
+```
+
+## Common String Methods
+
+```python
+text = "python"
+
+text.upper()      # "PYTHON"
+text.lower()      # "python"
+text.capitalize() # "Python"
+text.replace("p", "P")  # "Python"
+len(text)         # 6
+```

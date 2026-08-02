@@ -1,5 +1,6 @@
 import { parseBenchOutput } from '@/lib/rce/benchParser';
 import { runInSandboxTmpDir } from '@/lib/rce/executorUtils';
+import { buildResult } from '@/lib/rce/resultBuilder';
 import {
   ExecuteSubmissionParams,
   LanguageExecutor,
@@ -71,18 +72,11 @@ export function parseGoTestStream(
     output: t.output.join(''),
   }));
 
-  const passedCount = tests.filter((t) => t.passed).length;
-  const failedCount = tests.filter((t) => !t.passed).length;
-
   const isSuccess = compileError ? false : overallPassed && tests.length > 0;
 
   return {
+    ...buildResult(tests, compileError, rawText),
     success: isSuccess,
-    passed: passedCount,
-    failed: failedCount,
-    tests,
-    compileError,
-    rawOutput: rawText,
     bench,
     hasRaceDetected: enableRaceCheck ? hasRaceDetected : false,
   };

@@ -4,7 +4,7 @@
 
 **Blocked by:** 04 — Interactive Challenge Workspace & Socratic Hints
 
-**Status:** completed
+**Status:** done
 
 - [x] Reading Chapter 1.1 MDX: Pointers, Memory Addresses, and Value vs Reference Semantics.
 - [x] Challenge Chapter 1.2 MDX & Go files: Slice Headers, Capacity Mutability, and Reallocation.

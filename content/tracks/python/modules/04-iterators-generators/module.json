@@ -1,0 +1,5 @@
+{
+  "title": "Iterators & Generators",
+  "description": "Master the iterator protocol, generator pipelines, and itertools to process data streams efficiently and lazily.",
+  "order": 4
+}

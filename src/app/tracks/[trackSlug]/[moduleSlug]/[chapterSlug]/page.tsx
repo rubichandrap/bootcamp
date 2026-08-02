@@ -1,5 +1,6 @@
 import React from 'react';
 import { getChapterDetails } from '@/lib/tracks/trackCatalog';
+import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Code2, CheckCircle2 } from 'lucide-react';
@@ -29,6 +30,8 @@ export default async function ChapterWorkspacePage({ params }: ChapterPageProps)
   if (!chapter) {
     notFound();
   }
+
+  const trackCfg = getTrackConfig(trackSlug as TrackSlug);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans p-6 md:p-12">
@@ -70,7 +73,7 @@ export default async function ChapterWorkspacePage({ params }: ChapterPageProps)
 
             {chapter.starterCode && (
               <div className="space-y-2">
-                <span className="text-xs font-mono text-zinc-400">Solution Starter Code (`solution.${trackSlug === 'typescript' ? 'ts' : 'go'}`):</span>
+                <span className="text-xs font-mono text-zinc-400">Solution Starter Code (`${trackCfg.solutionFile}`):</span>
                 <pre className="p-4 rounded-lg bg-zinc-900 border border-zinc-800 font-mono text-xs text-zinc-200 overflow-x-auto">
                   <code>{chapter.starterCode}</code>
                 </pre>

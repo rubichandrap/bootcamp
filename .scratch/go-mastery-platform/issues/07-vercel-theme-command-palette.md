@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Curriculum Content Engine & Reading Chapters
 
-**Status:** completed
+**Status:** done
 
 - [x] Theme provider supporting system, dark, and light modes with Vercel neutral slate/zinc aesthetics.
 - [x] Command palette (`Cmd+K`) allowing instant search and navigation across all Modules and Chapters.

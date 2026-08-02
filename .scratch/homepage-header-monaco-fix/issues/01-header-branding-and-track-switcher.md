@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** completed
+**Status:** done
 
 - [x] `formatTitlebarText` output updated to clean Unix breadcrumbs without `go-mastery-cli v1.0.0` branding.
 - [x] `TerminalHeader` displays `~ / catalog` on homepage and `~ / tracks / <trackSlug> > <moduleTitle>` in workspace.

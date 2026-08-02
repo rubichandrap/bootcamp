@@ -1,0 +1,114 @@
+---
+title: "Generators & Pipelines"
+type: "reading"
+order: 3
+---
+
+# Generators & Pipelines
+
+A **generator** is the easiest way to make an iterator. Instead of writing a class with `__iter__` and `__next__`, you write a function that contains the keyword `yield`.
+
+## The `yield` Keyword
+
+Any function containing `yield` is a generator function. Calling it does **not** run the body — it returns a generator object. Each call to `next()` runs the body up to the next `yield`, produces that value, and pauses:
+
+```python
+def countdown(start):
+    while start >= 0:
+        yield start
+        start -= 1
+
+gen = countdown(3)
+next(gen)   # 3
+next(gen)   # 2
+next(gen)   # 1
+next(gen)   # 0
+next(gen)   # StopIteration — the loop ended
+```
+
+When the function reaches the end, the generator raises `StopIteration` automatically — no need to raise it yourself.
+
+## Generators Are Lazy
+
+A generator computes its values **on demand**. Nothing happens until you pull. This means you can represent sequences that would be impossible (or wasteful) to store, like an infinite stream:
+
+```python
+def natural_numbers():
+    n = 0
+    while True:
+        yield n
+        n += 1
+```
+
+This generator never stops on its own — but you only ever pull what you need. Combined with `itertools.islice` (next chapter) or a `for` loop that breaks, infinite generators are perfectly safe.
+
+## The `for` Loop Works Directly
+
+Generators are iterators, so everything that works on iterators works on generators:
+
+```python
+def squares(nums):
+    for n in nums:
+        yield n * n
+
+list(squares([1, 2, 3]))   # [1, 4, 9]
+```
+
+Note `list(gen)` materializes the generator — pull it into a concrete list. Until you do, nothing is computed.
+
+## Generator Expressions
+
+A **generator expression** is a lazy one-line generator, written with parentheses instead of the square brackets of a list comprehension:
+
+```python
+squares_of_evens = (n * n for n in range(10) if n % 2 == 0)
+```
+
+It is lazy — `list(squares_of_evens)` computes `[0, 4, 16, 36, 64]` only when you ask. Use it to avoid building a whole list when you only need to stream through the values once.
+
+## Generator Pipelines
+
+Because generators are lazy and composable, you can **chain** them into pipelines. Each stage pulls from the previous one, one item at a time. The whole pipeline processes a single item through every stage before the next item starts — memory stays constant no matter how long the input:
+
+```python
+def evens(limit):
+    for n in range(limit + 1):
+        if n % 2 == 0:
+            yield n
+
+def squares(nums):
+    for n in nums:
+        yield n * n
+
+list(squares(evens(10)))
+# [0, 4, 16, 36, 64, 100]
+```
+
+`squares(evens(10))` streams: `evens` yields `0`, `squares` squares it and yields `0`, then `evens` yields `2`, and so on. Only one number is in flight at a time. This is how Python processes huge files and data streams without loading them into memory.
+
+## `yield from`
+
+When a generator wants to delegate to another iterable, `yield from` yields every item from it:
+
+```python
+def flatten(outer):
+    for inner in outer:
+        yield from inner
+
+list(flatten([[1, 2], [3]]))   # [1, 2, 3]
+```
+
+`yield from inner` is short for `for x in inner: yield x`.
+
+## Generators Replace Custom Iterator Classes
+
+The `Countdown` iterator class from the previous chapter becomes a three-line generator:
+
+```python
+def countdown(start):
+    while start >= 0:
+        yield start
+        start -= 1
+```
+
+Use a generator function for almost everything — it is the idiomatic way to write iterators in Python.

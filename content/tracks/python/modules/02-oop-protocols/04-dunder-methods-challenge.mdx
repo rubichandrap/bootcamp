@@ -1,0 +1,106 @@
+---
+title: "Dunder Methods Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # Money wraps a dollar amount.
+  class Money:
+      # TODO: Store self.amount
+      def __init__(self, amount):
+          pass
+
+      # TODO: Return "$" + str(self.amount)
+      def __str__(self):
+          return ""
+
+      # TODO: Return True when the amounts are equal
+      def __eq__(self, other):
+          return False
+
+      # TODO: Return a new Money with the summed amounts
+      def __add__(self, other):
+          return Money(0)
+
+
+  # Book has a title and a publication year.
+  class Book:
+      # TODO: Store self.title and self.year
+      def __init__(self, title, year):
+          pass
+
+      # TODO: Return True when self.year is less than other.year
+      def __lt__(self, other):
+          return False
+
+      # TODO: Return "Book(<title>, <year>)"
+      def __repr__(self):
+          return ""
+
+
+  # Playlist holds an ordered list of tracks.
+  class Playlist:
+      # TODO: Set self.tracks to an empty list
+      def __init__(self):
+          pass
+
+      # TODO: Append track to self.tracks
+      def add(self, track):
+          pass
+
+      # TODO: Return the number of tracks
+      def __len__(self):
+          return 1
+testCode: |
+  from solution import Money, Book, Playlist
+
+
+  def test_money_str():
+      assert str(Money(25)) == "$25"
+
+
+  def test_money_add():
+      assert (Money(10) + Money(15)).amount == 25
+
+
+  def test_money_eq():
+      assert Money(5) == Money(5)
+
+
+  def test_money_neq():
+      assert Money(5) != Money(6)
+
+
+  def test_book_lt():
+      assert Book("A", 1990) < Book("B", 2000)
+
+
+  def test_book_sort():
+      books = [Book("Older", 1980), Book("Newer", 2020)]
+      books.sort()
+      assert [b.title for b in books] == ["Older", "Newer"]
+
+
+  def test_book_repr():
+      assert repr(Book("Dune", 1965)) == "Book(Dune, 1965)"
+
+
+  def test_playlist_len_empty():
+      assert len(Playlist()) == 0
+
+
+  def test_playlist_len_after_add():
+      p = Playlist()
+      p.add("track1")
+      p.add("track2")
+      assert len(p) == 2
+---
+
+# Dunder Methods Challenge
+
+Now that you have read about dunder methods, apply what you learned!
+
+## Tasks
+
+1. Implement `Money` with `__str__`, `__eq__`, and `__add__`.
+2. Implement `Book` with `__lt__` (for sorting) and `__repr__`.
+3. Implement `Playlist` with an `add` method and `__len__`.

@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** completed
+**Status:** done
 
 - [x] `CodeEditor` receives explicit key/path scoping per chapter and active tab.
 - [x] `useChallengeSession` avoids setting dummy `DEFAULT_STARTER_CODE` prior to chapter initialization.

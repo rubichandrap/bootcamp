@@ -1,0 +1,110 @@
+---
+title: "Module 08 Capstone: Native Performance Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import cProfile
+  import ctypes
+  import ctypes.util
+  import pstats
+  import sys
+  import time
+
+
+  # load_libm() loads the platform's C math library and returns the CDLL.
+  # When find_library cannot resolve it, fall back to the well-known Linux
+  # name so the load never silently fails.
+  def load_libm():
+      name = ctypes.util.find_library("m") or "libm.so.6"
+      return ctypes.CDLL(name)
+
+
+  # elapsed_ns(fn, *args, iterations=100) times a loop of fn(*args) calls
+  # with perf_counter_ns and returns the total nanoseconds as an int.
+  def elapsed_ns(fn, *args, iterations=100):
+      # TODO: loop calling fn(*args) iterations times, timing with
+      # time.perf_counter_ns(), and return the total nanoseconds.
+      return 0
+
+
+  # call_count(fn, *args) profiles fn(*args) with cProfile and returns the
+  # total number of function calls recorded.
+  def call_count(fn, *args):
+      # TODO: profile fn(*args), then return pstats.Stats(profile).total_calls.
+      return 0
+
+
+  # refcount(obj) returns the number of live references to obj.
+  def refcount(obj):
+      # TODO: return sys.getrefcount(obj) - 1.
+      return 0
+
+
+  # same_object(a, b) returns True when a and b are the same object
+  # (identity via is).
+  def same_object(a, b):
+      # TODO: return a is b.
+      return False
+
+
+  # c_hypot(a, b) calls libm's hypot through ctypes, declaring two double
+  # arguments and a double return.
+  def c_hypot(a, b):
+      # TODO: declare argtypes/restype on libm.hypot, then call it with two
+      # c_double values.
+      return 0.0
+testCode: |
+  import math
+
+  from solution import call_count, c_hypot, elapsed_ns, refcount, same_object
+
+
+  def test_elapsed_ns_returns_int():
+      assert isinstance(elapsed_ns(lambda: None), int)
+
+
+  def test_elapsed_ns_slow_is_slower():
+      fast = elapsed_ns(lambda: sum(range(100)), iterations=50)
+      slow = elapsed_ns(lambda: sum(range(300_000)), iterations=50)
+      assert fast < slow
+
+
+  def test_call_count_grows_with_work():
+      def fib(n):
+          return n if n < 2 else fib(n - 1) + fib(n - 2)
+
+      assert call_count(fib, 10) > call_count(fib, 6)
+
+
+  def test_refcount_rises_with_reference():
+      l = [1, 2, 3]
+      base = refcount(l)
+      alias = l
+      assert refcount(l) == base + 1
+
+
+  def test_same_object_identity():
+      l = [1, 2, 3]
+      assert same_object(l, l) is True
+      assert same_object(l, [1, 2, 3]) is False
+
+
+  def test_c_hypot():
+      assert c_hypot(3, 4) == 5.0
+
+
+  def test_c_hypot_matches_math():
+      assert math.isclose(c_hypot(5, 12), math.hypot(5, 12))
+---
+
+# Assessment: Native Performance Toolkit
+
+Integrate profiling, memory inspection, and native C calls to build a small performance toolkit. All three areas from this module must be applied correctly to pass.
+
+## Tasks
+
+1. Implement `elapsed_ns(fn, *args, iterations=100)` to time a loop of `fn(*args)` calls with `time.perf_counter_ns` and return the total nanoseconds as an int.
+2. Implement `call_count(fn, *args)` to profile `fn(*args)` with `cProfile.Profile` and return `pstats.Stats(profile).total_calls`.
+3. Implement `refcount(obj)` to return the live reference count of `obj` using `sys.getrefcount` (subtracting its temporary argument).
+4. Implement `same_object(a, b)` to return whether `a` and `b` are the same object via `is`.
+5. Implement `c_hypot(a, b)` to call `libm.hypot` through ctypes with declared double `argtypes`/`restype`.

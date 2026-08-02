@@ -1,0 +1,130 @@
+---
+title: "itertools"
+type: "reading"
+order: 5
+---
+
+# itertools
+
+Python's `itertools` module is a toolbox of building blocks for iterators. Every function in it is lazy, and they compose perfectly with the generators from the previous chapter. Almost all of them produce iterators — materialize with `list()` when you need a list.
+
+## Infinite Iterators
+
+Three functions generate infinite streams:
+
+```python
+import itertools
+
+itertools.count(10)        # 10, 11, 12, ... (endless)
+itertools.count(1, 2)      # 1, 3, 5, 7, ...   (step 2)
+itertools.cycle(["a", "b"])  # "a", "b", "a", "b", ...  (endless)
+itertools.repeat("x", 3)   # "x", "x", "x"  (or endless with no count)
+```
+
+Always bound an infinite iterator — with `islice`, `takewhile`, or a `for` loop that breaks:
+
+```python
+list(itertools.islice(itertools.count(5), 3))   # [5, 6, 7]
+```
+
+## `islice` — Bounded Slicing
+
+`islice` slices an iterator lazily. It is the iterator version of `seq[start:stop]`, but works on any stream and never builds a list:
+
+```python
+list(itertools.islice("abcdef", 2, 5))   # ["c", "d", "e"]
+```
+
+## `takewhile` / `dropwhile`
+
+`takewhile` yields items from an iterable **while** a predicate stays true, then stops permanently. `dropwhile` skips items while the predicate is true, then yields everything after:
+
+```python
+list(itertools.takewhile(lambda n: n < 5, [1, 2, 6, 3]))
+# [1, 2]  — stops at 6, never revisits
+
+list(itertools.dropwhile(lambda n: n < 5, [1, 2, 6, 3]))
+# [6, 3]  — skips 1, 2, then yields the rest
+```
+
+This is the safe way to bound an infinite iterator: `list(itertools.takewhile(lambda n: n < 10, itertools.count()))`.
+
+## `chain` — Gluing Iterables
+
+`chain` concatenates iterables into one stream:
+
+```python
+list(itertools.chain([1, 2], [3], [4, 5]))   # [1, 2, 3, 4, 5]
+```
+
+`chain.from_iterable` flattens a sequence of iterables — like `yield from` in a single call:
+
+```python
+list(itertools.chain.from_iterable([[1, 2], [3]]))   # [1, 2, 3]
+```
+
+## `zip_longest` — Zipping Uneven Streams
+
+`zip` stops at the shortest input. `zip_longest` keeps going and fills missing values with a `fillvalue`:
+
+```python
+list(zip("AB", [1, 2, 3]))                     # [("A", 1), ("B", 2)]
+list(itertools.zip_longest("AB", [1, 2, 3], fillvalue="?"))
+# [("A", 1), ("B", 2), ("?", 3)]
+```
+
+## `accumulate` — Running Totals
+
+`accumulate` yields the running total (or any running reduction) of an iterable:
+
+```python
+list(itertools.accumulate([1, 2, 3, 4]))   # [1, 3, 6, 10]
+```
+
+## `product` — Cartesian Product
+
+`product` yields every combination, one item from each input:
+
+```python
+list(itertools.product("AB", [1, 2]))
+# [("A", 1), ("A", 2), ("B", 1), ("B", 2)]
+```
+
+## `permutations` / `combinations`
+
+`permutations` yields orderings of a set; `combinations` yields unordered selections:
+
+```python
+list(itertools.permutations("ABC", 2))
+# [("A", "B"), ("A", "C"), ("B", "A"), ("B", "C"), ("C", "A"), ("C", "B")]
+
+list(itertools.combinations("ABC", 2))
+# [("A", "B"), ("A", "C"), ("B", "C")]
+```
+
+## `groupby` — Consecutive Grouping
+
+`groupby` groups **consecutive** items that share a key. The iterable must be sorted by the key first:
+
+```python
+list(itertools.groupby("AABBBA"))
+# [("A", <group>), ("B", <group>), ("A", <group>)]  — three groups, A/B/A
+```
+
+The group values are lazy iterators — materialize them with `list()` inside a loop.
+
+## Composing Everything
+
+The real power is composition. Here is a lazily computed pipeline that builds on every tool in this chapter:
+
+```python
+import itertools
+
+stream = itertools.count(0)                               # infinite
+stream = itertools.islice(stream, 100)                    # bound it
+stream = itertools.takewhile(lambda n: n <= 50, stream)   # cap at 50
+evens = (n for n in stream if n % 2 == 0)                 # filter evens
+result = list(itertools.accumulate(evens))                # running sums
+```
+
+`itertools` turns one-off iterator logic into composed building blocks — the toolkit for fast, memory-efficient data processing.

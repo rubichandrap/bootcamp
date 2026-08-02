@@ -1,0 +1,7 @@
+{
+  "slug": "python",
+  "title": "Python Mastery",
+  "description": "Master idiomatic Python from fundamentals to metaprogramming, async, and native extensions.",
+  "language": "python",
+  "order": 3
+}

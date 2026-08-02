@@ -1,0 +1,78 @@
+---
+title: "Memory Behavior & the GIL, Deep"
+type: "reading"
+order: 3
+---
+
+# Memory Behavior & the GIL, Deep
+
+Two forces dominate Python's runtime behavior at scale: how **objects are owned and freed** (reference counting) and the **Global Interpreter Lock** (the GIL) that serializes pure-Python execution. Understanding both explains most of Python's performance character.
+
+## Reference Counting: Who Owns an Object
+
+Every Python object carries a **reference count** — the number of names, containers, and temporaries currently pointing at it. When a reference is created, the count rises; when one goes away, it falls. At zero, the object is freed immediately:
+
+```python
+import sys
+
+l = [1, 2, 3]
+sys.getrefcount(l) - 1   # 1 — one name, `l`
+m = l                    # now two references
+sys.getrefcount(l) - 1   # 2
+```
+
+`sys.getrefcount(obj)` returns the count **plus one** for its own temporary argument, so subtract 1 to get the true count. Reference counting is what makes Python memory safe without a stop-the-world collector for most cases — the moment an object has no references, its memory returns.
+
+## Measuring Size and Identity
+
+`sys.getsizeof(obj)` reports the memory an object itself occupies (not counting what its elements point to). Sizes grow with content:
+
+```python
+sys.getsizeof([])         # 56 bytes — empty list
+sys.getsizeof([1, 2, 3])  # 88 bytes — more room for elements
+```
+
+Two references can point at the same object or at equal-but-distinct objects. `is` (and `id()` behind it) tests *identity* — same object — not equality. Python **interns** small integers (`-5` through `256`) and some identifier-like short strings, so `5 is 5` is `True`, while two separately-created lists are never the same object.
+
+## `__slots__`: Replacing the Per-Object Dict
+
+The biggest per-instance memory cost in normal classes is the `__dict__`. Declaring `__slots__` (from the previous module) swaps that dict for fixed-width descriptors, shrinking each instance by hundreds of bytes and denying unknown attributes. For millions of small records this is the single easiest memory win.
+
+## The GIL: One Lock Around Bytecode
+
+The **Global Interpreter Lock** is a mutex inside CPython that allows only one thread to execute Python **bytecode** at a time. It exists because CPython's internal state — reference counts above all — is not safe to mutate from two threads at once. The consequence is the central fact of Python threading: **pure-Python CPU-bound code does not run in parallel across threads**.
+
+## When the GIL Is Released
+
+The GIL is *not* held for everything. It is dropped during long operations that do not touch Python objects:
+
+- blocking **I/O** — network, disk, sleeps
+- many **C-extension** calls that release it explicitly (e.g. the big numeric libraries, compression, hashing)
+
+During those windows other threads run. That is why threads still speed up I/O-bound work: while one thread waits on a socket, another executes. It is also why CPU-bound pure Python stays flat across threads — there is no I/O window to overlap.
+
+## What Actually Runs in Parallel
+
+To get CPU parallelism in CPython you must escape the GIL:
+
+- **processes** (`ProcessPoolExecutor`) — each process has its own interpreter and its own GIL, so several cores genuinely run.
+- **native code** — a C/C++ extension (Cython, numpy, ctypes wrappers) that runs without holding the GIL. This is the entire point of the next chapter.
+
+The GIL is not evil; it is a trade that made CPython's memory model simple and thread-safe by construction, at the cost of one-core pure-Python execution. Choose your tool by whether the work is waiting (threads help), pure arithmetic (processes or native code), or already-native (release the GIL in the extension).
+
+## The Decision Rule
+
+When you must pick a parallelism strategy, classify the workload:
+
+```python
+def parallel_strategy(kind):
+    if kind in ("io", "network"):
+        return "thread"    # waiting on I/O — the GIL is released
+    return "process"       # pure-Python CPU work — the GIL serializes threads
+```
+
+I/O-bound work — network, disk, sleeps — releases the GIL while it waits, so threads overlap their waits and a `ThreadPoolExecutor` wins. Pure-Python CPU-bound work never releases the GIL, so threads merely take turns on one core and processes are the only way to use more cores. Naming the workload up front is the entire GIL decision.
+
+## The Golden Rule
+
+Reference counts own and free objects (`getrefcount` shows them), `getsizeof` measures them, `is`/`id` distinguish identity, and `__slots__` cuts per-instance overhead; the GIL serializes pure-Python threads but is released during I/O and native calls — so I/O wants threads, CPU-bound pure Python wants processes or native code. In the next chapter you will inspect references, sizes, and identity, and confirm the GIL's behavior in code.

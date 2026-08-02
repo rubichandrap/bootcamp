@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Header Titlebar Branding Refactor & UI Track Switcher.
 
-**Status:** completed
+**Status:** done
 
 - [x] `GET /` renders the terminal-styled Track Catalog Homepage.
 - [x] Users can view all available language tracks (Go, TypeScript), progress statistics, and module counts.

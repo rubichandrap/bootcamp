@@ -1,0 +1,80 @@
+---
+title: "First-Class Functions"
+type: "reading"
+order: 1
+---
+
+# First-Class Functions
+
+In Python, functions are **first-class objects**: you can store them in variables, pass them as arguments, return them from other functions, and keep them in lists or dicts — exactly like numbers, strings, and lists.
+
+## Functions Are Objects
+
+A function name is just a variable that refers to a function object. Assign it to a new name and call it through that:
+
+```python
+def greet(name):
+    return "Hello, " + name
+
+hi = greet
+hi("Ada")   # "Hello, Ada"
+```
+
+Use `greet` (no parentheses) when you want the function itself, and `greet("Ada")` when you want to call it.
+
+## Passing Functions as Arguments
+
+Because functions are objects, you can hand one to another function. A function that takes or returns another function is called a **higher-order function**:
+
+```python
+def apply_twice(func, value):
+    return func(func(value))
+
+def double(x):
+    return x * 2
+
+apply_twice(double, 3)   # double(double(3)) = 12
+```
+
+## Returning Functions
+
+A function can also produce a new function. The returned function behaves like any other — it can be stored, passed around, and called:
+
+```python
+def make_multiplier(n):
+    def multiply(x):
+        return x * n
+    return multiply
+
+double = make_multiplier(2)
+double(5)   # 10
+triple = make_multiplier(3)
+triple(5)   # 15
+```
+
+## Lambda Functions
+
+A **lambda** is a short, anonymous function written as a single expression. It is handy when you need a small function on the spot — for example, as an argument to a higher-order function:
+
+```python
+def apply_twice(func, value):
+    return func(func(value))
+
+apply_twice(lambda x: x + 1, 5)   # 7
+
+doubler = lambda x: x * 2
+doubler(4)   # 8
+```
+
+A lambda takes the form `lambda parameters: expression`. It can only contain one expression — use a `def` when you need statements or multiple lines.
+
+## Combining Behavior
+
+Passing small functions around lets you build reusable behavior. The built-in `map` applies a function to every element of a sequence:
+
+```python
+nums = [1, 2, 3]
+list(map(lambda x: x * x, nums))   # [1, 4, 9]
+```
+
+The key idea: treat behavior as data. Store it, hand it around, and combine it — the foundation for closures and decorators in the rest of this module.

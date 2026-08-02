@@ -1,0 +1,97 @@
+---
+title: "Decorators & functools Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  import functools
+
+
+  # uppercase returns a decorated function whose return value is uppercased.
+  def uppercase(fn):
+      # TODO: Return a wrapper that uppercases fn's result.
+      return fn
+
+
+  # count_calls returns a wrapper that counts how many times fn is called.
+  # Store the count in wrapper.calls and preserve metadata with functools.wraps.
+  def count_calls(fn):
+      # TODO: Return a wrapper with a .calls attribute.
+      return fn
+
+
+  # factorial must keep the @functools.lru_cache decorator so repeated
+  # calls are memoized. Fill in the body only.
+  @functools.lru_cache(maxsize=None)
+  def factorial(n):
+      # TODO: Return n! (n * (n-1) * ... * 1), with factorial(0) == 1.
+      return n
+testCode: |
+  from solution import uppercase, count_calls, factorial
+
+
+  def test_uppercase_greet():
+      @uppercase
+      def greet(name):
+          return "Hello, " + name
+
+      assert greet("Ada") == "HELLO, ADA"
+
+
+  def test_uppercase_any_function():
+      @uppercase
+      def shout(msg):
+          return msg
+
+      assert shout("woof") == "WOOF"
+
+
+  def test_count_calls_increments():
+      @count_calls
+      def add(a, b):
+          return a + b
+
+      assert add(1, 2) == 3
+      assert add(3, 4) == 7
+      assert add.calls == 2
+
+
+  def test_count_calls_independent():
+      @count_calls
+      def ping():
+          return "pong"
+
+      ping()
+      assert ping.calls == 1
+
+
+  def test_count_calls_preserves_name():
+      @count_calls
+      def my_func():
+          return 1
+
+      assert my_func.__name__ == "my_func"
+
+
+  def test_factorial_small():
+      assert factorial(5) == 120
+
+
+  def test_factorial_zero():
+      assert factorial(0) == 1
+
+
+  def test_factorial_cache_hits():
+      factorial(6)
+      factorial(6)
+      assert factorial.cache_info().hits >= 1
+---
+
+# Decorators & functools Challenge
+
+Now that you have read about decorators and functools, apply what you learned!
+
+## Tasks
+
+1. Implement `uppercase(fn)` so the wrapped function's return value is uppercased.
+2. Implement `count_calls(fn)` so the wrapper counts calls in a `.calls` attribute and preserves the original name with `functools.wraps`.
+3. Complete `factorial(n)` — keep the `@functools.lru_cache` decorator so repeated calls hit the cache.

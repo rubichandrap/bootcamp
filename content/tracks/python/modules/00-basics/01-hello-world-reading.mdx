@@ -1,0 +1,55 @@
+---
+title: "Python Program Structure & Functions"
+type: "reading"
+order: 1
+---
+
+# Python Program Structure & Functions
+
+Welcome to Python! Python is a dynamically typed, interpreted language prized for its readability and expressive standard library.
+
+## Program Structure
+
+Python source files are plain text files ending in `.py`. Unlike Go, there is no mandatory package declaration or `main` function — code executes top-to-bottom when the file runs.
+
+```python
+# This is a comment
+print("Hello, World!")
+```
+
+## Defining Functions
+
+Functions are defined with the `def` keyword. Python infers types at runtime — you never declare parameter or return types.
+
+```python
+def greet(name):
+    return "Hello, " + name + "!"
+```
+
+Key parts of a Python function declaration:
+1. `def`: Keyword introducing a function.
+2. `greet`: Name of the function.
+3. `(name)`: Parameters, optionally with a default value.
+4. `return`: Optional statement returning a value. Functions without `return` return `None`.
+
+## Calling Functions
+
+Call a function by name followed by parentheses with arguments:
+
+```python
+message = greet("Pythonista")
+print(message)  # Hello, Pythonista!
+```
+
+## Indentation
+
+Python uses indentation (4 spaces is conventional) to delimit blocks. There are no curly braces.
+
+```python
+def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False
+```
+
+Indentation is part of the syntax — inconsistent indentation raises an `IndentationError`.

@@ -1,0 +1,98 @@
+---
+title: "Classes & Instances Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # Counter tracks an integer count, starting from `start`.
+  class Counter:
+      # TODO: Set self.count = start in __init__
+      def __init__(self, start=0):
+          pass
+
+      # TODO: Increment self.count by 1
+      def increment(self):
+          pass
+
+      # TODO: Return the current value of self.count
+      def value(self):
+          return None
+
+
+  # Rectangle has a width and a height.
+  class Rectangle:
+      # TODO: Store self.width and self.height
+      def __init__(self, width, height):
+          pass
+
+      # TODO: Return width * height
+      def area(self):
+          return None
+
+
+  # Student has a name and can introduce themselves.
+  class Student:
+      # TODO: Store self.name
+      def __init__(self, name):
+          pass
+
+      # TODO: Return "Hi, I'm " + self.name + "!"
+      def introduce(self):
+          return ""
+testCode: |
+  from solution import Counter, Rectangle, Student
+
+
+  def test_counter_initial():
+      assert Counter().value() == 0
+
+
+  def test_counter_start():
+      assert Counter(5).value() == 5
+
+
+  def test_counter_increment():
+      c = Counter()
+      c.increment()
+      c.increment()
+      assert c.value() == 2
+
+
+  def test_counter_independent():
+      a = Counter()
+      b = Counter()
+      a.increment()
+      assert a.value() == 1
+      assert b.value() == 0
+
+
+  def test_rectangle_area():
+      assert Rectangle(3, 4).area() == 12
+
+
+  def test_rectangle_area_square():
+      assert Rectangle(5, 5).area() == 25
+
+
+  def test_rectangle_attributes():
+      r = Rectangle(2, 5)
+      assert r.width == 2
+      assert r.height == 5
+
+
+  def test_student_introduce():
+      assert Student("Ada").introduce() == "Hi, I'm Ada!"
+
+
+  def test_student_different_names():
+      assert Student("Linus").introduce() == "Hi, I'm Linus!"
+---
+
+# Classes & Instances Challenge
+
+Now that you have read about classes and instances, apply what you learned!
+
+## Tasks
+
+1. Implement `Counter` with `__init__`, `increment`, and `value` methods.
+2. Implement `Rectangle` with `width`/`height` attributes and an `area` method.
+3. Implement `Student` with a `name` attribute and an `introduce` method.

@@ -1,0 +1,107 @@
+---
+title: "Module 03 Capstone: Functions & Decorators Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import functools
+
+
+  # compose returns a new function that applies g first, then f:
+  # compose(f, g)(x) == f(g(x)).
+  def compose(f, g):
+      # TODO: Return h(x) that calls g, then f
+      return lambda x: x
+
+
+  # make_taxer returns a closure that adds rate% tax to a price.
+  def make_taxer(rate):
+      # TODO: Return a closure computing price * (1 + rate)
+      return lambda price: price
+
+
+  # repeat is a decorator factory: repeat(3)(fn) calls fn three times
+  # and returns the last result.
+  def repeat(times):
+      # TODO: Return a decorator whose wrapper calls fn `times` times
+      return lambda fn: fn
+
+
+  # greet builds a greeting; say_hello freezes the greeting with partial.
+  def greet(greeting, name):
+      return greeting + ", " + name + "!"
+
+
+  say_hello = functools.partial(greet, "Hello")
+testCode: |
+  from solution import compose, make_taxer, repeat, greet, say_hello
+
+
+  def test_compose_applies_g_then_f():
+      h = compose(lambda x: x * 2, lambda x: x + 1)
+      assert h(3) == 8
+
+
+  def test_compose_named_functions():
+      def double(x):
+          return x * 2
+
+      def add_one(x):
+          return x + 1
+
+      h = compose(double, add_one)
+      assert h(5) == 12
+
+
+  def test_make_taxer_twenty_five_percent():
+      tax = make_taxer(0.25)
+      assert tax(100) == 125.0
+
+
+  def test_make_taxer_no_tax():
+      tax = make_taxer(0)
+      assert tax(50) == 50.0
+
+
+  def test_repeat_calls_three_times():
+      calls = []
+
+      @repeat(3)
+      def record(value):
+          calls.append(value)
+          return value
+
+      record("hi")
+      assert calls == ["hi", "hi", "hi"]
+
+
+  def test_repeat_returns_last_result():
+      total = 0
+
+      @repeat(3)
+      def add_one():
+          nonlocal total
+          total += 1
+          return total
+
+      assert add_one() == 3
+
+
+  def test_repeat_once():
+      @repeat(1)
+      def square(x):
+          return x * x
+
+      assert square(4) == 16
+
+
+  def test_say_hello_partial():
+      assert say_hello("Ada") == "Hello, Ada!"
+
+
+  def test_greet_still_works():
+      assert greet("Hi", "Bob") == "Hi, Bob!"
+---
+
+# Assessment: Functions & Decorators Toolkit
+
+Integrate first-class functions, closures, decorators, and functools to implement a small function toolkit. All four areas from this module must be applied correctly to pass.

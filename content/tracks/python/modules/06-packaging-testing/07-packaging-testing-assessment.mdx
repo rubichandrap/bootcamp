@@ -1,0 +1,87 @@
+---
+title: "Module 06 Capstone: Project Toolkit"
+type: "assessment"
+order: 7
+starterCode: |
+  import importlib
+
+
+  # module_kind(name: str) -> str imports the module named name and returns
+  # "package" when it is a package (has a __path__ attribute) and "module"
+  # otherwise.
+  def module_kind(name: str) -> str:
+      # TODO: import name and check hasattr(module, "__path__").
+      return "module"
+
+
+  # import_member(module: str, attr: str) dynamically imports module with
+  # importlib and returns the attribute named attr from it.
+  def import_member(module: str, attr: str):
+      # TODO: importlib.import_module(module), then getattr the attr.
+      return None
+
+
+  # parse_requirements(text: str) -> dict[str, str | None] parses a
+  # requirements.txt and returns a dict mapping each package name to its
+  # pinned version (or None). Blank lines and "#" comments are ignored.
+  def parse_requirements(text: str) -> dict[str, str | None]:
+      # TODO: split lines, skip blanks/comments, split "name==version".
+      return {}
+
+
+  # within_tolerance(actual: float, expected: float, tol: float = 1e-6) ->
+  # bool returns True when actual is within tol of expected
+  # (pytest.approx-style tolerant comparison).
+  def within_tolerance(actual: float, expected: float, tol: float = 1e-6) -> bool:
+      # TODO: return abs(actual - expected) <= tol.
+      return False
+testCode: |
+  import math
+
+  from solution import import_member, module_kind, parse_requirements, within_tolerance
+
+
+  def test_module_kind_package():
+      assert module_kind("json") == "package"
+
+
+  def test_module_kind_plain_module():
+      assert module_kind("math") == "module"
+
+
+  def test_import_member_function():
+      assert import_member("math", "sqrt") is math.sqrt
+
+
+  def test_import_member_constant():
+      assert import_member("math", "pi") == math.pi
+
+
+  def test_parse_requirements():
+      text = "# deps\nrequests==2.31.0\npytest\n"
+      assert parse_requirements(text) == {"requests": "2.31.0", "pytest": None}
+
+
+  def test_parse_requirements_annotations():
+      assert parse_requirements.__annotations__["return"] == dict[str, str | None]
+
+
+  def test_within_tolerance():
+      assert within_tolerance(0.1 + 0.2, 0.3) is True
+      assert within_tolerance(1.0, 2.0) is False
+
+
+  def test_within_tolerance_annotations():
+      assert within_tolerance.__annotations__["return"] is bool
+---
+
+# Assessment: Project Toolkit
+
+Integrate modules, packages, virtual-environment tooling, and type hints to build a small project toolkit. All three areas from this module must be applied correctly to pass.
+
+## Tasks
+
+1. Implement `module_kind(name: str) -> str` to return `"package"` when the imported module has a `__path__` attribute and `"module"` otherwise.
+2. Implement `import_member(module: str, attr: str)` using `importlib.import_module` and `getattr` to load any module and return one of its attributes.
+3. Implement `parse_requirements(text: str) -> dict[str, str | None]` to parse a `requirements.txt`, mapping each package to its pinned version (or `None`), ignoring blank lines and `#` comments.
+4. Implement `within_tolerance(actual, expected, tol)` returning whether `actual` is within `tol` of `expected`, with correct type hints.

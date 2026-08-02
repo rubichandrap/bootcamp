@@ -1,0 +1,127 @@
+---
+title: "The Iterator Protocol"
+type: "reading"
+order: 1
+---
+
+# The Iterator Protocol
+
+Almost everything in Python that you can `for` over — lists, strings, dicts, ranges, files — works the same way underneath. They all support the **iterator protocol**: two methods that let Python pull values out one at a time.
+
+## Iterables vs Iterators
+
+An **iterable** is anything you can loop over: `[1, 2, 3]`, `"hello"`, `range(10)`, a dict's keys. An **iterator** is the object that actually produces the values. They are different things.
+
+The built-in `iter()` converts an iterable into an iterator:
+
+```python
+nums = [1, 2, 3]
+it = iter(nums)      # an iterator over nums
+next(it)             # 1
+next(it)             # 2
+```
+
+`next()` pulls out the next value. When the iterator has nothing left, `next()` raises `StopIteration`:
+
+```python
+it = iter([1])
+next(it)             # 1
+next(it)             # StopIteration raised
+```
+
+The `for` loop is just a convenient wrapper around `iter()` and `next()`:
+
+```python
+for n in nums:
+    print(n)
+```
+
+is roughly equivalent to:
+
+```python
+it = iter(nums)
+while True:
+    try:
+        n = next(it)
+    except StopIteration:
+        break
+    print(n)
+```
+
+## The Two Methods
+
+The iterator protocol is only two methods:
+
+- `__iter__(self)` — returns the iterator itself. `iter(x)` calls this.
+- `__next__(self)` — returns the next value, or raises `StopIteration` when done. `next(x)` calls this.
+
+Here is a custom iterator that counts down to zero:
+
+```python
+class Countdown:
+    def __init__(self, start):
+        self.current = start
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current < 0:
+            raise StopIteration
+        value = self.current
+        self.current -= 1
+        return value
+
+list(Countdown(3))   # [3, 2, 1, 0]
+```
+
+`__iter__` returning `self` is the rule for iterators — an iterator is its own iterable.
+
+## Iterables Are Not Iterators
+
+A list is an iterable but **not** an iterator: it has `__iter__` but no `__next__`. Each call to `iter(nums)` returns a *fresh* iterator, so you can loop over the list multiple times:
+
+```python
+nums = [1, 2, 3]
+iter(nums) is nums   # False — iter() made a new iterator
+```
+
+An iterator, in contrast, is one-shot. Once it raises `StopIteration`, it stays exhausted — looping over it a second time yields nothing:
+
+```python
+cd = Countdown(1)
+list(cd)   # [1, 0]
+list(cd)   # [] — the iterator is spent
+```
+
+## Iterators Are Everywhere
+
+The built-ins `enumerate`, `zip`, and `reversed` all return iterators:
+
+```python
+for index, name in enumerate(["Ada", "Bob"]):
+    print(index, name)
+```
+
+Because they are lazy, they produce values on demand instead of building whole lists up front — the key to efficient streaming.
+
+`range`, `map`, and `filter` are also lazy. `map` and `filter` return iterators, and `range` returns a lazy `range` object that produces values on demand — none of them build whole lists up front. Materialize with `list()` when you actually need a list.
+
+## The Protocol Unifies Everything
+
+Because every sequence type speaks the same two methods, you can write a single function that works on any stream:
+
+```python
+def take(it, n):
+    result = []
+    for _ in range(n):
+        try:
+            result.append(next(it))
+        except StopIteration:
+            break
+    return result
+
+take(iter([1, 2, 3, 4, 5]), 3)   # [1, 2, 3]
+```
+
+The iterator protocol is Python's universal streaming interface. In the next chapter you will build custom iterators and stream-processing helpers with it.

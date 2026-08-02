@@ -1,0 +1,70 @@
+---
+title: "Threads & Processes Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  import time
+  from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
+
+  # fetch(url) simulates an I/O-bound network request: it sleeps (releasing
+  # the GIL), then returns the url uppercased.
+  def fetch(url):
+      time.sleep(0.05)
+      return url.upper()
+
+
+  # compute_square(n) is a CPU-bound pure computation.
+  def compute_square(n):
+      return n * n
+
+
+  # fetch_all(urls) fetches every url in parallel using threads (I/O-bound).
+  def fetch_all(urls):
+      # TODO: use a ThreadPoolExecutor to map fetch over urls.
+      return []
+
+
+  # squares_all(numbers) squares every number in parallel using processes
+  # (CPU-bound).
+  def squares_all(numbers):
+      # TODO: use a ProcessPoolExecutor to map compute_square over numbers.
+      return []
+testCode: |
+  import time
+
+  from solution import compute_square, fetch, fetch_all, squares_all
+
+
+  def test_fetch_returns_uppercase():
+      assert fetch("hello") == "HELLO"
+
+
+  def test_fetch_all_correctness():
+      assert fetch_all(["a", "b", "c"]) == ["A", "B", "C"]
+
+
+  def test_fetch_all_is_concurrent():
+      t0 = time.monotonic()
+      fetch_all(["a", "b", "c", "d"])
+      elapsed = time.monotonic() - t0
+      assert elapsed < 0.15  # 0.05 concurrent vs 0.2 sequential
+
+
+  def test_squares_all_correctness():
+      assert squares_all([1, 2, 3, 4]) == [1, 4, 9, 16]
+
+
+  def test_squares_all_matches_compute_square():
+      nums = list(range(12))
+      assert squares_all(nums) == [compute_square(n) for n in nums]
+---
+
+# Threads & Processes Challenge
+
+Now that you have read about the GIL, threads, and processes, apply what you learned!
+
+## Tasks
+
+1. Implement `fetch_all(urls)` using a `ThreadPoolExecutor` so that I/O-bound `fetch` calls overlap.
+2. Implement `squares_all(numbers)` using a `ProcessPoolExecutor` so that the CPU-bound `compute_square` runs across processes.

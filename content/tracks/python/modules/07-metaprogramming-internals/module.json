@@ -1,0 +1,5 @@
+{
+  "title": "Metaprogramming & Internals",
+  "description": "Control Python's machinery with descriptors, metaclasses, __slots__, context managers, and the import system.",
+  "order": 7
+}

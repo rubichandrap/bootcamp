@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Curriculum Content Engine & Reading Chapters
 
-**Status:** completed
+**Status:** done
 
 - [x] Responsive 3-pane split view workspace for Challenge Chapters.
 - [x] Challenge loader mounting `starter.go` into Monaco Editor and loading hidden `_test.go` suites.

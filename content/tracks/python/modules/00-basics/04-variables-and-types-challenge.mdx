@@ -1,0 +1,80 @@
+---
+title: "Variables & Types Challenge"
+type: "challenge"
+order: 4
+starterCode: |
+  # add returns the sum of a and b.
+  def add(a, b):
+      # TODO: Return a + b
+      return 0
+
+
+  # repeat returns the string text repeated n times.
+  def repeat(text, n):
+      # TODO: Return text repeated n times
+      return ""
+
+
+  # describe returns a sentence describing the given value.
+  # For numbers return "<value> is a number".
+  # For strings return "<value> is a string".
+  # For booleans return "<value> is a boolean".
+  def describe(value):
+      # TODO: Return the appropriate description
+      return ""
+
+
+  # to_int safely converts value to an int using int(), returning None on failure.
+  def to_int(value):
+      # TODO: Return int(value) or None if it raises an error
+      return None
+testCode: |
+  from solution import add, repeat, describe, to_int
+
+
+  def test_add():
+      assert add(2, 3) == 5
+
+
+  def test_add_negative():
+      assert add(-1, 1) == 0
+
+
+  def test_repeat():
+      assert repeat("Go", 3) == "GoGoGo"
+
+
+  def test_repeat_once():
+      assert repeat("ab", 1) == "ab"
+
+
+  def test_describe_number():
+      assert describe(42) == "42 is a number"
+
+
+  def test_describe_string():
+      assert describe("hi") == "hi is a string"
+
+
+  def test_describe_boolean():
+      assert describe(True) == "True is a boolean"
+
+
+  def test_to_int_valid():
+      assert to_int("42") == 42
+
+
+  def test_to_int_invalid():
+      assert to_int("abc") is None
+---
+
+# Variables & Types Challenge
+
+Now that you have read about variables and types, apply what you learned!
+
+## Tasks
+
+1. Implement `add(a, b)` that returns the sum.
+2. Implement `repeat(text, n)` that returns `text` repeated `n` times.
+3. Implement `describe(value)` that returns a type-based description.
+4. Implement `to_int(value)` that converts to an `int`, returning `None` when conversion fails.

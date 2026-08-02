@@ -1,0 +1,81 @@
+---
+title: "Context Managers & Import System Challenge"
+type: "challenge"
+order: 6
+starterCode: |
+  import time
+  from contextlib import contextmanager
+  import importlib.util
+
+
+  # Timer is a context manager that records how long the with block ran,
+  # stored in self.elapsed.
+  class Timer:
+      def __enter__(self):
+          # TODO: record time.monotonic() as self.start, then return self.
+          return self
+
+      def __exit__(self, exc_type, exc_val, exc_tb):
+          # TODO: set self.elapsed = time.monotonic() - self.start.
+          return False
+
+
+  # heading(title, log) is a generator-based context manager: on entry it
+  # appends "<title>" to log; on exit it always appends "</title>".
+  @contextmanager
+  def heading(title, log):
+      # TODO: append f"<{title}>" to log, yield, then in a finally block
+      # append f"</{title}>" to log.
+      pass
+
+
+  # module_exists(name) returns True when a module named name can be found,
+  # using importlib.util.find_spec.
+  def module_exists(name):
+      # TODO: return importlib.util.find_spec(name) is not None.
+      return False
+testCode: |
+  import time
+  import pytest
+
+  from solution import Timer, heading, module_exists
+
+
+  def test_timer_records_elapsed():
+      with Timer() as t:
+          time.sleep(0.01)
+      assert t.elapsed >= 0.01
+
+
+  def test_heading_marks_enter_and_exit():
+      log = []
+      with heading("h1", log):
+          log.append("body")
+      assert log == ["<h1>", "body", "</h1>"]
+
+
+  def test_heading_marks_exit_on_error():
+      log = []
+      with pytest.raises(RuntimeError):
+          with heading("p", log):
+              raise RuntimeError("boom")
+      assert log == ["<p>", "</p>"]
+
+
+  def test_module_exists_present():
+      assert module_exists("math") is True
+
+
+  def test_module_exists_absent():
+      assert module_exists("definitely_not_a_module_xyz") is False
+---
+
+# Context Managers & Import System Challenge
+
+Now that you have read about context managers, `contextlib`, and the import system, apply what you learned!
+
+## Tasks
+
+1. Implement `Timer` so entering the `with` block records a start time and exiting stores the elapsed seconds in `self.elapsed`.
+2. Implement `heading(title, log)` as a generator-based context manager that appends `"<title>"` on entry and always appends `"</title>"` on exit (even when the block raises).
+3. Implement `module_exists(name)` using `importlib.util.find_spec` to return whether a module with that name can be found.

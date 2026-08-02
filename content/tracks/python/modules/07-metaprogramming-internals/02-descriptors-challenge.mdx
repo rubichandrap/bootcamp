@@ -1,0 +1,120 @@
+---
+title: "Descriptors Challenge"
+type: "challenge"
+order: 2
+starterCode: |
+  # ReadOnly is a descriptor that stores one value and refuses assignment.
+  class ReadOnly:
+      def __init__(self, value):
+          # TODO: store value on self.
+          self._value = None
+
+      def __get__(self, instance, owner):
+          # TODO: return self._value.
+          return None
+
+      def __set__(self, instance, value):
+          # TODO: raise AttributeError("read-only attribute").
+          pass
+
+
+  # Config uses ReadOnly for its max_retries setting.
+  class Config:
+      max_retries = ReadOnly(3)
+
+
+  # Temperature exposes celsius with a validating setter and a fahrenheit
+  # property that converts.
+  class Temperature:
+      def __init__(self, celsius):
+          self._celsius = celsius
+
+      @property
+      def celsius(self):
+          # TODO: return self._celsius.
+          return 0
+
+      @celsius.setter
+      def celsius(self, value):
+          # TODO: raise ValueError when value < -273.15, otherwise store it.
+          self._celsius = value
+
+      @property
+      def fahrenheit(self):
+          # TODO: return self._celsius * 9 / 5 + 32.
+          return 0
+
+
+  # PositiveNumber is a descriptor that rejects non-positive assignments.
+  class PositiveNumber:
+      def __set_name__(self, owner, name):
+          # TODO: remember the attribute name as self.name.
+          self.name = None
+
+      def __get__(self, instance, owner):
+          # TODO: return instance.__dict__[self.name].
+          return None
+
+      def __set__(self, instance, value):
+          # TODO: raise ValueError when value <= 0, otherwise store the
+          # value in the instance dict under self.name.
+          pass
+
+
+  class Order:
+      quantity = PositiveNumber()
+testCode: |
+  import pytest
+
+  from solution import Config, Order, Temperature
+
+
+  def test_readonly_gets_value():
+      assert Config().max_retries == 3
+
+
+  def test_readonly_rejects_assignment():
+      with pytest.raises(AttributeError):
+          Config().max_retries = 5
+
+
+  def test_temperature_celsius_roundtrip():
+      t = Temperature(25)
+      assert t.celsius == 25
+      t.celsius = 30
+      assert t.celsius == 30
+
+
+  def test_temperature_fahrenheit():
+      assert Temperature(0).fahrenheit == 32.0
+      assert Temperature(100).fahrenheit == 212.0
+
+
+  def test_temperature_rejects_below_absolute_zero():
+      with pytest.raises(ValueError):
+          Temperature(25).celsius = -300
+
+
+  def test_positive_number_valid():
+      o = Order()
+      o.quantity = 5
+      assert o.quantity == 5
+
+
+  def test_positive_number_rejects_nonpositive():
+      o = Order()
+      with pytest.raises(ValueError):
+          o.quantity = 0
+      with pytest.raises(ValueError):
+          o.quantity = -3
+---
+
+# Descriptors Challenge
+
+Now that you have read about the descriptor protocol, `property`, and `__set_name__`, apply what you learned!
+
+## Tasks
+
+1. Implement the `ReadOnly` descriptor so `Config().max_retries` reads the stored value and assigning to it raises `AttributeError`.
+2. Implement `Temperature` so `celsius` stores through a validating setter (rejecting values below absolute zero with `ValueError`) and `fahrenheit` computes `celsius * 9 / 5 + 32`.
+3. Implement the `PositiveNumber` descriptor using `__set_name__` so `Order.quantity` rejects non-positive values with `ValueError` and otherwise stores per-instance values.
