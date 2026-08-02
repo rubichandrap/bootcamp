@@ -4,19 +4,19 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Python Track appears in Track Catalog at order 3 and in header Track switcher (switcher derives from track config, no hardcoded list)
-- [ ] Track config extended for Python: codeFile `solution.py`, testFile `test_solution.py`, solutionFile `solution.py`, language `python` (Monaco syntax highlighting works)
-- [ ] New `PythonExecutor` implements `LanguageExecutor`: writes `solution.py` + `test_solution.py` (`from solution import X`) to sandbox tmp dir, runs `python3 -m pytest -q --tb=short`, reuses existing 5s process-tree timeout
-- [ ] `parsePytestOutput` pure function maps pytest stdout/stderr to `SubmissionExecutionResult` (per-test pass/fail, totals, import/syntax errors and timeouts as `compileError`)
-- [ ] Python registered in executor registry (aliases `python`, `py`); `getLanguageExecutor('python')` dispatches correctly
-- [ ] Chapter page code-file label derives from track config (no `typescript ? ts : go` ternary) so Python shows `solution.py`
-- [ ] `-race` toggle renders only on the Go Track, not Python
-- [ ] ADR-0010 recorded: pytest runner choice, stdout parsing, no JSON plugin, `solution.py`/`test_solution.py` layout
-- [ ] Unit tests: `parsePytestOutput` fixtures (pass/fail/import error/syntax error/timeout), executor dispatch, track config entries
-- [ ] `00-basics` Module authored, 7 chapters: Basics — syntax, types, control flow, functions (3 Reading, 3 Challenge, 1 Assessment)
-- [ ] All Basics challenge `testCode` suites verified locally green against real solutions via pytest
+- [x] Python Track appears in Track Catalog at order 3 and in header Track switcher (switcher derives from track config, no hardcoded list)
+- [x] Track config extended for Python: codeFile `solution.py`, testFile `test_solution.py`, solutionFile `solution.py`, language `python` (Monaco syntax highlighting works)
+- [x] New `PythonExecutor` implements `LanguageExecutor`: writes `solution.py` + `test_solution.py` (`from solution import X`) to sandbox tmp dir, runs `python3 -m pytest -v --tb=short`, reuses existing 5s process-tree timeout
+- [x] `parsePytestOutput` pure function maps pytest stdout/stderr to `SubmissionExecutionResult` (per-test pass/fail, totals, import/syntax errors and timeouts as `compileError`)
+- [x] Python registered in executor registry (aliases `python`, `py`); `getLanguageExecutor('python')` dispatches correctly
+- [x] Chapter page code-file label derives from track config (no `typescript ? ts : go` ternary) so Python shows `solution.py`
+- [x] `-race` toggle renders only on the Go Track, not Python
+- [x] ADR-0010 recorded: pytest runner choice, stdout parsing, no JSON plugin, `solution.py`/`test_solution.py` layout
+- [x] Unit tests: `parsePytestOutput` fixtures (pass/fail/import error/syntax error/timeout/ERROR status), executor dispatch, track config entries
+- [x] `00-basics` Module authored, 7 chapters: Basics — syntax, types, control flow, functions (3 Reading, 3 Challenge, 1 Assessment)
+- [x] All Basics challenge `testCode` suites verified locally green against real solutions via pytest
 
 ## Blocked by
 
