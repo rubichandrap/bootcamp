@@ -4,11 +4,11 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Language derived from the active Track slug is forwarded through the challenge service and RCE endpoint to the executor (no silent default).
-- [ ] TypeScript Track submissions run via vitest and report real test results — the Go compile error is gone.
-- [ ] Python Track submissions run via pytest and report real test results — no Go compile error.
-- [ ] Missing or unsupported language produces a clear error message rather than silently running Go.
-- [ ] Editor header badge shows the active track's language, not a hardcoded Go label.
-- [ ] Unit tests cover: challenge service forwards the derived language; engine fails fast on missing/unknown language; RCE endpoint passes the language through.
+- [x] Language derived from the active Track slug is forwarded through the challenge service and RCE endpoint to the executor (no silent default).
+- [x] TypeScript Track submissions run via vitest and report real test results — the Go compile error is gone.
+- [x] Python Track submissions run via pytest and report real test results — no Go compile error.
+- [x] Missing or unsupported language produces a clear error message rather than silently running Go.
+- [x] Editor header badge shows the active track's language, not a hardcoded Go label.
+- [x] Unit tests cover: challenge service forwards the derived language; engine fails fast on missing/unknown language; RCE endpoint passes the language through.
