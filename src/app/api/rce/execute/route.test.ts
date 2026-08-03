@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { POST } from './route';
 import { NextRequest } from 'next/server';
 
@@ -164,5 +164,31 @@ func TestAdd(t *testing.T) {
     expect(res.status).toBe(200);
     expect(data.success).toBe(false);
     expect(data.compileError).toMatch(/unsupported/i);
+  });
+
+  it('passes a non-Go language through to the executor', async () => {
+    const rceEngine = await import('@/lib/rce/rceEngine');
+    const spy = vi.spyOn(rceEngine, 'executeSubmission').mockResolvedValue({
+      success: true,
+      passed: 1,
+      failed: 0,
+      tests: [{ name: 'add', passed: true }],
+    });
+
+    const req = new NextRequest('http://localhost:3000/api/rce/execute', {
+      method: 'POST',
+      body: JSON.stringify({
+        code: 'export const add = (a: number, b: number) => a + b;',
+        testCode: 'import { add } from "./solution";',
+        language: 'typescript',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    await res.json();
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ language: 'typescript' }));
+    spy.mockRestore();
   });
 });

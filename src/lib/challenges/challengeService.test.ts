@@ -151,23 +151,26 @@ describe('challengeService', () => {
       );
     });
 
-    it('returns a clear RCE failure result when trackId is missing', async () => {
+    it('returns a clear RCE failure result when trackId is missing, without punishing the learner', async () => {
       const mockExecuteRce = vi.fn().mockResolvedValue({
         success: true,
         passed: 1,
         failed: 0,
         tests: [],
       });
+      const mockIncrementFailedAttempts = vi.fn();
 
       const res = await runChallenge(
         { chapterId: 'ch-1', code: 'package main', testCode: 'func TestX(t *testing.T){}' },
-        { executeRce: mockExecuteRce, onAdvance: vi.fn() }
+        { executeRce: mockExecuteRce, onAdvance: vi.fn(), incrementFailedAttempts: mockIncrementFailedAttempts }
       );
 
       expect(res.isRceFailure).toBe(true);
       expect(res.result.success).toBe(false);
+      expect(res.result.failed).toBe(0);
       expect(res.result.compileError).toMatch(/language/i);
       expect(mockExecuteRce).not.toHaveBeenCalled();
+      expect(mockIncrementFailedAttempts).not.toHaveBeenCalled();
     });
 
     it('advances synchronously when autoAdvanceDelayMs is 0', async () => {

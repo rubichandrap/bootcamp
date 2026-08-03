@@ -1,6 +1,6 @@
 import React from 'react';
 import { getChapterDetails } from '@/lib/tracks/trackCatalog';
-import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
+import { getTrackConfig } from '@/lib/tracks/trackConfig';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Code2, CheckCircle2 } from 'lucide-react';
@@ -31,7 +31,7 @@ export default async function ChapterWorkspacePage({ params }: ChapterPageProps)
     notFound();
   }
 
-  const trackCfg = getTrackConfig(trackSlug as TrackSlug);
+  const trackCfg = getTrackConfig(trackSlug)!;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans p-6 md:p-12">

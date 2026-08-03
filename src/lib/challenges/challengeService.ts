@@ -5,7 +5,7 @@ import {
   defaultHttpProgressAdapter,
   DEFAULT_USER_ID,
 } from '@/lib/progress/progressTracker';
-import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
+import { getTrackConfig } from '@/lib/tracks/trackConfig';
 
 export interface ExecuteRceParams {
   code: string;
@@ -16,11 +16,11 @@ export interface ExecuteRceParams {
 
 export function deriveLanguageFromTrack(trackId?: string): string {
   if (!trackId) {
-    throw new Error('Missing trackId: cannot determine submission language');
+    throw new Error('Missing language: cannot derive a language from an empty track');
   }
-  const config = getTrackConfig(trackId as TrackSlug);
+  const config = getTrackConfig(trackId);
   if (!config) {
-    throw new Error(`Unsupported track: ${trackId}`);
+    throw new Error(`Unsupported track '${trackId}': no known language`);
   }
   return config.language;
 }
@@ -74,13 +74,30 @@ export async function runChallenge(
     ports?.recordSubmission || ((p) => defaultHttpProgressAdapter.recordSubmission(p));
   const autoAdvanceDelay = params.autoAdvanceDelayMs ?? 1500;
 
+  let language: string;
+  try {
+    language = deriveLanguageFromTrack(params.trackId);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Execution failed';
+    return {
+      result: {
+        success: false,
+        passed: 0,
+        failed: 0,
+        tests: [],
+        compileError: errorMessage,
+      },
+      isRceFailure: true,
+    };
+  }
+
   let data: RCEExecuteResponse;
   try {
     data = await resolvedExecuteRce({
       code: params.code,
       testCode: params.testCode,
       enableRaceCheck: params.enableRaceCheck,
-      language: deriveLanguageFromTrack(params.trackId),
+      language,
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Execution failed';

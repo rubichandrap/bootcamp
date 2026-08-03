@@ -42,7 +42,7 @@ export const TrackWorkspace: React.FC<TrackWorkspaceProps> = ({ trackSlug = 'go'
   const session = useWorkspaceSession(trackSlug);
 
   // Track config — replaces all repeated track ternaries
-  const trackCfg = getTrackConfig(trackSlug);
+  const trackCfg = getTrackConfig(trackSlug)!;
 
   // Layout-only state
   const [isHintOpen, setIsHintOpen] = useState(false);

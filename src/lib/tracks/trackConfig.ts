@@ -36,6 +36,6 @@ export const TRACK_CONFIG: Record<TrackSlug, TrackConfig> = {
   },
 };
 
-export function getTrackConfig(trackSlug: TrackSlug): TrackConfig {
-  return TRACK_CONFIG[trackSlug];
+export function getTrackConfig(trackSlug: string): TrackConfig | undefined {
+  return TRACK_CONFIG[trackSlug as TrackSlug];
 }
