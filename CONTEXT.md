@@ -4,8 +4,12 @@ An interactive platform for developers (from beginners to experienced engineers)
 
 ## Language
 
+**Language**:
+The programming language a Track teaches and the RCE Engine executes (Go, TypeScript, Python, ...). Canonical source is `track.json.language` and `TrackConfig.language`; distinct from **Track**, the curriculum built around that language.
+_Avoid_: Runtime, execution environment, compiler
+
 **Track**:
-The top-level structured curriculum dedicated to a specific programming language (e.g., Go, TypeScript), containing ordered Modules from beginner to expert.
+The top-level structured curriculum dedicated to a specific programming language (see **Language**), containing ordered Modules from beginner to expert.
 _Avoid_: Course, pathway, syllabus
 
 **Track Catalog**:
