@@ -23,7 +23,7 @@ func TestAdd(t *testing.T) {
 
     const req = new NextRequest('http://localhost:3000/api/rce/execute', {
       method: 'POST',
-      body: JSON.stringify({ code, testCode }),
+      body: JSON.stringify({ code, testCode, language: 'go' }),
       headers: { 'Content-Type': 'application/json' },
     });
 
@@ -58,7 +58,7 @@ func TestAdd(t *testing.T) {
 
     const req = new NextRequest('http://localhost:3000/api/rce/execute', {
       method: 'POST',
-      body: JSON.stringify({ code, testCode }),
+      body: JSON.stringify({ code, testCode, language: 'go' }),
       headers: { 'Content-Type': 'application/json' },
     });
 
@@ -88,7 +88,7 @@ func TestBroken(t *testing.T) {
 
     const req = new NextRequest('http://localhost:3000/api/rce/execute', {
       method: 'POST',
-      body: JSON.stringify({ code, testCode }),
+      body: JSON.stringify({ code, testCode, language: 'go' }),
       headers: { 'Content-Type': 'application/json' },
     });
 
@@ -120,7 +120,7 @@ func TestAdd(t *testing.T) {
 
     const req = new NextRequest('http://localhost:3000/api/rce/execute', {
       method: 'POST',
-      body: JSON.stringify({ code, testCode, enableRaceCheck: true }),
+      body: JSON.stringify({ code, testCode, enableRaceCheck: true, language: 'go' }),
       headers: { 'Content-Type': 'application/json' },
     });
 
@@ -130,5 +130,39 @@ func TestAdd(t *testing.T) {
     expect(res.status).toBe(200);
     expect(data.hasRaceDetected).toBeDefined();
     expect(data.hasRaceDetected).toBe(false);
+  });
+
+  it('fails fast with a clear error when language is missing', async () => {
+    const req = new NextRequest('http://localhost:3000/api/rce/execute', {
+      method: 'POST',
+      body: JSON.stringify({ code: 'package main', testCode: 'func TestX(t *testing.T){}' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.success).toBe(false);
+    expect(data.compileError).toMatch(/language/i);
+  });
+
+  it('fails fast with a clear error for an unsupported language', async () => {
+    const req = new NextRequest('http://localhost:3000/api/rce/execute', {
+      method: 'POST',
+      body: JSON.stringify({
+        code: 'package main',
+        testCode: 'func TestX(t *testing.T){}',
+        language: 'ruby',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.success).toBe(false);
+    expect(data.compileError).toMatch(/unsupported/i);
   });
 });

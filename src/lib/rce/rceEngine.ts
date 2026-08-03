@@ -28,9 +28,16 @@ export const EXECUTOR_REGISTRY: Record<string, LanguageExecutor> = {
   py: pyExecutor,
 };
 
-export function getLanguageExecutor(trackId: string = 'go'): LanguageExecutor {
-  const normalizedTrack = trackId.toLowerCase();
-  return EXECUTOR_REGISTRY[normalizedTrack] || goExecutor;
+export function getLanguageExecutor(language?: string): LanguageExecutor {
+  if (!language) {
+    throw new Error('Missing language: cannot select an executor');
+  }
+  const normalizedLanguage = language.toLowerCase();
+  const executor = EXECUTOR_REGISTRY[normalizedLanguage];
+  if (!executor) {
+    throw new Error(`Unsupported language: ${language}`);
+  }
+  return executor;
 }
 
 export async function executeSubmission(
@@ -47,7 +54,7 @@ export async function executeSubmission(
   }
 
   try {
-    const executor = getLanguageExecutor(params.trackId);
+    const executor = getLanguageExecutor(params.language);
     return await executor.execute(params);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Execution failed';

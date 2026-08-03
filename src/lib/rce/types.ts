@@ -23,7 +23,7 @@ export interface SubmissionExecutionResult {
 export interface ExecuteSubmissionParams {
   code: string;
   testCode: string;
-  trackId?: string;
+  language?: string;
   enableRaceCheck?: boolean;
   timeoutMs?: number;
 }

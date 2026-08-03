@@ -106,11 +106,31 @@ func TestAdd(t *testing.T) {
   if Add(2, 3) != 5 { t.Errorf("want 5") }
 }
 `;
-      const result = await executeSubmission({ code, testCode });
+      const result = await executeSubmission({ code, testCode, language: 'go' });
       expect(result.success).toBe(true);
       expect(result.passed).toBe(1);
       expect(result.failed).toBe(0);
       expect(result.tests[0].name).toBe('TestAdd');
+    });
+
+    it('fails fast with a clear error when language is missing', async () => {
+      const result = await executeSubmission({
+        code: 'package main',
+        testCode: 'func TestX(t *testing.T){}',
+      });
+      expect(result.success).toBe(false);
+      expect(result.passed).toBe(0);
+      expect(result.compileError).toMatch(/language/i);
+    });
+
+    it('fails fast with a clear error for an unsupported language', async () => {
+      const result = await executeSubmission({
+        code: 'package main',
+        testCode: 'func TestX(t *testing.T){}',
+        language: 'ruby',
+      });
+      expect(result.success).toBe(false);
+      expect(result.compileError).toMatch(/unsupported/i);
     });
 
     it('dispatches typescript trackId to TypeScriptExecutor correctly', () => {

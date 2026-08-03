@@ -33,6 +33,7 @@ describe('challengeService', () => {
         code: 'package main',
         testCode: 'package main_test',
         enableRaceCheck: true,
+        language: 'go',
       });
 
       expect(mockFetch).toHaveBeenCalledWith('/api/rce/execute', {
@@ -42,6 +43,7 @@ describe('challengeService', () => {
           code: 'package main',
           testCode: 'package main_test',
           enableRaceCheck: true,
+          language: 'go',
         }),
       });
       expect(result).toEqual(mockResult);
@@ -67,6 +69,7 @@ describe('challengeService', () => {
       const runPromise = runChallenge(
         {
           chapterId: 'ch-1',
+          trackId: 'go',
           code: 'package main',
           testCode: 'package main_test',
           enableRaceCheck: false,
@@ -84,9 +87,11 @@ describe('challengeService', () => {
         code: 'package main',
         testCode: 'package main_test',
         enableRaceCheck: false,
+        language: 'go',
       });
       expect(mockRecordSubmission).toHaveBeenCalledWith({
         userId: 'default-user',
+        trackId: 'go',
         chapterId: 'ch-1',
         code: 'package main',
         passed: true,
@@ -106,6 +111,65 @@ describe('challengeService', () => {
       expect(mockOnAdvance).toHaveBeenCalledTimes(1);
     });
 
+    it('derives language from trackId and forwards it to executeRce', async () => {
+      const mockRceResponse: RCEExecuteResponse = {
+        success: true,
+        passed: 1,
+        failed: 0,
+        tests: [],
+      };
+      const mockExecuteRce = vi.fn().mockResolvedValue(mockRceResponse);
+      const mockRecordSubmission = vi.fn().mockResolvedValue({
+        completedChapterIds: ['ch-1'],
+        streakDays: 1,
+      });
+
+      await runChallenge(
+        {
+          chapterId: 'ch-1',
+          trackId: 'typescript',
+          code: 'export const add = (a: number, b: number) => a + b;',
+          testCode: 'import { add } from "./solution";',
+          enableRaceCheck: false,
+          autoAdvanceDelayMs: 0,
+        },
+        {
+          executeRce: mockExecuteRce,
+          recordSubmission: mockRecordSubmission,
+          onAdvance: vi.fn(),
+        }
+      );
+
+      expect(mockExecuteRce).toHaveBeenCalledWith({
+        code: 'export const add = (a: number, b: number) => a + b;',
+        testCode: 'import { add } from "./solution";',
+        enableRaceCheck: false,
+        language: 'typescript',
+      });
+      expect(mockRecordSubmission).toHaveBeenCalledWith(
+        expect.objectContaining({ trackId: 'typescript' })
+      );
+    });
+
+    it('returns a clear RCE failure result when trackId is missing', async () => {
+      const mockExecuteRce = vi.fn().mockResolvedValue({
+        success: true,
+        passed: 1,
+        failed: 0,
+        tests: [],
+      });
+
+      const res = await runChallenge(
+        { chapterId: 'ch-1', code: 'package main', testCode: 'func TestX(t *testing.T){}' },
+        { executeRce: mockExecuteRce, onAdvance: vi.fn() }
+      );
+
+      expect(res.isRceFailure).toBe(true);
+      expect(res.result.success).toBe(false);
+      expect(res.result.compileError).toMatch(/language/i);
+      expect(mockExecuteRce).not.toHaveBeenCalled();
+    });
+
     it('advances synchronously when autoAdvanceDelayMs is 0', async () => {
       const mockRceResponse: RCEExecuteResponse = {
         success: true,
@@ -123,6 +187,7 @@ describe('challengeService', () => {
       await runChallenge(
         {
           chapterId: 'ch-1',
+          trackId: 'go',
           code: 'package main',
           testCode: 'package main_test',
           autoAdvanceDelayMs: 0,
@@ -162,6 +227,7 @@ describe('challengeService', () => {
 
       const res = await runChallenge({
         chapterId: 'ch-1',
+        trackId: 'go',
         code: 'package main',
         testCode: 'package main_test',
         autoAdvanceDelayMs: 0,
@@ -189,6 +255,7 @@ describe('challengeService', () => {
       const res = await runChallenge(
         {
           chapterId: 'ch-1',
+          trackId: 'go',
           code: 'package main',
           testCode: 'package main_test',
         },
@@ -213,6 +280,7 @@ describe('challengeService', () => {
       const res = await runChallenge(
         {
           chapterId: 'ch-1',
+          trackId: 'go',
           code: 'package main',
           testCode: 'package main_test',
         },
@@ -251,6 +319,7 @@ describe('challengeService', () => {
       const res = await runChallenge(
         {
           chapterId: 'ch-1',
+          trackId: 'go',
           code: 'package main',
           testCode: 'package main_test',
         },

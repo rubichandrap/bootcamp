@@ -5,11 +5,24 @@ import {
   defaultHttpProgressAdapter,
   DEFAULT_USER_ID,
 } from '@/lib/progress/progressTracker';
+import { getTrackConfig, TrackSlug } from '@/lib/tracks/trackConfig';
 
 export interface ExecuteRceParams {
   code: string;
   testCode: string;
   enableRaceCheck?: boolean;
+  language: string;
+}
+
+export function deriveLanguageFromTrack(trackId?: string): string {
+  if (!trackId) {
+    throw new Error('Missing trackId: cannot determine submission language');
+  }
+  const config = getTrackConfig(trackId as TrackSlug);
+  if (!config) {
+    throw new Error(`Unsupported track: ${trackId}`);
+  }
+  return config.language;
 }
 
 export async function executeRce(params: ExecuteRceParams): Promise<RCEExecuteResponse> {
@@ -20,6 +33,7 @@ export async function executeRce(params: ExecuteRceParams): Promise<RCEExecuteRe
       code: params.code,
       testCode: params.testCode,
       enableRaceCheck: params.enableRaceCheck,
+      language: params.language,
     }),
   });
   if (!res.ok) {
@@ -66,6 +80,7 @@ export async function runChallenge(
       code: params.code,
       testCode: params.testCode,
       enableRaceCheck: params.enableRaceCheck,
+      language: deriveLanguageFromTrack(params.trackId),
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Execution failed';
