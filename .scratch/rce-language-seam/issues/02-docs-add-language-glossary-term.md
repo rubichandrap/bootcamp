@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] CONTEXT.md defines "Language" with a canonical source and Avoid terms.
-- [ ] Existing "Track" glossary entry cross-referenced so the Track/Language distinction is explicit.
+- [x] CONTEXT.md defines "Language" with a canonical source and Avoid terms.
+- [x] Existing "Track" glossary entry cross-referenced so the Track/Language distinction is explicit.
